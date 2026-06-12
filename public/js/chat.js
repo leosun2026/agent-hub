@@ -526,10 +526,13 @@ function formatTime(isoStr) {
 
 function getBossAvatar() {
   var saved = localStorage.getItem("hub_boss_avatar");
-  if (saved && saved.indexOf("data:") === 0) return '<img src="'+saved+'" style="width:22px;height:22px;object-fit:cover;border-radius:50%;vertical-align:middle">';
   return saved || "👤";
 }
 function getBossName() {
   var saved = localStorage.getItem("hub_boss_name");
   return saved || "力哥";
+}
+function getBossBio() {
+  var saved = localStorage.getItem("hub_boss_bio");
+  return saved || "AI 时代的手艺人";
 }

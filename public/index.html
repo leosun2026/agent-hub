@@ -99,11 +99,11 @@ main{flex:1;display:flex;overflow:hidden}
 .hall-content{flex:1;padding:40px 20px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px}
 .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:2000;display:none;align-items:center;justify-content:center}
 .overlay.show{display:flex}
-.overlay-content{background:var(--bg-elevated);border-radius:14px;padding:0;width:440px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg);position:relative}
-.settings-section{margin-bottom:2px}
-.settings-section:last-child{margin-bottom:0}
+.overlay-content{background:var(--bg-elevated);border-radius:14px;padding:28px 32px;width:460px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg);position:relative}
+.settings-close{position:absolute;top:14px;right:16px;width:30px;height:30px;border:none;border-radius:6px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:20px;transition:background .12s}
+.settings-close:hover{background:var(--bg-hover)}
+.settings-section{margin-bottom:24px}
 .settings-section h3{font-size:13px;color:var(--text-secondary);margin-bottom:10px;font-weight:600}
-.settings-inner{padding:20px 28px}
 .theme-row{display:flex;gap:10px}
 .theme-card{flex:1;padding:14px;border:2px solid var(--border-color);border-radius:10px;text-align:center;cursor:pointer;transition:border-color .15s,background .12s;font-size:12px;background:transparent;color:var(--text-primary)}
 .theme-card:hover{border-color:var(--accent-primary)}
@@ -223,8 +223,8 @@ main{flex:1;display:flex;overflow:hidden}
 </main>
 <div class="overlay" id="settingsOverlay">
   <div class="overlay-content">
-    <div class="settings-inner">
-    <h2 style="font-size:18px;margin-bottom:14px;">⚙️ 设置</h2>
+    <button class="settings-close" onclick="closeSettings()">&times;</button>
+    <h2 style="font-size:18px;margin-bottom:20px;">⚙️ 设置</h2>
     <div class="settings-section"><h3>🎨 主题配色</h3>
       <div class="theme-row">
         <button class="theme-card active" data-theme="white" onclick="setTheme('white',this)"><div class="preview-box" style="background:#f5f7fa;border:1px solid #e2e6ed"></div>极简白</button>
@@ -236,19 +236,25 @@ main{flex:1;display:flex;overflow:hidden}
       <div class="settings-card" onclick="openAddMember()"><div style="font-size:13px;font-weight:500;">＋ 添加新 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">通过邀请链接添加 Agent</div></div>
       <div class="settings-card" onclick="openManageMembers()"><div style="font-size:13px;font-weight:500;">📋 管理 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">查看/编辑/移除已添加的 Agent</div></div>
     </div>
+    <div class="settings-section"><h3>📜 发言规则</h3>
+      <div class="settings-card" onclick="alert('原型：发言规则配置')"><div style="font-size:13px;font-weight:500;">编辑轮次限制与 @ 模式</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">设置 Agent 回复限制、@ 模式宽限规则等</div></div>
+    </div>
     <div class="settings-section"><h3>👤 用户设置</h3>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-        <span id="settingsAvatarPreview" style="font-size:40px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--bg-tertiary);overflow:hidden;">👤</span>
-        <label style="padding:6px 14px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;">
-          更换头像
-          <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none" onchange="saveAvatar(this)">
-        </label>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <span style="font-size:40px;">👤</span>
+        <button onclick="alert('原型：更换头像')" style="padding:6px 14px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;">更换头像</button>
       </div>
-      <div class="settings-input-row"><span style="font-size:12px;width:50px;flex-shrink:0;">昵称</span><input class="settings-input" id="settingsNickname" value="力哥" onchange="saveUserSettings()" placeholder="输入昵称"></div>
+      <div class="settings-input-row" style="margin-bottom:6px;"><span style="font-size:12px;width:50px;flex-shrink:0;">昵称</span><input class="settings-input" id="settingsNickname" value="力哥" onchange="saveUserSettings()" placeholder="输入昵称"></div>
+      <div class="settings-input-row"><span style="font-size:12px;width:50px;flex-shrink:0;">签名</span><input class="settings-input" id="settingsBio" value="AI 时代的手艺人" onchange="saveUserSettings()" placeholder="个性签名"></div>
     </div>
+    <div class="settings-section"><h3>🪵 日志</h3><button onclick="alert('原型：打开日志文件')" style="padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:13px;">📂 打开日志文件</button></div>
+    <div class="settings-section"><h3>📥 导出保存位置</h3>
+      <div class="settings-input-row"><input class="settings-input" value="D:\Agent Hub\exports\" readonly><button onclick="alert('原型：浏览文件夹')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:13px;">浏览</button></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">默认：D:\Agent Hub\exports\</div>
     </div>
-    <div style="border-top:1px solid var(--border-color);padding:10px 28px;">
+    <div style="text-align:right;margin-top:12px;display:flex;gap:8px;justify-content:space-between;">
       <button onclick="alert('原型：退出程序并关闭浏览器')" class="settings-btn-danger">⏻ 退出程序</button>
+      <button onclick="closeSettings()" class="settings-btn-close">关闭</button>
     </div>
   </div>
 </div>
@@ -311,11 +317,10 @@ function toggleCmd(){document.getElementById("cmdPanel").classList.toggle("show"
 function toggleHall(){document.getElementById("hallOverlay").classList.toggle("open");document.getElementById("btnHall").classList.toggle("active")}
 document.getElementById("hallOverlay").addEventListener("click",function(e){if(e.target===this)toggleHall()})
 function setTheme(t,el){document.documentElement.setAttribute("data-theme",t);localStorage.setItem("hub_theme",t);document.querySelectorAll(".theme-card").forEach(function(c){c.classList.remove("active")});if(el)el.classList.add("active");document.querySelectorAll('.theme-card[data-theme="'+t+'"]').forEach(function(c){c.classList.add("active")})}
-function openSettings(){var n=localStorage.getItem("hub_boss_name");if(n)document.getElementById("settingsNickname").value=n;var a=localStorage.getItem("hub_boss_avatar");if(a){document.getElementById("settingsAvatarPreview").innerHTML='<img src="'+a+'" style="width:48px;height:48px;object-fit:cover;border-radius:50%">'}else{document.getElementById("settingsAvatarPreview").textContent="👤"}document.getElementById("settingsOverlay").classList.add("show")}
+function openSettings(){var n=localStorage.getItem("hub_boss_name");var b=localStorage.getItem("hub_boss_bio");if(n)document.getElementById("settingsNickname").value=n;if(b)document.getElementById("settingsBio").value=b;document.getElementById("settingsOverlay").classList.add("show")}
 function closeSettings(){document.getElementById("settingsOverlay").classList.remove("show")}
 document.getElementById("settingsOverlay").addEventListener("click",function(e){if(e.target===this)closeSettings()})
-function saveUserSettings(){localStorage.setItem("hub_boss_name",document.getElementById("settingsNickname").value||"力哥")}
-function saveAvatar(el){var file=el.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var data=e.target.result;localStorage.setItem("hub_boss_avatar",data);document.getElementById("settingsAvatarPreview").innerHTML='<img src="'+data+'" style="width:48px;height:48px;object-fit:cover;border-radius:50%">'};reader.readAsDataURL(file)}
+function saveUserSettings(){localStorage.setItem("hub_boss_name",document.getElementById("settingsNickname").value||"力哥");localStorage.setItem("hub_boss_bio",document.getElementById("settingsBio").value||"AI 时代的手艺人")}
 var picked=[];
 function openPick(){var l=document.getElementById("pickAgentList");l.innerHTML="";picked=[];agents.forEach(function(a){if(!a.endpoint)return;var r=document.createElement("div");r.className="pick-agent-row";r.innerHTML='<span style="font-size:24px">'+a.avatar+'</span><span class="name">'+(a.nickname||a.name)+'</span><code style="margin-left:auto;font-size:11px;color:var(--text-muted)">@'+a.id+"</code>";r.addEventListener("click",function(){togglePick(r)});l.appendChild(r)});document.getElementById("pickOverlay").classList.add("show");document.querySelector(".pick-modal .btn-confirm").textContent="确认（0/2）";document.querySelector(".pick-modal .btn-confirm").style.opacity="0.5"}
 function togglePick(el){el.classList.toggle("selected");if(el.classList.contains("selected"))picked.push(el);else picked=picked.filter(function(e){return e!==el});var b=document.querySelector(".pick-modal .btn-confirm");if(picked.length===2){b.textContent="确认（2/2）";b.style.opacity="1"}else{b.textContent="确认（"+picked.length+"/2）";b.style.opacity="0.5"}}
