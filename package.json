@@ -1,0 +1,27 @@
+﻿{
+    "name":  "agent-hub",
+    "version":  "2.0.0",
+    "description":  "Multi-Agent collaboration hub with dynamic member management, group chat, and task orchestration",
+    "main":  "server.js",
+    "scripts":  {
+                    "start":  "node server.js",
+                    "dev":  "node server.js"
+                },
+    "keywords":  [
+                     "ai",
+                     "agent",
+                     "multi-agent",
+                     "chat",
+                     "group-chat"
+                 ],
+    "author":  "",
+    "license":  "MIT",
+    "type":  "commonjs",
+    "dependencies":  {
+                         "express":  "^5.2.1",
+                         "socket.io":  "^4.8.3",
+                         "socket.io-client":  "^4.8.3",
+                         "sql.js":  "^1.14.1",
+                         "dotenv":  "^17.4.2"
+                     }
+}

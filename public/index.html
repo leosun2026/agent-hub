@@ -1,0 +1,334 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN" data-theme="white">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Hub</title>
+<style>
+html[data-theme="white"]{--bg-primary:#f5f7fa;--bg-secondary:#fff;--bg-tertiary:#f9fafb;--bg-elevated:#fff;--bg-hover:#f0f1f5;--bg-input:#f9fafb;--bg-message:#f0f1f5;--bg-message-self:#3b82f6;--text-primary:#1a1a2e;--text-secondary:#6b7280;--text-muted:#9ca3af;--text-inverse:#fff;--border-color:#e2e6ed;--border-strong:#d0d5dd;--accent-primary:#3b82f6;--accent-primary-hover:#2563eb;--accent-bg:#eef2ff;--accent-danger:#dc2626;--overlay-bg:rgba(0,0,0,0.3);--shadow-sm:0 1px 3px rgba(0,0,0,0.06);--shadow-md:0 4px 12px rgba(0,0,0,0.08);--shadow-lg:0 8px 32px rgba(0,0,0,0.12);--header-bg:#fff;--header-border:#e2e6ed;--sidebar-bg:#fff;--sidebar-border:#e2e6ed;--sidebar-agent-hover:#f5f7fa;--btn-send-bg:#3b82f6;--btn-send-color:#fff;--chat-user-bg:#3b82f6;--chat-user-color:#fff;--hall-btn-bg:#f0f1f5;--hall-btn-hover:#e5e7eb;--cmd-badge-bg:#eef2ff;--cmd-badge-color:#3b82f6;--scrollbar-thumb:#d0d5dd;--cmd-toggle-bg:#f0f1f5;--cmd-panel-bg:#f9fafb;--settings-float-bg:#f0f1f5;--settings-float-hover:#e5e7eb;--export-btn-bg:#eef2ff;--export-btn-color:#3b82f6;--export-btn-hover:#dbeafe;--online-dot:#059669;--offline-dot:#dc2626}
+html[data-theme="blue"]{--bg-primary:#0a1628;--bg-secondary:#0f1f3d;--bg-tertiary:#1a2d4a;--bg-elevated:#0f1f3d;--bg-hover:#1e3a5f;--bg-input:#0a1628;--bg-message:#1e3a5f;--bg-message-self:#3b82f6;--text-primary:#e0e8f4;--text-secondary:#7a8aa0;--text-muted:#5a7a9a;--text-inverse:#0a1628;--border-color:#1e3a5f;--border-strong:#2a4a6a;--accent-primary:#60a5fa;--accent-primary-hover:#3b82f6;--accent-bg:#1e3a5f;--accent-danger:#ff6b6b;--overlay-bg:rgba(0,0,0,0.5);--shadow-md:0 4px 16px rgba(0,0,0,0.4);--shadow-lg:0 8px 32px rgba(0,0,0,0.4);--header-bg:#0f1f3d;--header-border:#1e3a5f;--sidebar-bg:#0f1f3d;--sidebar-border:#1e3a5f;--sidebar-agent-hover:#1e3a5f;--btn-send-bg:#3b82f6;--btn-send-color:#fff;--chat-user-bg:#3b82f6;--chat-user-color:#fff;--hall-btn-bg:#1e3a5f;--hall-btn-hover:#2a4a6a;--cmd-badge-bg:#1e3a5f;--cmd-badge-color:#60a5fa;--scrollbar-thumb:#2a4a6a;--cmd-toggle-bg:#1a2d4a;--cmd-panel-bg:#0f1f3d;--settings-float-bg:#1a2d4a;--settings-float-hover:#1e3a5f;--export-btn-bg:#1e3a5f;--export-btn-color:#60a5fa;--export-btn-hover:#2a4a6a;--online-dot:#2dd4a0;--offline-dot:#ff6b6b}
+html[data-theme="gray"]{--bg-primary:#1c1c1e;--bg-secondary:#2c2c2e;--bg-tertiary:#3a3a3c;--bg-elevated:#2c2c2e;--bg-hover:#3a3a3c;--bg-input:#1c1c1e;--bg-message:#3a3a3c;--bg-message-self:#d4a373;--text-primary:#f5f5f7;--text-secondary:#8e8e93;--text-muted:#636366;--text-inverse:#1c1c1e;--border-color:#48484a;--border-strong:#48484a;--accent-primary:#d4a373;--accent-primary-hover:#c9955e;--accent-bg:#3a3a3c;--accent-danger:#ff3b30;--overlay-bg:rgba(0,0,0,0.55);--shadow-md:0 4px 16px rgba(0,0,0,0.5);--shadow-lg:0 8px 32px rgba(0,0,0,0.5);--header-bg:#2c2c2e;--header-border:#48484a;--sidebar-bg:#2c2c2e;--sidebar-border:#48484a;--sidebar-agent-hover:#3a3a3c;--btn-send-bg:#d4a373;--btn-send-color:#1c1c1e;--chat-user-bg:#d4a373;--chat-user-color:#1c1c1e;--hall-btn-bg:#3a3a3c;--hall-btn-hover:#48484a;--cmd-badge-bg:#3a3a3c;--cmd-badge-color:#d4a373;--scrollbar-thumb:#48484a;--cmd-toggle-bg:#3a3a3c;--cmd-panel-bg:#2c2c2e;--settings-float-bg:#3a3a3c;--settings-float-hover:#48484a;--export-btn-bg:#3a3a3c;--export-btn-color:#d4a373;--export-btn-hover:#48484a;--online-dot:#30d158;--offline-dot:#ff3b30}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg-primary);color:var(--text-primary);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--header-bg);border-bottom:1px solid var(--header-border);flex-shrink:0;height:56px}
+.header-left{display:flex;align-items:center;gap:16px}
+.header-brand{font-size:20px;font-weight:700;color:var(--accent-primary);white-space:nowrap;cursor:default;user-select:none;margin:0;line-height:1}
+.task-selector{position:relative}
+.task-selector-btn{padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:background .15s}
+.task-selector-btn:hover{background:var(--bg-hover)}
+.task-selector-btn .arrow{font-size:10px;color:var(--text-muted);transition:transform .2s}
+.task-selector-btn.open .arrow{transform:rotate(180deg)}
+.task-dropdown{position:absolute;top:100%;left:0;margin-top:4px;width:240px;background:var(--bg-elevated);border:1px solid var(--border-color);border-radius:10px;box-shadow:var(--shadow-lg);z-index:1000;display:none;overflow:hidden}
+.task-dropdown.show{display:block}
+.task-option{padding:10px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;transition:background .12s}
+.task-option:hover{background:var(--bg-hover)}
+.task-option.active{background:var(--accent-bg);color:var(--accent-primary);font-weight:500}
+.task-option.new{border-top:1px solid var(--border-color);color:var(--accent-primary)}
+.task-edit-btn{display:inline;margin-left:6px;cursor:pointer;opacity:0;font-size:12px;transition:opacity .12s;user-select:none}
+.task-option:hover .task-edit-btn{opacity:.6}
+.task-edit-btn:hover{opacity:1!important}
+.header-right{display:flex;align-items:center;gap:8px}
+.btn-hall{width:36px;height:36px;border:none;border-radius:8px;background:var(--hall-btn-bg);color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.btn-hall:hover{background:var(--hall-btn-hover)}
+.btn-hall.active{background:var(--accent-bg);color:var(--accent-primary)}
+main{flex:1;display:flex;overflow:hidden}
+.sidebar{width:220px;min-width:220px;background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;overflow-y:auto;position:relative;padding:12px;gap:4px}
+.agent-card{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;transition:background .12s;position:relative}
+.agent-card:hover{background:var(--sidebar-agent-hover)}
+.agent-card-left{display:flex;align-items:center;gap:8px;min-width:0}
+.agent-avatar{width:24px;text-align:center;font-size:18px;flex-shrink:0}
+.agent-info{min-width:0}
+.agent-info .name{font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary)}
+.agent-info .agent-id{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-left:auto}
+.status-dot.online{background:var(--online-dot)}
+.status-dot.offline{background:var(--offline-dot)}
+.status-dot.thinking{background:var(--accent-primary);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sidebar-section-title{font-size:14px;color:var(--text-primary);font-weight:600;padding:8px 4px 8px}
+.history-list{flex:1;overflow-y:auto;min-height:0;padding-bottom:48px;margin-top:4px}
+.history-day{padding:5px 8px;font-size:13px;color:var(--text-primary);cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-radius:4px;margin-bottom:2px;transition:background .2s}
+.history-day:hover{background:var(--sidebar-agent-hover)}
+.history-day .day-count{font-size:10px;color:var(--text-muted);background:var(--bg-tertiary);padding:1px 6px;border-radius:8px}
+.history-day .day-actions{display:none;gap:3px}
+.history-day:hover .day-actions{display:flex}
+.history-day .day-actions button{background:none;border:none;cursor:pointer;font-size:12px;color:var(--text-muted);padding:2px;line-height:1;opacity:.6}
+.history-day .day-actions button:hover{opacity:1;color:var(--accent-primary)}
+.history-day .day-actions button.danger:hover{color:var(--accent-danger)}
+.btn-settings-float{position:absolute;bottom:12px;left:12px;width:36px;height:36px;border:1px solid var(--border-color);border-radius:8px;background:var(--settings-float-bg);color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s;z-index:5}
+.btn-settings-float:hover{background:var(--settings-float-hover)}
+.agent-edit-btn{width:20px;height:20px;border:none;border-radius:4px;background:transparent;color:var(--text-muted);cursor:pointer;font-size:11px;display:none;align-items:center;justify-content:center;flex-shrink:0;transition:color .12s;padding:0}
+.agent-card:hover .agent-edit-btn{display:flex}
+.agent-edit-btn:hover{color:var(--accent-primary)}
+.content-area{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.chat-messages{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{display:flex;gap:10px;align-items:flex-start;max-width:75%}
+.chat-msg.user{align-self:flex-end;flex-direction:row-reverse}
+.chat-msg.system{align-self:center;max-width:100%}
+.msg-avatar{min-width:30px;text-align:center;font-size:22px;flex-shrink:0}
+.msg-body{min-width:0}
+.msg-header{font-size:11px;color:var(--text-muted);margin-bottom:4px}
+.msg-text{padding:8px 14px;border-radius:12px;background:var(--bg-message);font-size:14px;line-height:1.5;color:var(--text-primary);word-break:break-word}
+.chat-msg.user .msg-text{background:var(--chat-user-bg);color:var(--chat-user-color)}
+.chat-msg.system .msg-text{background:transparent;text-align:center;font-size:12px;color:var(--text-muted);padding:4px 12px}
+.cmd-panel{max-height:0;overflow:hidden;transition:max-height .25s ease;background:var(--cmd-panel-bg);border-top:1px solid var(--border-color)}
+.cmd-panel.show{max-height:200px}
+.cmd-items{display:flex;flex-wrap:wrap;gap:6px 10px;padding:12px 20px;align-items:center}
+.cmd-label{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-right:4px}
+.cmd-item{padding:4px 10px;border-radius:6px;background:var(--cmd-badge-bg);color:var(--cmd-badge-color);font-size:12px;cursor:pointer;transition:opacity .12s;white-space:nowrap}
+.cmd-item:hover{opacity:.8}
+.cmd-item .cmd-desc{color:var(--text-muted);margin-left:4px;font-size:11px}
+.input-area{padding:10px 16px;border-top:1px solid var(--border-color);background:var(--bg-secondary)}
+.input-row{display:flex;gap:6px;align-items:center}
+.btn-cmd-toggle{width:36px;height:36px;border:1px solid var(--border-color);border-radius:8px;background:var(--cmd-toggle-bg);color:var(--text-secondary);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s,border-color .15s}
+.btn-cmd-toggle:hover{background:var(--bg-hover)}
+.btn-cmd-toggle.active{background:var(--accent-bg);color:var(--accent-primary);border-color:var(--accent-primary)}
+#chatInput{flex:1;min-height:36px;max-height:120px;padding:8px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-input);color:var(--text-primary);font-family:inherit;font-size:13.5px;resize:none;outline:none;line-height:1.5;transition:border-color .15s}
+#chatInput:focus{border-color:var(--accent-primary)}
+#chatInput::placeholder{color:var(--text-muted)}
+.btn-send{padding:7px 18px;border:none;border-radius:8px;background:var(--btn-send-bg);color:var(--btn-send-color);cursor:pointer;font-size:14px;font-weight:500;white-space:nowrap;transition:opacity .15s}
+.btn-send:hover{opacity:.9}
+.btn-export{width:36px;height:36px;padding:0;border:1px solid var(--border-color);border-radius:8px;background:var(--export-btn-bg);color:var(--export-btn-color);cursor:pointer;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.btn-export:hover{background:var(--export-btn-hover)}
+.hall-overlay{width:0;overflow:hidden;background:var(--bg-secondary);border-left:1px solid var(--border-color);transition:width .3s ease;flex-shrink:0;display:flex;flex-direction:column}
+.hall-overlay.open{width:720px}
+.hall-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-color)}
+.hall-header h2{font-size:16px}
+.hall-close{width:32px;height:32px;border:none;border-radius:6px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:18px;transition:background .12s}
+.hall-close:hover{background:var(--bg-hover)}
+.hall-content{flex:1;padding:40px 20px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px}
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:2000;display:none;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.overlay-content{background:var(--bg-elevated);border-radius:14px;padding:28px 32px;width:460px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg);position:relative}
+.settings-close{position:absolute;top:14px;right:16px;width:30px;height:30px;border:none;border-radius:6px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:20px;transition:background .12s}
+.settings-close:hover{background:var(--bg-hover)}
+.settings-section{margin-bottom:24px}
+.settings-section h3{font-size:13px;color:var(--text-secondary);margin-bottom:10px;font-weight:600}
+.theme-row{display:flex;gap:10px}
+.theme-card{flex:1;padding:14px;border:2px solid var(--border-color);border-radius:10px;text-align:center;cursor:pointer;transition:border-color .15s,background .12s;font-size:12px;background:transparent;color:var(--text-primary)}
+.theme-card:hover{border-color:var(--accent-primary)}
+.theme-card.active{border-color:var(--accent-primary);background:var(--accent-bg)}
+.theme-card .preview-box{width:100%;height:36px;border-radius:6px;margin-bottom:6px;border:1px solid var(--border-color)}
+.settings-card{padding:12px 14px;border:1px solid var(--border-color);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .12s}
+.settings-card:hover{border-color:var(--accent-primary)}
+.settings-input-row{display:flex;gap:8px;align-items:center}
+.settings-input{flex:1;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-primary);font-size:13px;outline:none}
+.settings-input:focus{border-color:var(--accent-primary)}
+.settings-btn-danger{padding:8px 20px;border:2px solid var(--accent-danger);border-radius:8px;background:transparent;color:var(--accent-danger);cursor:pointer;font-size:13px;font-weight:600;transition:background .12s}
+.settings-btn-danger:hover{background:var(--accent-danger);color:var(--text-inverse)}
+.settings-btn-close{padding:8px 20px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;font-weight:600}
+.pick-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:3000;display:none;align-items:center;justify-content:center}
+.pick-overlay.show{display:flex}
+.pick-modal{background:var(--bg-elevated);border-radius:14px;padding:24px;width:360px;max-width:90vw;box-shadow:var(--shadow-lg)}
+.pick-modal h3{font-size:15px;margin-bottom:14px}
+.pick-agent-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;margin-bottom:4px;border:1px solid transparent}
+.pick-agent-row:hover{background:var(--bg-hover)}
+.pick-agent-row.selected{border-color:var(--accent-primary);background:var(--accent-bg)}
+.pick-modal .btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.pick-modal .btn-row button{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px}
+.pick-modal .btn-cancel{background:var(--bg-hover);color:var(--text-primary)}
+.pick-modal .btn-confirm{background:var(--accent-primary);color:#fff}
+.mention-dropdown{background:var(--bg-elevated);border:1px solid var(--border-color);border-radius:10px;box-shadow:var(--shadow-lg);z-index:1500;max-height:200px;overflow-y:auto}
+.mention-item{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;transition:background .12s;font-size:12px}
+.mention-item:hover{background:var(--bg-hover)}
+.mention-item code{margin-left:auto;font-size:11px;color:var(--text-muted)}
+.mention-avatar{width:20px;text-align:center;font-size:16px}
+.manage-panel{position:fixed;top:0;right:0;bottom:0;width:400px;background:var(--bg-elevated);border-left:1px solid var(--border-color);box-shadow:var(--shadow-lg);z-index:2000;display:none;flex-direction:column}
+.manage-panel.show{display:flex}
+.manage-panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-color)}
+.manage-panel-body{flex:1;overflow-y:auto;padding:12px 16px}
+.manage-agent-card{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--border-color)}
+.manage-agent-card .agent-info{flex:1}
+.manage-agent-card .agent-name{font-size:13px;font-weight:500}
+.manage-agent-card .agent-meta{font-size:11px;color:var(--text-muted)}
+.manage-agent-card .agent-actions button{padding:4px 10px;border:none;border-radius:6px;background:var(--accent-danger);color:#fff;cursor:pointer;font-size:11px}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:2000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-container{background:var(--bg-elevated);border-radius:14px;width:520px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-color)}
+.modal-header h2{font-size:16px}
+.modal-close{width:30px;height:30px;border:none;border-radius:6px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:22px;transition:background .12s}
+.modal-close:hover{background:var(--bg-hover)}
+.modal-body{flex:1;overflow-y:auto;padding:20px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border-color)}
+.invite-text{background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:14px;font-size:12px;line-height:1.6;white-space:pre-wrap;margin:10px 0;color:var(--text-primary)}
+.paste-area{width:100%;min-height:120px;padding:10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-input);color:var(--text-primary);font-family:monospace;font-size:12px;resize:vertical;outline:none}
+.paste-area:focus{border-color:var(--accent-primary)}
+.paste-error{color:var(--accent-danger);font-size:12px;margin-top:6px;display:none}
+.preview-panel{background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:12px;margin-top:8px;font-size:12px;line-height:1.6}
+.preview-valid{color:var(--online-dot);font-weight:500;margin-bottom:6px}
+.copy-btn{padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px}
+.btn-primary,.btn-secondary,.btn-success{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px}
+.btn-primary{background:var(--accent-primary);color:#fff}
+.btn-secondary{background:var(--bg-hover);color:var(--text-primary)}
+.btn-success{background:var(--online-dot);color:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <h1 class="header-brand">Agent Hub</h1>
+    <div class="task-selector">
+      <button class="task-selector-btn" onclick="toggleTaskDropdown()">📋 当前任务 <span class="arrow">▼</span></button>
+      <div class="task-dropdown" id="taskDropdown">
+        <div class="task-option active" onclick="switchTask(this)">📋 Agent Hub <span class="task-edit-btn" onclick="event.stopPropagation();alert('原型：编辑任务名称')">✏️</span></div>
+        <div class="task-option" onclick="switchTask(this)">🛠️ 系统维护 <span class="task-edit-btn" onclick="event.stopPropagation();alert('原型：编辑任务名称')">✏️</span></div>
+      <div class="task-divider"></div>
+      <div class="task-option new" onclick="alert('原型：新建任务')">＋ 新建任务</div>
+    </div>
+  </div>
+</div>
+<div class="header-right">
+    <button class="btn-hall" id="btnHall" onclick="toggleHall()" title="展开/折叠大厅">🏢</button>
+  </div>
+</header>
+<main>
+  <div class="sidebar" id="sidebar"></div>
+  <div class="content-area">
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="cmd-panel" id="cmdPanel">
+      <div class="cmd-items">
+        <span class="cmd-label">命令</span>
+        <span class="cmd-item" title="查看所有命令">/help <span class="cmd-desc">帮助</span></span>
+        <span class="cmd-item" title="停止当前 Agent 回复">/stop <span class="cmd-desc">停止</span></span>
+        <span class="cmd-item" title="清屏（仅清显示，数据已存）">/new <span class="cmd-desc">清屏</span></span>
+        <span class="cmd-item" title="导出从上一次 /new 到现在的对话">/save <span class="cmd-desc">保存导出</span></span>
+        <span class="cmd-item" title="点选 2 个 Agent 展开探讨">/Battle <span class="cmd-desc">探讨</span></span>
+        <span class="cmd-item" title="搜索聊天历史">/search <span class="cmd-desc">搜索</span></span>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="input-row">
+        <button class="btn-cmd-toggle" id="btnCmdToggle" onclick="toggleCmd()" title="查看/收起命令">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2"/>
+            <rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2"/>
+            <rect x="9" y="9" width="5.5" height="5.5" rx="1.2"/>
+            <rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2"/>
+          </svg>
+        </button>
+        <textarea id="chatInput" placeholder="发送消息...（@Agent 提及，点击图标查看命令）"></textarea>
+        <button class="btn-send" onclick="sendMessage()">发送</button>
+        <button class="btn-export" onclick="exportChat()">💾</button>
+      </div>
+    </div>
+  </div>
+  <div class="hall-overlay" id="hallOverlay">
+    <div class="hall-header">
+      <h2>🏢 大厅</h2>
+      <button class="hall-close" onclick="toggleHall()">&times;</button>
+    </div>
+    <div class="hall-content"><span>🎉 大厅正在建设中，敬请期待...</span></div>
+  </div>
+</main>
+<div class="overlay" id="settingsOverlay">
+  <div class="overlay-content">
+    <button class="settings-close" onclick="closeSettings()">&times;</button>
+    <h2 style="font-size:18px;margin-bottom:20px;">⚙️ 设置</h2>
+    <div class="settings-section"><h3>🎨 主题配色</h3>
+      <div class="theme-row">
+        <button class="theme-card active" data-theme="white" onclick="setTheme('white',this)"><div class="preview-box" style="background:#f5f7fa;border:1px solid #e2e6ed"></div>极简白</button>
+        <button class="theme-card" data-theme="blue" onclick="setTheme('blue',this)"><div class="preview-box" style="background:#0a1628;border:1px solid #1e3a5f"></div>深海幽蓝</button>
+        <button class="theme-card" data-theme="gray" onclick="setTheme('gray',this)"><div class="preview-box" style="background:#1c1c1e;border:1px solid #48484a"></div>高级灰</button>
+      </div>
+    </div>
+    <div class="settings-section"><h3>🤖 Agent 管理</h3>
+      <div class="settings-card" onclick="openAddMember()"><div style="font-size:13px;font-weight:500;">＋ 添加新 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">通过邀请链接添加 Agent</div></div>
+      <div class="settings-card" onclick="openManageMembers()"><div style="font-size:13px;font-weight:500;">📋 管理 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">查看/编辑/移除已添加的 Agent</div></div>
+    </div>
+    <div class="settings-section"><h3>📜 发言规则</h3>
+      <div class="settings-card" onclick="alert('原型：发言规则配置')"><div style="font-size:13px;font-weight:500;">编辑轮次限制与 @ 模式</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">设置 Agent 回复限制、@ 模式宽限规则等</div></div>
+    </div>
+    <div class="settings-section"><h3>👤 用户设置</h3>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <span style="font-size:40px;">👤</span>
+        <button onclick="alert('原型：更换头像')" style="padding:6px 14px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;">更换头像</button>
+      </div>
+      <div class="settings-input-row" style="margin-bottom:6px;"><span style="font-size:12px;width:50px;flex-shrink:0;">昵称</span><input class="settings-input" id="settingsNickname" value="力哥" onchange="saveUserSettings()" placeholder="输入昵称"></div>
+      <div class="settings-input-row"><span style="font-size:12px;width:50px;flex-shrink:0;">签名</span><input class="settings-input" id="settingsBio" value="AI 时代的手艺人" onchange="saveUserSettings()" placeholder="个性签名"></div>
+    </div>
+    <div class="settings-section"><h3>🪵 日志</h3><button onclick="alert('原型：打开日志文件')" style="padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:13px;">📂 打开日志文件</button></div>
+    <div class="settings-section"><h3>📥 导出保存位置</h3>
+      <div class="settings-input-row"><input class="settings-input" value="D:\Agent Hub\exports\" readonly><button onclick="alert('原型：浏览文件夹')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:13px;">浏览</button></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">默认：D:\Agent Hub\exports\</div>
+    </div>
+    <div style="text-align:right;margin-top:12px;display:flex;gap:8px;justify-content:space-between;">
+      <button onclick="alert('原型：退出程序并关闭浏览器')" class="settings-btn-danger">⏻ 退出程序</button>
+      <button onclick="closeSettings()" class="settings-btn-close">关闭</button>
+    </div>
+  </div>
+</div>
+<div class="pick-overlay" id="pickOverlay">
+  <div class="pick-modal">
+    <h3>👥 选择 2 个 Agent 展开探讨</h3>
+    <div id="pickAgentList"></div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closePick()">取消</button>
+      <button class="btn-confirm" onclick="confirmPick()" style="opacity:0.5;">确认（0/2）</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="addMemberOverlay">
+  <div class="modal-container">
+    <div class="modal-header"><h2>添加成员</h2><button class="modal-close" onclick="closeAddMember()">&times;</button></div>
+    <div class="modal-body" id="addMemberBody">
+      <div class="add-member-step" id="step1" style="display:block">
+        <h3>第1步：发送邀请</h3><p>复制下方邀请，发给目标 Agent（通过飞书、WebUI 等渠道）</p>
+        <div class="invite-text" id="inviteText">## Agent Hub 邀请 - 加入聊天室
+
+请提供以下信息以加入 Agent Hub 聊天室：
+
+1. **agent_id**: 唯一标识 (英文数字下划线)
+2. **name**: 显示名称
+3. **role**: orchestrator | executor | specialist
+4. **avatar**: emoji 头像 (可选)
+5. **endpoint**: API 端点 URL (可选)
+6. **model**: 模型名称 (可选)
+7. **group_permissions**: 权限设置 (可选)</div>
+        <button class="copy-btn" onclick="copyInvite()">复制邀请</button>
+      </div>
+      <div class="add-member-step" id="step2" style="display:none">
+        <h3>第2步：粘贴 Agent 配置 JSON</h3><p>粘贴 Agent 回复的 JSON 配置：</p>
+        <textarea class="paste-area" id="pasteArea" placeholder="粘贴 JSON..." oninput="previewPaste()"></textarea>
+        <div class="paste-error" id="pasteError"></div>
+        <div class="preview-panel" id="previewPanel"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="btnPrev" onclick="prevStep()" style="display:none">上一步</button>
+      <button class="btn-secondary" id="btnCancel" onclick="closeAddMember()">取消</button>
+      <button class="btn-primary" id="btnNext" onclick="nextStep()">下一步</button>
+      <button class="btn-success" id="btnConfirm" onclick="confirmAddMember()" style="display:none">确认添加</button>
+    </div>
+  </div>
+</div>
+<div class="manage-panel" id="managePanel">
+  <div class="manage-panel-header"><h3>管理成员</h3><button class="modal-close" onclick="closeManageMembers()">&times;</button></div>
+  <div class="manage-panel-body" id="managePanelBody"></div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = io();
+var agents = [];
+function toggleTaskDropdown(){document.getElementById("taskDropdown").classList.toggle("show");document.querySelector(".task-selector-btn").classList.toggle("open")}
+function switchTask(el){document.querySelectorAll(".task-option").forEach(function(o){o.classList.remove("active")});el.classList.add("active");document.getElementById("taskDropdown").classList.remove("show");document.querySelector(".task-selector-btn").classList.remove("open");document.querySelector(".task-selector-btn").innerHTML=el.textContent+' <span class="arrow">▼</span>'}
+document.addEventListener("click",function(e){if(!e.target.closest(".task-selector")){document.getElementById("taskDropdown").classList.remove("show");var b=document.querySelector(".task-selector-btn");if(b)b.classList.remove("open")}})
+function toggleCmd(){document.getElementById("cmdPanel").classList.toggle("show");document.getElementById("btnCmdToggle").classList.toggle("active")}
+function toggleHall(){document.getElementById("hallOverlay").classList.toggle("open");document.getElementById("btnHall").classList.toggle("active")}
+document.getElementById("hallOverlay").addEventListener("click",function(e){if(e.target===this)toggleHall()})
+function setTheme(t,el){document.documentElement.setAttribute("data-theme",t);localStorage.setItem("hub_theme",t);document.querySelectorAll(".theme-card").forEach(function(c){c.classList.remove("active")});if(el)el.classList.add("active");document.querySelectorAll('.theme-card[data-theme="'+t+'"]').forEach(function(c){c.classList.add("active")})}
+function openSettings(){var n=localStorage.getItem("hub_boss_name");var b=localStorage.getItem("hub_boss_bio");if(n)document.getElementById("settingsNickname").value=n;if(b)document.getElementById("settingsBio").value=b;document.getElementById("settingsOverlay").classList.add("show")}
+function closeSettings(){document.getElementById("settingsOverlay").classList.remove("show")}
+document.getElementById("settingsOverlay").addEventListener("click",function(e){if(e.target===this)closeSettings()})
+function saveUserSettings(){localStorage.setItem("hub_boss_name",document.getElementById("settingsNickname").value||"力哥");localStorage.setItem("hub_boss_bio",document.getElementById("settingsBio").value||"AI 时代的手艺人")}
+var picked=[];
+function openPick(){var l=document.getElementById("pickAgentList");l.innerHTML="";picked=[];agents.forEach(function(a){if(!a.endpoint)return;var r=document.createElement("div");r.className="pick-agent-row";r.innerHTML='<span style="font-size:24px">'+a.avatar+'</span><span class="name">'+(a.nickname||a.name)+'</span><code style="margin-left:auto;font-size:11px;color:var(--text-muted)">@'+a.id+"</code>";r.addEventListener("click",function(){togglePick(r)});l.appendChild(r)});document.getElementById("pickOverlay").classList.add("show");document.querySelector(".pick-modal .btn-confirm").textContent="确认（0/2）";document.querySelector(".pick-modal .btn-confirm").style.opacity="0.5"}
+function togglePick(el){el.classList.toggle("selected");if(el.classList.contains("selected"))picked.push(el);else picked=picked.filter(function(e){return e!==el});var b=document.querySelector(".pick-modal .btn-confirm");if(picked.length===2){b.textContent="确认（2/2）";b.style.opacity="1"}else{b.textContent="确认（"+picked.length+"/2）";b.style.opacity="0.5"}}
+function closePick(){document.getElementById("pickOverlay").classList.remove("show");picked=[]}
+function confirmPick(){if(picked.length!==2){alert("请选择 2 个 Agent");return}var n=picked.map(function(r){return r.querySelector(".name").textContent});alert("🔗 私聊通道已建立："+n[0]+" ↔ "+n[1]);closePick()}
+document.addEventListener("DOMContentLoaded",function(){var i=document.getElementById("chatInput");if(i){i.addEventListener("input",function(){if(this.value.includes("/Battle")){setTimeout(function(){openPick();i.value=i.value.replace("/Battle","")},100)}})}})
+;(function(){var s=localStorage.getItem("hub_theme");if(s){document.documentElement.setAttribute("data-theme",s);document.querySelectorAll('.theme-card[data-theme="'+s+'"]').forEach(function(c){c.classList.add("active")})}})()
+</script>
+<script src="/js/chat.js"></script>
+</body>
+</html>
