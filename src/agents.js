@@ -180,6 +180,11 @@ async function checkAgentStatus(agentId) {
   if (!agent || !agent.endpoint) return { agentId, online: false, reason: 'no endpoint' };
 
   try {
+    // Resolve $env var prefix before using auth
+    if (agent.auth && agent.auth.startsWith('$')) {
+      const envKey = agent.auth.slice(1);
+      agent.auth = process.env[envKey] || null;
+    }
     const url = agent.endpoint.replace('/v1/chat/completions', '/v1/models');
     const headers = {};
     if (agent.auth) headers['Authorization'] = agent.auth.startsWith('Bearer ') ? agent.auth : 'Bearer ' + agent.auth;

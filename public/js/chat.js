@@ -511,7 +511,7 @@ function esc(str) {
 }
 
 function escAttr(str) {
-  return (str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'"'"'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return (str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function formatTime(isoStr) {

@@ -301,24 +301,6 @@ io.on('connection', function(socket) {
 
   let currentRoom = 'room-general';
 
-  // --- Room switching ---
-  socket.on('room:join', function(roomId) {
-    const room = getRoom(roomId);
-    if (!room) {
-      socket.emit('room:error', { message: 'Room not found: ' + roomId });
-      return;
-    }
-    currentRoom = roomId;
-    socket.emit('room:joined', room);
-    console.log('Client ' + socket.id + ' joined room:', room.name);
-  });
-
-  socket.on('room:list', function(data, callback) {
-    const { listRooms } = require('./src/db');
-    const rooms = listRooms();
-    if (callback) callback(rooms);
-  });
-
   // --- Send message (broadcast mode core) ---
   socket.on('chat:send', async function(data) {
     const { task_id, agent_id, role, content, room_id, reply_to } = data;
@@ -361,31 +343,10 @@ io.on('connection', function(socket) {
     if (callback) callback(msgs);
   });
 
-  // --- Mode switch ---
-  socket.on('chat:mode:set', function(data) {
-    const { mode, room_id } = data;
-    if (!mode || !['broadcast', 'mention-only'].includes(mode)) return;
-    const roomId = room_id || currentRoom;
-    const { updateRoomMode, getRoom } = require('./src/db');
-    const room = updateRoomMode(roomId, mode);
-    if (room) {
-      console.log('[Mode] Room ' + room.name + ' mode switched: ' + mode);
-      io.emit('chat:mode', { room_id: roomId, mode: mode });
-    }
-  });
-
   // --- Member added event (for frontend sync) ---
   socket.on('member:refresh', function() {
     const allAgents = listAgents();
     socket.emit('agents:list', allAgents);
-  });
-
-    // --- Nickname sync ---
-  socket.on('room:nickname:set', function(data) {
-    const { setRoomMemberNickname } = require('./src/db');
-    const result = setRoomMemberNickname(data.roomId, data.agentId, data.nickname || null);
-    io.emit('room:nickname:sync', result);
-    io.emit('room:nicknames:refresh', { roomId: data.roomId });
   });
 
   socket.on('disconnect', function() {
