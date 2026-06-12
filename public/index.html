@@ -162,6 +162,29 @@ main{flex:1;display:flex;overflow:hidden}
 .btn-primary{background:var(--accent-primary);color:#fff}
 .btn-secondary{background:var(--bg-hover);color:var(--text-primary)}
 .btn-success{background:var(--online-dot);color:#fff}
+
+/* Right Panel */
+.right-panel{position:fixed;top:0;right:0;bottom:0;width:400px;background:var(--bg-elevated);border-left:1px solid var(--border-color);box-shadow:var(--shadow-lg);z-index:2000;display:none;flex-direction:column}
+.right-panel.show{display:flex}
+.right-panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-color)}
+.right-panel-body{flex:1;overflow-y:auto;padding:16px 20px}
+.right-panel-body h3{font-size:14px;margin-bottom:10px}
+.right-panel-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--border-color)}
+/* Form controls */
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px}
+.form-input{width:100%;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-primary);font-size:13px;outline:none;font-family:inherit}
+.form-input:focus{border-color:var(--accent-primary)}
+.form-textarea{width:100%;min-height:80px;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-primary);font-size:13px;resize:vertical;outline:none;font-family:inherit}
+.form-textarea:focus{border-color:var(--accent-primary)}
+.form-slider-row{display:flex;align-items:center;gap:10px}
+.form-slider{flex:1;accent-color:var(--accent-primary);cursor:pointer}
+.form-slider-value{min-width:30px;text-align:center;font-size:13px;font-weight:600;color:var(--accent-primary)}
+.form-hint{font-size:11px;color:var(--text-muted);margin-top:2px}
+.btn-save{padding:7px 18px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;font-weight:500}
+.btn-save:hover{opacity:.9}
+
+.right-panel-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:1999;display:none}.right-panel-overlay.show{display:block}
 </style>
 </head>
 <body>
@@ -171,10 +194,10 @@ main{flex:1;display:flex;overflow:hidden}
     <div class="task-selector">
       <button class="task-selector-btn" onclick="toggleTaskDropdown()">📋 当前任务 <span class="arrow">▼</span></button>
       <div class="task-dropdown" id="taskDropdown">
-        <div class="task-option active" onclick="switchTask(this)">📋 Agent Hub <span class="task-edit-btn" onclick="event.stopPropagation();alert('原型：编辑任务名称')">✏️</span></div>
-        <div class="task-option" onclick="switchTask(this)">🛠️ 系统维护 <span class="task-edit-btn" onclick="event.stopPropagation();alert('原型：编辑任务名称')">✏️</span></div>
+        <div class="task-option active" onclick="switchTask(this)">📋 Agent Hub <span class="task-edit-btn" onclick="event.stopPropagation();alert('编辑任务名称功能开发中')">✏️</span></div>
+        <div class="task-option" onclick="switchTask(this)">🛠️ 系统维护 <span class="task-edit-btn" onclick="event.stopPropagation();alert('编辑任务名称功能开发中')">✏️</span></div>
       <div class="task-divider"></div>
-      <div class="task-option new" onclick="alert('原型：新建任务')">＋ 新建任务</div>
+      <div class="task-option new" onclick="alert('新建任务功能开发中')">＋ 新建任务</div>
     </div>
   </div>
 </div>
@@ -221,43 +244,78 @@ main{flex:1;display:flex;overflow:hidden}
     <div class="hall-content"><span>🎉 大厅正在建设中，敬请期待...</span></div>
   </div>
 </main>
+<div class="right-panel-overlay" id="rightPanelOverlay" onclick="closeAllRightPanels()"></div>
 <div class="overlay" id="settingsOverlay">
-  <div class="overlay-content">
+  <div class="overlay-content" style="padding:16px 24px;">
     <button class="settings-close" onclick="closeSettings()">&times;</button>
-    <h2 style="font-size:18px;margin-bottom:20px;">⚙️ 设置</h2>
-    <div class="settings-section"><h3>🎨 主题配色</h3>
+    <h2 style="font-size:16px;margin-bottom:14px;">⚙️ 设置</h2>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🎨 主题配色</h3>
       <div class="theme-row">
-        <button class="theme-card active" data-theme="white" onclick="setTheme('white',this)"><div class="preview-box" style="background:#f5f7fa;border:1px solid #e2e6ed"></div>极简白</button>
-        <button class="theme-card" data-theme="blue" onclick="setTheme('blue',this)"><div class="preview-box" style="background:#0a1628;border:1px solid #1e3a5f"></div>深海幽蓝</button>
-        <button class="theme-card" data-theme="gray" onclick="setTheme('gray',this)"><div class="preview-box" style="background:#1c1c1e;border:1px solid #48484a"></div>高级灰</button>
+        <button class="theme-card active" data-theme="white" onclick="setTheme('white',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#f5f7fa;border:1px solid #e2e6ed;border-radius:6px;margin-bottom:4px;"></div>极简白</button>
+        <button class="theme-card" data-theme="blue" onclick="setTheme('blue',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#0a1628;border:1px solid #1e3a5f;border-radius:6px;margin-bottom:4px;"></div>深海幽蓝</button>
+        <button class="theme-card" data-theme="gray" onclick="setTheme('gray',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#1c1c1e;border:1px solid #48484a;border-radius:6px;margin-bottom:4px;"></div>高级灰</button>
       </div>
     </div>
-    <div class="settings-section"><h3>🤖 Agent 管理</h3>
-      <div class="settings-card" onclick="openAddMember()"><div style="font-size:13px;font-weight:500;">＋ 添加新 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">通过邀请链接添加 Agent</div></div>
-      <div class="settings-card" onclick="openManageMembers()"><div style="font-size:13px;font-weight:500;">📋 管理 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">查看/编辑/移除已添加的 Agent</div></div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🤖 Agent 管理</h3>
+      <div class="settings-card" onclick="openRightPanel('addAgentPanel')" style="padding:10px 12px;margin-bottom:6px;"><div style="font-size:13px;font-weight:500;">＋ 添加新 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">通过邀请链接添加 Agent</div></div>
+      <div class="settings-card" onclick="openRightPanel('manageAgentPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">📋 管理 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">查看/编辑/移除已添加的 Agent</div></div>
     </div>
-    <div class="settings-section"><h3>📜 发言规则</h3>
-      <div class="settings-card" onclick="alert('原型：发言规则配置')"><div style="font-size:13px;font-weight:500;">编辑轮次限制与 @ 模式</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">设置 Agent 回复限制、@ 模式宽限规则等</div></div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">📜 发言规则</h3>
+      <div class="settings-card" onclick="openRightPanel('rulesPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">编辑轮次限制与 @ 模式</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">设置 Agent 回复限制、@ 模式宽限规则等</div></div>
     </div>
-    <div class="settings-section"><h3>👤 用户设置</h3>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <span style="font-size:40px;">👤</span>
-        <button onclick="alert('原型：更换头像')" style="padding:6px 14px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;">更换头像</button>
-      </div>
-      <div class="settings-input-row" style="margin-bottom:6px;"><span style="font-size:12px;width:50px;flex-shrink:0;">昵称</span><input class="settings-input" id="settingsNickname" value="力哥" onchange="saveUserSettings()" placeholder="输入昵称"></div>
-      <div class="settings-input-row"><span style="font-size:12px;width:50px;flex-shrink:0;">签名</span><input class="settings-input" id="settingsBio" value="AI 时代的手艺人" onchange="saveUserSettings()" placeholder="个性签名"></div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">👤 用户设置</h3>
+      <div class="settings-input-row" style="margin-bottom:4px;"><span style="font-size:12px;width:50px;flex-shrink:0;">头像 URL</span><input class="settings-input" id="settingsAvatarUrl" value="" onchange="saveUserSettings()" placeholder="https://..."></div>
+      <div class="settings-input-row" style="margin-bottom:4px;"><span style="font-size:12px;width:50px;flex-shrink:0;">昵称</span><input class="settings-input" id="settingsNickname" value="力哥" onchange="saveUserSettings()" placeholder="输入昵称"></div>
+      
     </div>
-    <div class="settings-section"><h3>🪵 日志</h3><button onclick="alert('原型：打开日志文件')" style="padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:13px;">📂 打开日志文件</button></div>
-    <div class="settings-section"><h3>📥 导出保存位置</h3>
-      <div class="settings-input-row"><input class="settings-input" value="D:\Agent Hub\exports\" readonly><button onclick="alert('原型：浏览文件夹')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:13px;">浏览</button></div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">默认：D:\Agent Hub\exports\</div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">⚡ Agent 速度</h3>
+      <div class="settings-input-row"><input type="number" class="form-input" id="agentSpeed" min="5" max="100" value="20" style="width:70px" onchange="localStorage.setItem('hub_agent_speed',this.value)"><span style="font-size:12px;color:var(--text-muted)">px/s（5-100）</span></div>
     </div>
-    <div style="text-align:right;margin-top:12px;display:flex;gap:8px;justify-content:space-between;">
-      <button onclick="alert('原型：退出程序并关闭浏览器')" class="settings-btn-danger">⏻ 退出程序</button>
-      <button onclick="closeSettings()" class="settings-btn-close">关闭</button>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🪵 日志</h3><button onclick="window.open('/api/log','_blank')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;">📂 打开日志文件</button></div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">📥 导出保存位置</h3>
+      <div class="settings-input-row"><input class="settings-input" id="settingsExportPath" value="D:\Agent Hub\exports\" onchange="localStorage.setItem('hub_export_path',this.value)" placeholder="路径"></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">修改后自动保存</div>
+    </div>
+
+    <div style="text-align:right;margin-top:8px;display:flex;gap:8px;justify-content:space-between;">
+      <button onclick="exitApp()" class="settings-btn-danger" style="padding:7px 18px;font-size:12px;">⏻ 退出程序</button>
+      
     </div>
   </div>
 </div>
+    <div class="right-panel" id="addAgentPanel"></div>
+
+<!-- ═══ Right Panel: 管理 Agent ═══ -->
+<div class="right-panel" id="manageAgentPanel"></div>
+
+<!-- ═══ Right Panel: 发言规则 ═══ -->
+<div class="right-panel" id="rulesPanel">
+  <div class="right-panel-header"><h3>📜 发言规则</h3></div>
+  <div class="right-panel-body">
+    <div class="form-group">
+      <label>轮次限制</label>
+      <input class="form-input" id="ruleRounds" type="number" min="1" max="20" value="5" placeholder="每轮最大回复次数">
+    </div>
+    <div class="form-group">
+      <label>@模式宽限（秒）</label>
+      <input class="form-input" id="ruleGrace" type="number" min="0" max="60" value="10" placeholder="@模式免打扰宽限秒数">
+    </div>
+    <div class="form-group">
+      <label>自定义规则</label>
+      <textarea class="form-textarea" id="ruleCustom" placeholder="一行一条规则…"></textarea>
+    </div>
+    <div class="form-hint">修改后点击"保存规则"生效</div>
+  </div>
+  <div class="right-panel-footer"><button class="btn-save" onclick="saveRules()">保存规则</button></div>
+</div>
+
 <div class="pick-overlay" id="pickOverlay">
   <div class="pick-modal">
     <h3>👥 选择 2 个 Agent 展开探讨</h3>
@@ -268,65 +326,162 @@ main{flex:1;display:flex;overflow:hidden}
     </div>
   </div>
 </div>
-<div class="modal-overlay" id="addMemberOverlay">
-  <div class="modal-container">
-    <div class="modal-header"><h2>添加成员</h2><button class="modal-close" onclick="closeAddMember()">&times;</button></div>
-    <div class="modal-body" id="addMemberBody">
-      <div class="add-member-step" id="step1" style="display:block">
-        <h3>第1步：发送邀请</h3><p>复制下方邀请，发给目标 Agent（通过飞书、WebUI 等渠道）</p>
-        <div class="invite-text" id="inviteText">## Agent Hub 邀请 - 加入聊天室
 
-请提供以下信息以加入 Agent Hub 聊天室：
-
-1. **agent_id**: 唯一标识 (英文数字下划线)
-2. **name**: 显示名称
-3. **role**: orchestrator | executor | specialist
-4. **avatar**: emoji 头像 (可选)
-5. **endpoint**: API 端点 URL (可选)
-6. **model**: 模型名称 (可选)
-7. **group_permissions**: 权限设置 (可选)</div>
-        <button class="copy-btn" onclick="copyInvite()">复制邀请</button>
-      </div>
-      <div class="add-member-step" id="step2" style="display:none">
-        <h3>第2步：粘贴 Agent 配置 JSON</h3><p>粘贴 Agent 回复的 JSON 配置：</p>
-        <textarea class="paste-area" id="pasteArea" placeholder="粘贴 JSON..." oninput="previewPaste()"></textarea>
-        <div class="paste-error" id="pasteError"></div>
-        <div class="preview-panel" id="previewPanel"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" id="btnPrev" onclick="prevStep()" style="display:none">上一步</button>
-      <button class="btn-secondary" id="btnCancel" onclick="closeAddMember()">取消</button>
-      <button class="btn-primary" id="btnNext" onclick="nextStep()">下一步</button>
-      <button class="btn-success" id="btnConfirm" onclick="confirmAddMember()" style="display:none">确认添加</button>
-    </div>
-  </div>
-</div>
-<div class="manage-panel" id="managePanel">
-  <div class="manage-panel-header"><h3>管理成员</h3><button class="modal-close" onclick="closeManageMembers()">&times;</button></div>
-  <div class="manage-panel-body" id="managePanelBody"></div>
-</div>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 var socket = io();
 var agents = [];
-function toggleTaskDropdown(){document.getElementById("taskDropdown").classList.toggle("show");document.querySelector(".task-selector-btn").classList.toggle("open")}
-function switchTask(el){document.querySelectorAll(".task-option").forEach(function(o){o.classList.remove("active")});el.classList.add("active");document.getElementById("taskDropdown").classList.remove("show");document.querySelector(".task-selector-btn").classList.remove("open");document.querySelector(".task-selector-btn").innerHTML=el.textContent+' <span class="arrow">▼</span>'}
-document.addEventListener("click",function(e){if(!e.target.closest(".task-selector")){document.getElementById("taskDropdown").classList.remove("show");var b=document.querySelector(".task-selector-btn");if(b)b.classList.remove("open")}})
-function toggleCmd(){document.getElementById("cmdPanel").classList.toggle("show");document.getElementById("btnCmdToggle").classList.toggle("active")}
-function toggleHall(){document.getElementById("hallOverlay").classList.toggle("open");document.getElementById("btnHall").classList.toggle("active")}
-document.getElementById("hallOverlay").addEventListener("click",function(e){if(e.target===this)toggleHall()})
-function setTheme(t,el){document.documentElement.setAttribute("data-theme",t);localStorage.setItem("hub_theme",t);document.querySelectorAll(".theme-card").forEach(function(c){c.classList.remove("active")});if(el)el.classList.add("active");document.querySelectorAll('.theme-card[data-theme="'+t+'"]').forEach(function(c){c.classList.add("active")})}
-function openSettings(){var n=localStorage.getItem("hub_boss_name");var b=localStorage.getItem("hub_boss_bio");if(n)document.getElementById("settingsNickname").value=n;if(b)document.getElementById("settingsBio").value=b;document.getElementById("settingsOverlay").classList.add("show")}
-function closeSettings(){document.getElementById("settingsOverlay").classList.remove("show")}
-document.getElementById("settingsOverlay").addEventListener("click",function(e){if(e.target===this)closeSettings()})
-function saveUserSettings(){localStorage.setItem("hub_boss_name",document.getElementById("settingsNickname").value||"力哥");localStorage.setItem("hub_boss_bio",document.getElementById("settingsBio").value||"AI 时代的手艺人")}
-var picked=[];
-function openPick(){var l=document.getElementById("pickAgentList");l.innerHTML="";picked=[];agents.forEach(function(a){if(!a.endpoint)return;var r=document.createElement("div");r.className="pick-agent-row";r.innerHTML='<span style="font-size:24px">'+a.avatar+'</span><span class="name">'+(a.nickname||a.name)+'</span><code style="margin-left:auto;font-size:11px;color:var(--text-muted)">@'+a.id+"</code>";r.addEventListener("click",function(){togglePick(r)});l.appendChild(r)});document.getElementById("pickOverlay").classList.add("show");document.querySelector(".pick-modal .btn-confirm").textContent="确认（0/2）";document.querySelector(".pick-modal .btn-confirm").style.opacity="0.5"}
-function togglePick(el){el.classList.toggle("selected");if(el.classList.contains("selected"))picked.push(el);else picked=picked.filter(function(e){return e!==el});var b=document.querySelector(".pick-modal .btn-confirm");if(picked.length===2){b.textContent="确认（2/2）";b.style.opacity="1"}else{b.textContent="确认（"+picked.length+"/2）";b.style.opacity="0.5"}}
-function closePick(){document.getElementById("pickOverlay").classList.remove("show");picked=[]}
-function confirmPick(){if(picked.length!==2){alert("请选择 2 个 Agent");return}var n=picked.map(function(r){return r.querySelector(".name").textContent});alert("🔗 私聊通道已建立："+n[0]+" ↔ "+n[1]);closePick()}
-document.addEventListener("DOMContentLoaded",function(){var i=document.getElementById("chatInput");if(i){i.addEventListener("input",function(){if(this.value.includes("/Battle")){setTimeout(function(){openPick();i.value=i.value.replace("/Battle","")},100)}})}})
+var picked = [];
+
+/* 任务下拉菜单 */
+function toggleTaskDropdown() {
+  document.getElementById("taskDropdown").classList.toggle("show");
+  document.querySelector(".task-selector-btn").classList.toggle("open");
+}
+function switchTask(el) {
+  document.querySelectorAll(".task-option").forEach(function(o){o.classList.remove("active")});
+  el.classList.add("active");
+  document.getElementById("taskDropdown").classList.remove("show");
+  document.querySelector(".task-selector-btn").classList.remove("open");
+  document.querySelector(".task-selector-btn").innerHTML = el.textContent + ' <span class="arrow">▼</span>';
+}
+document.addEventListener("click", function(e){
+  if (!e.target.closest(".task-selector")) {
+    document.getElementById("taskDropdown").classList.remove("show");
+    var b = document.querySelector(".task-selector-btn");
+    if (b) b.classList.remove("open");
+  }
+});
+
+/* 命令面板 */
+function toggleCmd() {
+  document.getElementById("cmdPanel").classList.toggle("show");
+  document.getElementById("btnCmdToggle").classList.toggle("active");
+}
+
+/* 大厅 */
+function toggleHall() {
+  document.getElementById("hallOverlay").classList.toggle("open");
+  document.getElementById("btnHall").classList.toggle("active");
+}
+document.getElementById("hallOverlay").addEventListener("click", function(e){
+  if (e.target === this) toggleHall();
+});
+
+/* 主题切换 */
+function setTheme(t, el) {
+  document.documentElement.setAttribute("data-theme", t);
+  localStorage.setItem("hub_theme", t);
+  document.querySelectorAll(".theme-card").forEach(function(c){c.classList.remove("active")});
+  if (el) el.classList.add("active");
+  document.querySelectorAll('.theme-card[data-theme="'+t+'"]').forEach(function(c){c.classList.add("active")});
+}
+
+/* 设置面板 */
+function openSettings() {
+  document.getElementById("settingsOverlay").classList.add("show");
+  var savedName = localStorage.getItem("hub_boss_name");
+  var nickInput = document.getElementById("settingsNickname");
+  if (nickInput && savedName) nickInput.value = savedName;
+  var savedAvatar = localStorage.getItem("hub_boss_avatar");
+  var avatarInput = document.getElementById("settingsAvatarUrl");
+  if (avatarInput && savedAvatar) avatarInput.value = savedAvatar;
+  var savedSpeed = localStorage.getItem("hub_agent_speed");
+  var speedInput = document.getElementById("agentSpeed");
+  if (speedInput && savedSpeed) speedInput.value = savedSpeed;
+}
+function closeSettings() {
+  document.getElementById("settingsOverlay").classList.remove("show");
+}
+document.getElementById("settingsOverlay").addEventListener("click", function(e){
+  if (e.target === this) closeSettings();
+});
+
+function saveUserSettings() {
+  localStorage.setItem("hub_boss_name", document.getElementById("settingsNickname").value || "力哥");
+  localStorage.setItem("hub_boss_avatar", document.getElementById("settingsAvatarUrl").value || "");
+}
+
+/* Agent 对谈选人 */
+function togglePick(el) {
+  el.classList.toggle("selected");
+  if (el.classList.contains("selected")) picked.push(el);
+  else picked = picked.filter(function(e){return e !== el});
+  var b = document.querySelector(".pick-modal .btn-confirm");
+  if (picked.length === 2) { b.textContent = "确认（2/2）"; b.style.opacity = "1"; }
+  else { b.textContent = "确认（"+picked.length+"/2）"; b.style.opacity = "0.5"; }
+}
+function closePick() {
+  document.getElementById("pickOverlay").classList.remove("show");
+  picked = [];
+}
+function confirmPick() {
+  if (picked.length !== 2) { alert("请选择 2 个 Agent"); return; }
+  var n = picked.map(function(r){ return r.querySelector(".name").textContent });
+  alert("🔗 私聊通道已建立：" + n[0] + " ↔ " + n[1]);
+  closePick();
+}
+document.addEventListener("DOMContentLoaded", function() {
+  var i = document.getElementById("chatInput");
+  if (i) {
+    i.addEventListener("input", function() {
+      if (this.value.includes("/Battle")) {
+        setTimeout(function(){
+          openPick();
+          i.value = i.value.replace("/Battle", "");
+        }, 100);
+      }
+    });
+  }
+});
+
+/* 右侧面板 */
+function openRightPanel(panelId) {
+  document.getElementById("rightPanelOverlay").classList.add("show");
+  document.getElementById(panelId).classList.add("show");
+}
+function closeAllRightPanels() {
+  document.querySelectorAll(".right-panel").forEach(function(p){p.classList.remove("show")});
+  document.getElementById("rightPanelOverlay").classList.remove("show");
+}
+
+function confirmRapAdd() {
+  if (!rapData) return;
+  var btn = document.getElementById("rapConfirm"); btn.disabled=true; btn.textContent="添加中...";
+  fetch("/api/members",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(rapData)})
+    .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error)});return r.json()})
+    .then(function(){closeRightPanel("addAgentPanel");return fetch("/api/agents")})
+    .then(function(r){return r.json()}).then(function(d){agents=d;renderAgentSidebar()})
+    .catch(function(e){alert("Error: "+e.message);btn.disabled=false;btn.textContent="确认添加"});
+}
+function populateManageAgentPanel() {
+  var panel = document.getElementById("manageAgentPanel");
+  var html = "<div class=\"right-panel-header\"><h3>📋 管理 Agent</h3></div><div class=\"right-panel-body\">";
+  agents.forEach(function(a){
+    html += "<div style=\"display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-color);\">";
+    html += "<span style=\"font-size:20px;\">"+a.avatar+"</span>";
+    html += "<div style=\"flex:1;\"><div style=\"font-size:13px;font-weight:500;\">"+esc(a.nickname||a.name)+"</div><div style=\"font-size:11px;color:var(--text-muted);\">ID: "+esc(a.id)+" | "+esc(a.role)+"</div></div>";
+    if (a.id!=="codex") html += "<button onclick=\"fetch('/api/members/"+a.id+"',{method:'DELETE'}).then(function(){return fetch('/api/agents')}).then(function(r){return r.json()}).then(function(d){agents=d;renderAgentSidebar();populateManageAgentPanel()}).catch(function(e){alert('Error: '+e.message)})\" style=\"padding:4px 10px;border:none;border-radius:6px;background:var(--accent-danger);color:#fff;cursor:pointer;font-size:11px;\">移除</button>";
+    html += "</div>";
+  });
+  html += "</div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+function saveRules() {
+  var rounds = document.getElementById("ruleRounds").value;
+  var grace = document.getElementById("ruleGrace").value;
+  var custom = document.getElementById("ruleCustom").value;
+  localStorage.setItem("hub_rule_rounds", rounds);
+  localStorage.setItem("hub_rule_grace", grace);
+  localStorage.setItem("hub_rule_custom", custom);
+  alert("规则已保存");
+}
+function exitApp() {
+  if (!confirm("确定要退出 Agent Hub 吗？")) return;
+  fetch("/api/shutdown", { method: "POST" }).then(function(){ alert("正在关闭服务器..."); }).catch(function(){ alert("服务器已关闭"); });
+}
+
 ;(function(){var s=localStorage.getItem("hub_theme");if(s){document.documentElement.setAttribute("data-theme",s);document.querySelectorAll('.theme-card[data-theme="'+s+'"]').forEach(function(c){c.classList.add("active")})}})()
 </script>
 <script src="/js/chat.js"></script>

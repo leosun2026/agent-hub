@@ -5,6 +5,9 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs');
+const LOG_FILE = path.join(__dirname, 'hub.log');
+;
 const { setupRoutes } = require('./src/routes');
 const { saveMessage, getMessages, getDb, getRoom, syncAgentsToDb } = require('./src/db');
 const { callAgent, getAgent, listAgents } = require('./src/agents');
@@ -93,6 +96,7 @@ async function askAgent(agentId, userMessage, taskId, roomId) {
   // Throttle check
   if (!canAgentReply(agentId)) {
     console.log('[Throttle] Agent ' + agentId + ' is cooling down, skipping');
+    writeLog('WARN', '[Throttle] Agent ' + agentId + ' is cooling down, skipping');
     return null;
   }
 
@@ -106,12 +110,14 @@ async function askAgent(agentId, userMessage, taskId, roomId) {
     const content = (result.content || '').trim();
     if (content === '[SILENT]' || content === '') {
       console.log('[Silent] Agent ' + agentId + ' chose to be silent');
+      writeLog('INFO', '[Silent] Agent ' + agentId + ' chose to be silent');
       io.emit('agent:state', { agentId: agentId, state: 'idle' });
       return { agentId, silent: true };
     }
 
     if (isDuplicateReply(agentId, content)) {
       console.log('[Dedup] Agent ' + agentId + ' duplicate reply, skipping');
+      writeLog('WARN', '[Dedup] Agent ' + agentId + ' duplicate reply, skipping');
       io.emit('agent:state', { agentId: agentId, state: 'idle' });
       return { agentId, duplicate: true };
     }
@@ -139,6 +145,7 @@ async function askAgent(agentId, userMessage, taskId, roomId) {
     return result;
   } catch (err) {
     console.error('Agent ' + agentId + ' error:', err.message);
+    writeLog('ERROR', 'Agent ' + agentId + ' error: ' + err.message)
     const errMsg = saveMessage({
       task_id: taskId || null,
       room_id: roomId || null,
@@ -166,11 +173,13 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
   const room = getRoom(roomId);
   if (!room) {
     console.log('[Broadcast] Room not found:', roomId);
+    writeLog('WARN', '[Broadcast] Room not found: ' + roomId)
     return;
   }
 
   const mode = room.mode || 'broadcast';
   console.log('[Broadcast] Room "' + room.name + '" mode=' + mode + ' sender=' + senderId);
+  writeLog('INFO', '[Broadcast] Room "' + room.name + '" mode=' + mode + ' sender=' + senderId);
 
   // Get recent history for context
   const recentMsgs = getMessages({ room_id: roomId, limit: 30 });
@@ -179,6 +188,7 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
   const roomAgents = getRoomAgents(room, senderId, content);
   if (roomAgents.length === 0) {
     console.log('[Broadcast] No eligible agents in room');
+    writeLog('WARN', '[Broadcast] No eligible agents in room');
     return;
   }
 
@@ -278,6 +288,7 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
       return { agentId: agent.id, name: agent.name, replied: true, content: replyContent };
     } catch (err) {
       console.error('Agent ' + agent.id + ' error:', err.message);
+      writeLog('ERROR', 'Agent ' + agent.id + ' error: ' + err.message)
       io.emit('agent:state', { agentId: agent.id, state: 'idle' });
       return { agentId: agent.id, name: agent.name, error: err.message };
     }
@@ -292,12 +303,14 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
   const errors = results.filter(r => r.status === 'rejected' || (r.value && r.value.error)).length;
 
   console.log('[Broadcast] Results: ' + replied + ' replied, ' + silent + ' silent, ' + skipped + ' skipped, ' + errors + ' errors');
+  writeLog('INFO', '[Broadcast] Results: ' + replied + ' replied, ' + silent + ' silent, ' + skipped + ' skipped, ' + errors + ' errors');
 }
 
 // ============ Socket.IO event handling ============
 
 io.on('connection', function(socket) {
   console.log('Client connected:', socket.id);
+  writeLog('INFO', 'Client connected: ' + socket.id);
 
   let currentRoom = 'room-general';
 
@@ -330,6 +343,7 @@ io.on('connection', function(socket) {
     });
 
     console.log('Chat [' + roomId + ']:', agent_id || 'user', '->', content.slice(0, 50));
+    writeLog('INFO', 'Chat [' + roomId + ']: ' + (agent_id || 'user') + ' -> ' + content.slice(0, 50));
 
     // 3. Broadcast to all room agents
     const senderName = agent_id === 'user' ? 'Boss' : (getAgent(agent_id)?.nickname || getAgent(agent_id)?.name || agent_id || 'Unknown');
@@ -351,13 +365,35 @@ io.on('connection', function(socket) {
 
   socket.on('disconnect', function() {
     console.log('Client disconnected:', socket.id);
+    writeLog('INFO', 'Client disconnected: ' + socket.id);
   });
 });
 
 // ============ Health check ============
 
+app.get('/api/log', function(req, res) {
+  fs.readFile(LOG_FILE, 'utf8', function(err, data) {
+    if (err) {
+      if (err.code === 'ENOENT') return res.send('日志文件尚未生成。\n');
+      return res.status(500).json({ error: err.message });
+    }
+    var lines = data.split('\n').filter(function(l) { return l.trim(); });
+    var tail = lines.slice(-500);
+    res.type('text/plain; charset=utf-8').send(tail.join('\n'));
+  });
+});
+
+
 app.get('/api/health', function(_req, res) {
   res.json({ status: 'ok', uptime: process.uptime() });
+});
+
+app.post('/api/shutdown', function(req, res) {
+  writeLog('INFO', 'Shutdown requested via API');
+  res.json({ status: 'shutting_down' });
+  setTimeout(function() {
+    process.exit(0);
+  }, 500);
 });
 
 // ============ Startup ============
@@ -374,15 +410,31 @@ async function start() {
 
   server.listen(PORT, '127.0.0.1', function() {
     console.log('Agent Hub v2.0 running at http://127.0.0.1:' + PORT);
+    writeLog('INFO', 'Agent Hub v2.0 started on port ' + PORT + ' with ' + allAgents.length + ' agents');
     console.log('Mode: Dynamic member management + Group chat broadcast');
+    writeLog('INFO', 'Mode: Dynamic member management + Group chat broadcast');
     console.log('Agents loaded:', allAgents.length);
+    writeLog('INFO', 'Agents loaded: ' + allAgents.length);
   });
 }
 
 start().catch(function(err) {
   console.error('Failed to start:', err);
+  writeLog('CRITICAL', 'Failed to start: ' + (err && err.message ? err.message : err))
   process.exit(1);
 });
 
 // Export broadcastToRoom for routes.js
+// ============ Logging ============
+
+function writeLog(level, msg) {
+  const line = '[' + new Date().toISOString() + '] [' + level + '] ' + msg + '\n';
+  fs.appendFile(LOG_FILE, line, function(err) {
+    if (err) console.error('Log write error:', err.message);
+  });
+}
+
 module.exports = { broadcastToRoom };
+
+
+

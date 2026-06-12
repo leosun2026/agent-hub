@@ -224,14 +224,66 @@ function loadHistorySidebar() {
           "<span>" + month + "</span>" +
           '<span class="day-count">' + g.count + '条</span>' +
           '<div class="day-actions">' +
-          '<button title="导出" onclick="event.stopPropagation();alert(\'原型：导出 ' + month + ' 聊天记录\')">↗</button>' +
-          '<button class="danger" title="删除" onclick="event.stopPropagation();alert(\'原型：删除 ' + month + ' 记录\')">✕</button>' +
+          '<button title="导出" onclick="event.stopPropagation();exportMonthChat(month)">↗</button>' +
+          '<button class="danger" title="删除" onclick="event.stopPropagation();deleteMonthChat(month)">✕</button>' +
           "</div>";
         histList.appendChild(day);
       });
     })
     .catch(function(e) { console.error("Failed to load history sidebar:", e); });
 }
+
+
+
+// ============ History Export / Delete ============
+
+function exportMonthChat(monthLabel) {
+  var msgs = chatMessages.querySelectorAll(".chat-msg:not(.system)");
+  var monthMsgs = [];
+  msgs.forEach(function(msg) {
+    var header = msg.querySelector(".msg-header");
+    if (header && header.textContent.indexOf(monthLabel) !== -1) {
+      monthMsgs.push(msg);
+    }
+  });
+  if (monthMsgs.length === 0) {
+    alert("该月没有消息");
+    return;
+  }
+  var text = "Agent Hub 聊天记录 - " + monthLabel + "\n";
+  text += "=".repeat(50) + "\n\n";
+  monthMsgs.forEach(function(msg) {
+    var sender = msg.querySelector(".msg-header");
+    var content = msg.querySelector(".msg-text");
+    if (sender) text += sender.textContent.trim() + "\n";
+    if (content) text += content.textContent.trim() + "\n";
+    text += "\n";
+  });
+  var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "chat-" + monthLabel + ".txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function deleteMonthChat(month) {
+  if (!confirm("确定要删除 " + month + " 的聊天记录吗？此操作不可撤销。")) return;
+  var msgs = chatMessages.querySelectorAll(".chat-msg");
+  var count = 0;
+  msgs.forEach(function(msg) {
+    var header = msg.querySelector(".msg-header");
+    if (header && header.textContent.indexOf(month) !== -1) {
+      msg.remove();
+      count++;
+    }
+  });
+  if (count > 0) {
+    // Reload history
+    loadChatHistory();
+  }
+}
+
 
 // ============ Mention Dropdown ============
 
@@ -294,134 +346,26 @@ function insertMention(agentId) {
 // ============ Export ============
 
 function exportChat() {
+  var prefix = document.getElementById("settingsExportPath");
+  var savePath = prefix ? prefix.value : "D:\\Agent Hub\\exports\\";
   var content = "";
   var msgs = chatMessages.querySelectorAll(".chat-msg:not(.system)");
   msgs.forEach(function(m) {
+    var header = m.querySelector(".msg-header");
     var text = m.querySelector(".msg-text");
-    if (text) content += text.textContent + "\n---\n";
+    if (header) content += header.textContent.trim() + "\n";
+    if (text) content += text.textContent.trim() + "\n";
+    content += "---\n";
   });
-  alert("原型：导出聊天记录\n\n" + (content.length > 200 ? "（共 " + content.length + " 字符，将导出到默认目录）" : "（无内容可导出）"));
-}
-
-// ============ Add Member ============
-
-function openAddMember() {
-  addMemberStep = 1;
-  document.getElementById("step1").style.display = "block";
-  document.getElementById("step2").style.display = "none";
-  document.getElementById("btnNext").style.display = "inline-block";
-  document.getElementById("btnPrev").style.display = "none";
-  document.getElementById("btnConfirm").style.display = "none";
-  document.getElementById("btnCancel").textContent = "取消";
-  pasteValid = false;
-  pasteData = null;
-  document.getElementById("pasteError").style.display = "none";
-  document.getElementById("previewPanel").innerHTML = "";
-  document.getElementById("addMemberOverlay").classList.add("show");
-}
-
-function closeAddMember() {
-  document.getElementById("addMemberOverlay").classList.remove("show");
-}
-
-function nextStep() {
-  if (addMemberStep === 1) {
-    document.getElementById("step1").style.display = "none";
-    document.getElementById("step2").style.display = "block";
-    document.getElementById("btnNext").style.display = "none";
-    document.getElementById("btnPrev").style.display = "inline-block";
-    document.getElementById("btnConfirm").style.display = pasteValid ? "inline-block" : "none";
-    addMemberStep = 2;
-  }
-}
-
-function prevStep() {
-  if (addMemberStep === 2) {
-    document.getElementById("step1").style.display = "block";
-    document.getElementById("step2").style.display = "none";
-    document.getElementById("btnNext").style.display = "inline-block";
-    document.getElementById("btnPrev").style.display = "none";
-    document.getElementById("btnConfirm").style.display = "none";
-    addMemberStep = 1;
-  }
-}
-
-function copyInvite() {
-  var text = document.getElementById("inviteText").textContent;
-  navigator.clipboard.writeText(text).then(function() {
-    alert("邀请已复制到剪贴板");
-  }).catch(function() {
-    alert("复制失败，请手动复制");
-  });
-}
-
-function previewPaste() {
-  var raw = document.getElementById("pasteArea").value.trim();
-  var error = document.getElementById("pasteError");
-  var preview = document.getElementById("previewPanel");
-
-  if (!raw) {
-    error.style.display = "none";
-    preview.innerHTML = "";
-    pasteValid = false;
-    document.getElementById("btnConfirm").style.display = "none";
-    return;
-  }
-
-  try {
-    var data = JSON.parse(raw);
-    if (!data.id || !data.name || !data.role) {
-      error.textContent = "缺少必填字段 id, name, role";
-      error.style.display = "block";
-      preview.innerHTML = "";
-      pasteValid = false;
-      document.getElementById("btnConfirm").style.display = "none";
-      return;
-    }
-    error.style.display = "none";
-    pasteData = data;
-    pasteValid = true;
-    document.getElementById("btnConfirm").style.display = "inline-block";
-    preview.innerHTML =
-      '<div class="preview-valid">\u2705 配置有效</div>' +
-      "<div>ID: " + esc(data.id) + "</div>" +
-      "<div>Name: " + esc(data.name) + "</div>" +
-      "<div>Role: " + esc(data.role) + "</div>" +
-      "<div>Endpoint: " + esc(data.endpoint || "(none)") + "</div>";
-  } catch (e) {
-    error.textContent = "JSON 解析错误: " + e.message;
-    error.style.display = "block";
-    preview.innerHTML = "";
-    pasteValid = false;
-    document.getElementById("btnConfirm").style.display = "none";
-  }
-}
-
-function confirmAddMember() {
-  if (!pasteValid || !pasteData) return;
-  var btn = document.getElementById("btnConfirm");
-  btn.disabled = true;
-  btn.textContent = "添加中...";
-  fetch("/api/members", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(pasteData),
-  })
-    .then(function(r) {
-      if (!r.ok) return r.json().then(function(err) { throw new Error(err.error); });
-      return r.json();
-    })
-    .then(function() {
-      closeAddMember();
-      return fetch("/api/agents");
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(d) { agents = d; renderAgentSidebar(); })
-    .catch(function(err) {
-      alert("Error: " + err.message);
-      btn.disabled = false;
-      btn.textContent = "确认添加";
-    });
+  if (!content) { alert("（无内容可导出）"); return; }
+  var now = new Date();
+  var dateStr = now.getFullYear() + "-" + (now.getMonth()+1) + "-" + now.getDate() + "_" + now.getHours() + "-" + now.getMinutes();
+  var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "chat-export-" + dateStr + ".txt";
+  a.click();
+  URL.revokeObjectURL(a.download);
 }
 
 // ============ Manage Members ============
@@ -526,13 +470,28 @@ function formatTime(isoStr) {
 
 function getBossAvatar() {
   var saved = localStorage.getItem("hub_boss_avatar");
-  return saved || "👤";
+  if (saved) return '<img src="' + saved + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">';
+  return "👤";
 }
 function getBossName() {
   var saved = localStorage.getItem("hub_boss_name");
   return saved || "力哥";
 }
-function getBossBio() {
-  var saved = localStorage.getItem("hub_boss_bio");
-  return saved || "AI 时代的手艺人";
+
+/* 打开 Agent 对谈选人弹窗 */
+function openPick() {
+  var l = document.getElementById("pickAgentList");
+  l.innerHTML = "";
+  picked = [];
+  agents.forEach(function(a){
+    if (!a.endpoint) return;
+    var r = document.createElement("div");
+    r.className = "pick-agent-row";
+    r.innerHTML = '<span style="font-size:24px">'+a.avatar+'</span><span class="name">'+(a.nickname||a.name)+'</span><code style="margin-left:auto;font-size:11px;color:var(--text-muted)">@'+a.id+"</code>";
+    r.addEventListener("click", function(){ togglePick(r); });
+    l.appendChild(r);
+  });
+  document.getElementById("pickOverlay").classList.add("show");
+  document.querySelector(".pick-modal .btn-confirm").textContent = "确认（0/2）";
+  document.querySelector(".pick-modal .btn-confirm").style.opacity = "0.5";
 }

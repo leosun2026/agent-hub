@@ -7,3 +7,4 @@ data/*.db-journal
 *.bak
 *.bak.*
 step*-result.md
+verify_content.js
