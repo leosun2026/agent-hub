@@ -4,3 +4,6 @@ data/*.db-journal
 .env
 .DS_Store
 *.log
+*.bak
+*.bak.*
+step*-result.md
