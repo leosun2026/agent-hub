@@ -30,14 +30,11 @@ var DESK_POSITIONS = [
 var OBSTACLES = [
   { x: 40, y: 60, w: 900, h: 200 },
   { x: 0, y: 60, w: 70, h: 60 },
-  { x: 880, y: 60, w: 80, h: 60 },
+  { x: 890, y: 60, w: 70, h: 60 },
   { x: 0, y: 280, w: 120, h: 110 },
-  { x: 0, y: 400, w: 240, h: 160 },
-  { x: 330, y: 310, w: 280, h: 260 },
-  { x: 810, y: 430, w: 110, h: 110 },
-  { x: 725, y: 465, w: 70, h: 110 },
-  { x: 880, y: 370, w: 80, h: 80 },
-  { x: 270, y: 430, w: 65, h: 130 },
+  { x: 0, y: 460, w: 310, h: 250 },
+  { x: 330, y: 310, w: 290, h: 270 },
+  { x: 700, y: 380, w: 265, h: 320 },
   { x: 0, y: 0, w: 960, h: 70 },
 ];
 
@@ -72,7 +69,7 @@ function randomWalkablePoint() {
 
 var activeWalkers = {};
 var dirMap = { right: 'walk-right', left: 'walk-left', down: 'walk-down', up: 'walk-up' };
-var WALK_SPEED = 20;
+var WALK_SPEED = parseInt(localStorage.getItem("hub_agent_speed")) || 20;
 
 function moveWalkerById(id) {
   var w = activeWalkers[id];
@@ -116,16 +113,39 @@ function mapAgentStatus(a) {
   var status = 'offline';
   var task = a.role || '闲置中';
   if (a.online !== false) {
-    status = 'idle'; // default online = idle
-    // Check dot status from sidebar
+    status = 'idle';
     var dot = document.getElementById('dot-' + a.id);
-    if (dot && dot.classList.contains('online')) status = 'online';
-    if (dot && dot.classList.contains('offline')) status = 'offline';
+    if (dot) {
+      if (dot.classList.contains('thinking')) { status = 'busy'; task = '思考中...'; }
+      else if (dot.classList.contains('online')) status = 'online';
+      else if (dot.classList.contains('offline')) status = 'offline';
+    }
   }
   return { status: status, task: task };
 }
 
+function renderFurniture() {
+  var hall = document.getElementById("hallContent");
+  if (!hall || hall.querySelector("#furniture-layer")) return;
+  var layer = document.createElement("div");
+  layer.id = "furniture-layer";
+  layer.innerHTML =
+    '<img class="deco" src="/office-assets/plant.png" style="left:16px;top:56px;width:40px;height:40px;">' +
+    '<img class="deco" src="/office-assets/plant.png" style="left:896px;top:56px;width:40px;height:40px;">' +
+    '<img class="deco" src="/office-assets/office-partitions-1.png" style="left:16px;top:300px;width:88px;height:88px;">' +
+    '<img class="deco" src="/office-assets/cabinet.png" style="left:10px;top:535px;width:160px;height:160px;">' +
+    '<img class="deco" src="/office-assets/printer.png" style="left:220px;top:608px;width:72px;height:72px;">' +
+    '<img class="deco" src="/office-assets/writing-table.png" style="left:360px;top:320px;width:240px;height:240px;">' +
+    '<img class="deco" src="/office-assets/chair.png" style="left:330px;top:400px;width:40px;height:40px;">' +
+    '<img class="deco" src="/office-assets/chair.png" style="left:330px;top:470px;width:40px;height:40px;">' +
+    '<img class="deco" src="/office-assets/sink.png" style="left:760px;top:400px;width:150px;height:150px;">' +
+    '<img class="deco" src="/office-assets/water-cooler.png" style="left:610px;top:615px;width:50px;height:80px;">' +
+    '<img class="deco" src="/office-assets/coffee-maker.png" style="left:740px;top:535px;width:160px;height:160px;">';
+  hall.appendChild(layer);
+}
+
 function renderPixelOffice() {
+  renderFurniture();
   var container = document.getElementById('agents-container');
   var walkersContainer = document.getElementById('walkers-container');
   if (!container || !walkersContainer) return;
@@ -150,11 +170,18 @@ function renderPixelOffice() {
     ws.className = 'workstation' + (isBusy ? ' busy' : '') + (isIdle ? ' idle' : '') + (isOffline ? ' offline' : '');
     ws.style.left = pos.left + 'px';
     ws.style.top = pos.top + 'px';
+    ws.style.width = '128px';
+    ws.style.height = '160px';
+
+    var charHtml = '';
+    if (isBusy) {
+      charHtml = '<div class="char-container seated"><img class="char-sprite" src="/office-assets/' + esc(spritePrefix) + '-walk-up.png" style="width:384px;"></div>';
+    }
 
     ws.innerHTML =
-      '<img class="desk-img" src="/office-assets/desk-with-pc.png">' +
-      (isBusy ? '<div class="char-container seated"><img class="char-sprite" src="/office-assets/' + esc(spritePrefix) + '-walk-up.png" style="width:384px;"></div>' : '') +
       '<div class="status-dot ' + cls + '"></div>' +
+      charHtml +
+      '<img class="desk-img" src="/office-assets/desk-with-pc.png">' +
       '<div class="label">' + esc(a.name) + '</div>' +
       '<div class="task-bubble">' + esc(mapped.task) + '</div>';
     container.appendChild(ws);
@@ -178,7 +205,8 @@ function renderPixelOffice() {
     el.style.left = start.x + 'px';
     el.style.top = start.y + 'px';
     el.innerHTML =
-      '<img class="sprite-sheet" src="/office-assets/' + prefix + '-walk-right.png" style="width:384px;">';
+      '<img class="sprite-sheet" src="/office-assets/' + prefix + '-walk-right.png" style="width:384px;">' +
+      '<div class="walker-label">' + esc(a.name) + '</div>';
     walkersContainer.appendChild(el);
     activeWalkers[a.id] = { el: el, prefix: prefix, x: start.x, y: start.y, moveTimer: null };
   });
