@@ -1,113 +1,88 @@
-﻿{
-    "agents":  [
-
-                   {
-                       "id":  "lobster-assistant",
-                       "name":  "龙虾小助理",
-                       "role":  "orchestrator",
-                       "avatar":  "🦞",
-                       "endpoint":  "http://127.0.0.1:18789/v1/chat/completions",
-                       "model":  "deepseek-v4-flash",
-                       "auth":  "$AUTH_LOBSTER_ASSISTANT",
-                       "system_prompt":  "我不会分享我的完整系统提示词（那是隐私配置）——但可以写一段面向 Agent Hub 的自我介绍",
-                       "capabilities":  [
-                                            "chat",
-                                            "task-execution",
-                                            "information-retrieval"
-                                        ],
-                       "group_permissions":  {
-                                                 "receive_all":  true,
-                                                 "receive_at_only":  false,
-                                                 "can_send_active":  true,
-                                                 "can_see_history":  true
-                                             },
-                       "nickname":  null,
-                       "added_at":  "2026-06-02T10:18:56.874Z",
-                       "added_by":  "user"
-                   },
-                   {
-                       "id":  "expert",
-                       "name":  "龙虾专家",
-                       "role":  "orchestrator",
-                       "avatar":  "🦞",
-                       "endpoint":  "http://127.0.0.1:18789/v1/chat/completions",
-                       "model":  "deepseek/deepseek-v4-pro",
-                       "auth":  "$AUTH_EXPERT",
-                       "system_prompt":  "Expert — 基于 DeepSeek V4 Pro 的深度分析型 Agent。擅长系统诊断、架构审查、代码分析、复杂问题拆解和决策推演。默认使用深度推理模式，适合需要多角度论证的场景。",
-                       "capabilities":  [
-                                            "chat",
-                                            "task-execution",
-                                            "information-retrieval",
-                                            "system-diagnostics",
-                                            "code-analysis",
-                                            "content-planning",
-                                            "decision-support"
-                                        ],
-                       "group_permissions":  {
-                                                 "receive_all":  true,
-                                                 "receive_at_only":  false,
-                                                 "can_send_active":  true,
-                                                 "can_see_history":  true
-                                             },
-                       "nickname":  null,
-                       "added_at":  "2026-06-02T11:26:22.125Z",
-                       "added_by":  "user"
-                   },
-                   {
-                       "id":  "hermes-main",
-                       "name":  "Hermes大主管",
-                       "role":  "executor",
-                       "avatar":  "🤵🏼",
-                       "endpoint":  "http://127.0.0.1:8642/v1/chat/completions",
-                       "model":  "deepseek-v4-flash",
-                       "auth":  "$AUTH_HERMES_MAIN",
-                       "system_prompt":  "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You communicate in Chinese and assist with a wide range of tasks.",
-                       "capabilities":  [
-                                            "chat",
-                                            "code",
-                                            "research",
-                                            "file-ops",
-                                            "web-search"
-                                        ],
-                       "group_permissions":  {
-                                                 "receive_all":  true,
-                                                 "receive_at_only":  false,
-                                                 "can_send_active":  true,
-                                                 "can_see_history":  true
-                                             },
-                       "nickname":  null,
-                       "added_at":  "2026-06-02T11:32:56.641Z",
-                       "added_by":  "user"
-                   },
-                   {
-                       "id":  "hermes-expert-deepseek",
-                       "name":  "Hermes专家",
-                       "role":  "executor",
-                       "avatar":  "🧑🏼‍🔬",
-                       "endpoint":  "http://127.0.0.1:8643/v1/chat/completions",
-                       "model":  "deepseek-v4-pro",
-                       "auth":  "$AUTH_HERMES_EXPERT_DEEPSEEK",
-                       "system_prompt":  "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist with a wide range of tasks including coding, analysis, creative work, and system operations. You have access to terminal, file system, web search, browser, Feishu messaging, and delegation tools. Communicate clearly and execute tasks thoroughly.",
-                       "capabilities":  [
-                                            "code",
-                                            "terminal",
-                                            "file",
-                                            "web",
-                                            "browser",
-                                            "feishu",
-                                            "delegation",
-                                            "cron",
-                                            "search"
-                                        ],
-                       "group_permissions":  {
-                                                 "receive_all":  true,
-                                                 "receive_at_only":  false,
-                                                 "can_send_active":  true,
-                                                 "can_see_history":  true
-                                             },
-                       "nickname":  null,
-                       "added_at":  "2026-06-02T11:36:39.003Z",
-                       "added_by":  "user"
-                   }
-               ]
+{
+  "agents": [
+    {
+      "id": "expert",
+      "name": "龙虾专家",
+      "role": "orchestrator",
+      "avatar": "🦞",
+      "endpoint": "http://127.0.0.1:18789/v1/chat/completions",
+      "model": "deepseek/deepseek-v4-pro",
+      "auth": "$AUTH_EXPERT",
+      "system_prompt": "Expert — 基于 DeepSeek V4 Pro 的深度分析型 Agent。擅长系统诊断、架构审查、代码分析、复杂问题拆解和决策推演。默认使用深度推理模式，适合需要多角度论证的场景。",
+      "capabilities": [
+        "chat",
+        "task-execution",
+        "information-retrieval",
+        "system-diagnostics",
+        "code-analysis",
+        "content-planning",
+        "decision-support"
+      ],
+      "group_permissions": {
+        "receive_all": true,
+        "receive_at_only": false,
+        "can_send_active": true,
+        "can_see_history": true
+      },
+      "nickname": "🦞龙虾小助理",
+      "added_at": "2026-06-02T11:26:22.125Z",
+      "added_by": "user"
+    },
+    {
+      "id": "hermes-main",
+      "name": "Hermes大主管",
+      "role": "executor",
+      "avatar": "🤵🏼",
+      "endpoint": "http://127.0.0.1:8642/v1/chat/completions",
+      "model": "deepseek-v4-flash",
+      "auth": "$AUTH_HERMES_MAIN",
+      "system_prompt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You communicate in Chinese and assist with a wide range of tasks.",
+      "capabilities": [
+        "chat",
+        "code",
+        "research",
+        "file-ops",
+        "web-search"
+      ],
+      "group_permissions": {
+        "receive_all": true,
+        "receive_at_only": false,
+        "can_send_active": true,
+        "can_see_history": true
+      },
+      "nickname": "Hermes大主管",
+      "added_at": "2026-06-02T11:32:56.641Z",
+      "added_by": "user"
+    },
+    {
+      "id": "hermes-expert-deepseek",
+      "name": "Hermes专家",
+      "role": "executor",
+      "avatar": "🧑🏼‍🔬",
+      "endpoint": "http://127.0.0.1:8643/v1/chat/completions",
+      "model": "deepseek-v4-pro",
+      "auth": "$AUTH_HERMES_EXPERT_DEEPSEEK",
+      "system_prompt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist with a wide range of tasks including coding, analysis, creative work, and system operations. You have access to terminal, file system, web search, browser, Feishu messaging, and delegation tools. Communicate clearly and execute tasks thoroughly.",
+      "capabilities": [
+        "code",
+        "terminal",
+        "file",
+        "web",
+        "browser",
+        "feishu",
+        "delegation",
+        "cron",
+        "search"
+      ],
+      "group_permissions": {
+        "receive_all": true,
+        "receive_at_only": false,
+        "can_send_active": true,
+        "can_see_history": true
+      },
+      "nickname": null,
+      "added_at": "2026-06-02T11:36:39.003Z",
+      "added_by": "user"
+    }
+  ]
 }

@@ -117,6 +117,29 @@ main{flex:1;display:flex;overflow:hidden}
 .settings-btn-danger{padding:8px 20px;border:2px solid var(--accent-danger);border-radius:8px;background:transparent;color:var(--accent-danger);cursor:pointer;font-size:13px;font-weight:600;transition:background .12s}
 .settings-btn-danger:hover{background:var(--accent-danger);color:var(--text-inverse)}
 .settings-btn-close{padding:8px 20px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;font-weight:600}
+.avatar-grid{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.avatar-grid button{width:36px;height:36px;border:2px solid transparent;border-radius:8px;background:var(--bg-tertiary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.avatar-grid button:hover{border-color:var(--accent-primary);background:var(--accent-bg)}
+.avatar-grid button.selected{border-color:var(--accent-primary);background:var(--accent-bg)}
+.upload-avatar-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px dashed var(--border-strong);border-radius:8px;background:var(--bg-tertiary);color:var(--text-secondary);cursor:pointer;font-size:12px;transition:all .15s}
+.upload-avatar-btn:hover{border-color:var(--accent-primary);color:var(--accent-primary)}
+
+.avatar-grid{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.avatar-grid button{width:36px;height:36px;border:2px solid transparent;border-radius:8px;background:var(--bg-tertiary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.avatar-grid button:hover{border-color:var(--accent-primary);background:var(--accent-bg)}
+.avatar-grid button.selected{border-color:var(--accent-primary);background:var(--accent-bg)}
+.upload-avatar-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px dashed var(--border-strong);border-radius:8px;background:var(--bg-tertiary);color:var(--text-secondary);cursor:pointer;font-size:12px;transition:all .15s}
+.upload-avatar-btn:hover{border-color:var(--accent-primary);color:var(--accent-primary)}
+
+.confirm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:3000;display:none;align-items:center;justify-content:center}
+.confirm-overlay.show{display:flex}
+.confirm-modal{background:var(--bg-elevated);border-radius:14px;padding:24px;width:360px;max-width:90vw;box-shadow:var(--shadow-lg)}
+.confirm-modal h3{font-size:15px;margin-bottom:4px}
+.confirm-modal .btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.confirm-modal .btn-row button{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px}
+.confirm-modal .btn-cancel{background:var(--bg-hover);color:var(--text-primary)}
+.confirm-modal .btn-confirm{background:var(--accent-primary);color:#fff}
+
 .pick-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:3000;display:none;align-items:center;justify-content:center}
 .pick-overlay.show{display:flex}
 .pick-modal{background:var(--bg-elevated);border-radius:14px;padding:24px;width:360px;max-width:90vw;box-shadow:var(--shadow-lg)}
@@ -164,7 +187,7 @@ main{flex:1;display:flex;overflow:hidden}
 .btn-success{background:var(--online-dot);color:#fff}
 
 /* Right Panel */
-.right-panel{position:fixed;top:0;right:0;bottom:0;width:400px;background:var(--bg-elevated);border-left:1px solid var(--border-color);box-shadow:var(--shadow-lg);z-index:2000;display:none;flex-direction:column}
+.right-panel{position:fixed;top:50%;right:20px;left:auto;transform:translateY(-50%);width:460px;max-height:75vh;border-radius:14px;background:var(--bg-elevated);box-shadow:var(--shadow-lg);z-index:2002;display:none;flex-direction:column}
 .right-panel.show{display:flex}
 .right-panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-color)}
 .right-panel-body{flex:1;overflow-y:auto;padding:16px 20px}
@@ -184,7 +207,7 @@ main{flex:1;display:flex;overflow:hidden}
 .btn-save{padding:7px 18px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;font-weight:500}
 .btn-save:hover{opacity:.9}
 
-.right-panel-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:1999;display:none}.right-panel-overlay.show{display:block}
+.right-panel-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:2001;display:none}.right-panel-overlay.show{display:block}
 </style>
 </head>
 <body>
@@ -253,8 +276,8 @@ main{flex:1;display:flex;overflow:hidden}
     <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🎨 主题配色</h3>
       <div class="theme-row">
         <button class="theme-card active" data-theme="white" onclick="setTheme('white',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#f5f7fa;border:1px solid #e2e6ed;border-radius:6px;margin-bottom:4px;"></div>极简白</button>
+        <button class="theme-card" data-theme="gray" onclick="setTheme('gray',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#555557;border:1px solid #78787a;border-radius:6px;margin-bottom:4px;"></div>高级灰</button>
         <button class="theme-card" data-theme="blue" onclick="setTheme('blue',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#0a1628;border:1px solid #1e3a5f;border-radius:6px;margin-bottom:4px;"></div>深海幽蓝</button>
-        <button class="theme-card" data-theme="gray" onclick="setTheme('gray',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#1c1c1e;border:1px solid #48484a;border-radius:6px;margin-bottom:4px;"></div>高级灰</button>
       </div>
     </div>
 
@@ -268,23 +291,21 @@ main{flex:1;display:flex;overflow:hidden}
     </div>
 
     <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">👤 用户设置</h3>
-      <div class="settings-input-row" style="margin-bottom:4px;"><span style="font-size:12px;width:50px;flex-shrink:0;">头像 URL</span><input class="settings-input" id="settingsAvatarUrl" value="" onchange="saveUserSettings()" placeholder="https://..."></div>
-      <div class="settings-input-row" style="margin-bottom:4px;"><span style="font-size:12px;width:50px;flex-shrink:0;">昵称</span><input class="settings-input" id="settingsNickname" value="力哥" onchange="saveUserSettings()" placeholder="输入昵称"></div>
-      
+      <div class="settings-card" onclick="openRightPanel('userSettingsPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">👤 编辑个人信息</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">自定义头像、修改昵称</div></div>
     </div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">⚡ Agent 速度</h3>
-      <div class="settings-input-row"><input type="number" class="form-input" id="agentSpeed" min="5" max="100" value="20" style="width:70px" onchange="localStorage.setItem('hub_agent_speed',this.value)"><span style="font-size:12px;color:var(--text-muted)">px/s（5-100）</span></div>
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🎬 Agent 动画</h3>
+      <div class="settings-card" onclick="openRightPanel('agentAnimPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">🎬 动画速度</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">设置 Agent 消息动画速度</div></div>
     </div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🪵 日志</h3><button onclick="window.open('/api/log','_blank')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;">📂 打开日志文件</button></div>
+    <div class="settings-section" style="margin-bottom:10px;"><div style="display:flex;gap:16px;"><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;">🪵 日志</h3><button onclick="window.open('/api/log','_blank')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;">📂 打开日志文件</button></div><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;">🌐 语言</h3><select id="settingsLanguage" onchange="localStorage.setItem('hub_language',this.value);" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;"><option value="en">English</option><option value="zh">中文</option></select></div></div></div>
 
     <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">📥 导出保存位置</h3>
-      <div class="settings-input-row"><input class="settings-input" id="settingsExportPath" value="D:\Agent Hub\exports\" onchange="localStorage.setItem('hub_export_path',this.value)" placeholder="路径"></div>
+      <div class="settings-input-row"><input class="settings-input" id="settingsExportPath" value="" onchange="localStorage.setItem('hub_export_path',this.value)" placeholder="路径"></div>
       <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">修改后自动保存</div>
     </div>
 
-    <div style="text-align:right;margin-top:8px;display:flex;gap:8px;justify-content:space-between;">
+    <div style="text-align:right;margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
       <button onclick="exitApp()" class="settings-btn-danger" style="padding:7px 18px;font-size:12px;">⏻ 退出程序</button>
       
     </div>
@@ -295,9 +316,21 @@ main{flex:1;display:flex;overflow:hidden}
 <!-- ═══ Right Panel: 管理 Agent ═══ -->
 <div class="right-panel" id="manageAgentPanel"></div>
 
+<!-- ═══ Right Panel: 用户设置 ═══ -->
+<div class="right-panel" id="userSettingsPanel"></div>
+
+<!-- ═══ Right Panel: Agent 动画 ═══ -->
+<div class="right-panel" id="agentAnimPanel"></div>
+
+<!-- ═══ Right Panel: 编辑 Agent ═══ -->
+<div class="right-panel" id="editAgentPanel"></div>
+
+<!-- ═══ Right Panel: 编辑 Agent ═══ -->
+<div class="right-panel" id="editAgentPanel"></div>
+
 <!-- ═══ Right Panel: 发言规则 ═══ -->
 <div class="right-panel" id="rulesPanel">
-  <div class="right-panel-header"><h3>📜 发言规则</h3></div>
+  <div class="right-panel-header"><h3>📜 发言规则</h3><button class="settings-close" onclick="closeAllRightPanels()" style="position:static;width:auto;height:auto;font-size:18px;">×</button></div>
   <div class="right-panel-body">
     <div class="form-group">
       <label>轮次限制</label>
@@ -316,6 +349,18 @@ main{flex:1;display:flex;overflow:hidden}
   <div class="right-panel-footer"><button class="btn-save" onclick="saveRules()">保存规则</button></div>
 </div>
 
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-modal">
+    <h3 id="confirmTitle">确认</h3>
+    <p id="confirmMessage" style="font-size:14px;color:var(--text-secondary);margin:8px 0 16px;line-height:1.5"></p>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="hideConfirmModal()">取消</button>
+      <button class="btn-confirm" id="confirmOkBtn" style="background:var(--accent-danger);color:#fff">确认</button>
+    </div>
+  </div>
+</div>
+
 <div class="pick-overlay" id="pickOverlay">
   <div class="pick-modal">
     <h3>👥 选择 2 个 Agent 展开探讨</h3>
@@ -329,7 +374,8 @@ main{flex:1;display:flex;overflow:hidden}
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-var socket = io();
+var socket = null;
+try { socket = io(); } catch(e) { console.warn("Socket.IO not loaded:", e.message); }
 var agents = [];
 var picked = [];
 
@@ -381,11 +427,29 @@ function setTheme(t, el) {
 function openSettings() {
   document.getElementById("settingsOverlay").classList.add("show");
   var savedName = localStorage.getItem("hub_boss_name");
+  var exportInput = document.getElementById("settingsExportPath");
+  if (exportInput) {
+    fetch("/api/basepath").then(function(r){return r.json()}).then(function(d){
+      var base = d.basePath;
+      if (base.charAt(base.length-1) !== "\\") base += "\\";
+      exportInput.value = base + "exports\\";
+      localStorage.setItem("hub_export_path", base + "exports\\");
+    }).catch(function(){
+      if (!exportInput.value) exportInput.value = localStorage.getItem("hub_export_path") || "";
+    });
+  }
+  var langSel = document.getElementById("settingsLanguage");
+  if (langSel) {
+    var detectedLang = (navigator.language || "en").startsWith("zh") ? "zh" : "en";
+    var savedLang = localStorage.getItem("hub_language");
+    langSel.value = savedLang || detectedLang;
+    if (!savedLang) localStorage.setItem("hub_language", langSel.value);
+  }
   var nickInput = document.getElementById("settingsNickname");
   if (nickInput && savedName) nickInput.value = savedName;
   var savedAvatar = localStorage.getItem("hub_boss_avatar");
   var avatarInput = document.getElementById("settingsAvatarUrl");
-  if (avatarInput && savedAvatar) avatarInput.value = savedAvatar;
+  if (avatarInput && savedAvatar) { avatarInput.value = savedAvatar; document.getElementById('settingsAvatarPreview').innerHTML = '<img src=\"' + savedAvatar + '\" style=\"width:36px;height:36px;border-radius:50%;object-fit:cover\">'; }
   var savedSpeed = localStorage.getItem("hub_agent_speed");
   var speedInput = document.getElementById("agentSpeed");
   if (speedInput && savedSpeed) speedInput.value = savedSpeed;
@@ -396,6 +460,19 @@ function closeSettings() {
 document.getElementById("settingsOverlay").addEventListener("click", function(e){
   if (e.target === this) closeSettings();
 });
+
+function uploadSettingsAvatar(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    document.getElementById("settingsAvatarUrl").value = dataUrl;
+    document.getElementById("settingsAvatarPreview").innerHTML = '<img src="' + dataUrl + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">';
+    saveUserSettings();
+  };
+  reader.readAsDataURL(file);
+}
 
 function saveUserSettings() {
   localStorage.setItem("hub_boss_name", document.getElementById("settingsNickname").value || "力哥");
@@ -437,37 +514,421 @@ document.addEventListener("DOMContentLoaded", function() {
 
 /* 右侧面板 */
 function openRightPanel(panelId) {
+  closeSettings();
   document.getElementById("rightPanelOverlay").classList.add("show");
   document.getElementById(panelId).classList.add("show");
+  if (panelId === "manageAgentPanel") populateManageAgentPanel();
+  if (panelId === "addAgentPanel") populateAddAgentPanel();
+  if (panelId === "editAgentPanel") populateEditAgentPanel();
+  if (panelId === "userSettingsPanel") populateUserSettingsPanel();
+  if (panelId === "agentAnimPanel") populateAgentAnimPanel();
+  if (panelId === "editAgentPanel") populateEditAgentPanel();
 }
 function closeAllRightPanels() {
   document.querySelectorAll(".right-panel").forEach(function(p){p.classList.remove("show")});
   document.getElementById("rightPanelOverlay").classList.remove("show");
 }
 
+function generateRapInviteText() {
+  return "## Agent Hub 邀请 - 加入聊天室\n\n请提供以下信息以加入 Agent Hub 聊天室：\n\n1. **agent_id**: 唯一标识（英文、数字、下划线，如 \"hermes-main\"）\n2. **name**: 显示名称\n3. **role**: orchestrator | executor | specialist\n4. **avatar**（可选）：emoji 图标\n5. **endpoint**（可选）：API 端点 URL\n6. **model**（可选）：模型名称\n7. **auth**（可选）：认证令牌\n8. **system_prompt**（可选）：系统提示词\n9. **capabilities**（可选）：能力标签数组\n10. **group_permissions**（可选）：权限设置\n\n---\n\n请回复以下 JSON 格式的配置：\n\n\\\json\n{\n  \"id\": \"agent-id\",\n  \"name\": \"Agent Name\",\n  \"role\": \"executor\",\n  \"avatar\": \"robot\",\n  \"endpoint\": \"http://127.0.0.1:xxxx/v1/chat/completions\",\n  \"model\": \"deepseek-v4-flash\",\n  \"auth\": null,\n  \"system_prompt\": \"You are a helpful assistant.\",\n  \"capabilities\": [\"chat\"],\n  \"group_permissions\": { \"receive_all\": true, \"receive_at_only\": false, \"can_send_active\": true, \"can_see_history\": true }\n}\n\\\\n\nPlease reply with your configuration JSON.";
+}
+
+function copyRapInvite() {
+  var text = document.getElementById("rapInviteText").textContent || "";
+  var btn = document.getElementById("copyRapInviteBtn");
+  if (!text || !btn) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = "OK 已复制";
+      btn.style.background = "var(--online-dot)";
+      setTimeout(function() { btn.textContent = "Copy 复制邀请"; btn.style.background = ""; }, 2000);
+    }).catch(function() {
+      fallbackCopyRap(text, btn);
+    });
+  } else {
+    fallbackCopyRap(text, btn);
+  }
+}
+
+function fallbackCopyRap(text, btn) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed"; ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); } catch(e) {}
+  document.body.removeChild(ta);
+  btn.textContent = "OK 已复制";
+  btn.style.background = "var(--online-dot)";
+  setTimeout(function() { btn.textContent = "Copy 复制邀请"; btn.style.background = ""; }, 2000);
+}
+
+function showRapStep(step) {
+  document.getElementById("rapStep1").style.display = step === 1 ? "block" : "none";
+  document.getElementById("rapStep2").style.display = step === 2 ? "block" : "none";
+  document.getElementById("rapBtnPrev").style.display = step === 2 ? "inline-block" : "none";
+  document.getElementById("rapBtnNext").style.display = step === 1 ? "inline-block" : "none";
+  document.getElementById("rapConfirm").style.display = step === 2 ? "inline-block" : "none";
+}
+
+function populateAddAgentPanel() {
+  var inviteText = generateRapInviteText();
+  var panel = document.getElementById("addAgentPanel");
+  panel.innerHTML =
+    "<div class=\"right-panel-header\"><h3>Add 邀请新 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div id=\"rapStep1\">" +
+    "<h3 style=\"font-size:13px;margin-bottom:8px;\">Step1 第1步：发送邀请</h3>" +
+    "<p style=\"font-size:12px;color:var(--text-secondary);margin-bottom:8px;\">复制下方邀请文案，发送给目标 Agent（通过飞书、WebUI 等渠道）：</p>" +
+    "<div class=\"invite-text\" id=\"rapInviteText\" style=\"background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:12px;font-size:11px;line-height:1.5;white-space:pre-wrap;max-height:280px;overflow-y:auto;color:var(--text-primary);margin-bottom:8px;\">" + esc(inviteText) + "</div>" +
+    "<button class=\"copy-btn\" id=\"copyRapInviteBtn\" onclick=\"copyRapInvite()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">Copy 复制邀请</button>" +
+    "</div>" +
+    "<div id=\"rapStep2\" style=\"display:none\">" +
+    "<h3 style=\"font-size:13px;margin-bottom:8px;\">Step2 第2步：粘贴 Agent 配置 JSON</h3>" +
+    "<p style=\"font-size:12px;color:var(--text-secondary);margin-bottom:8px;\">粘贴 Agent 回复的 JSON 配置：</p>" +
+    "<textarea class=\"form-textarea\" id=\"rapInput\" rows=\"4\" placeholder=\"粘贴 JSON...\"></textarea>" +
+    "<div id=\"rapPreview\" style=\"display:none;margin-top:8px;\">" +
+    "<div id=\"rapPreviewContent\" style=\"background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:10px;font-size:12px;line-height:1.5;\"></div>" +
+    "<div id=\"rapError\" style=\"color:var(--accent-danger);font-size:12px;margin-top:4px;display:none;\"></div>" +
+    "</div>" +
+    "</div>" +
+    "</div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" id=\"rapBtnPrev\" onclick=\"showRapStep(1)\" style=\"display:none;padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">Back 上一步</button>" +
+    "<button class=\"btn-primary\" id=\"rapBtnNext\" onclick=\"showRapStep(2)\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">Next 下一步</button>" +
+    "<button class=\"btn-save\" id=\"rapConfirm\" onclick=\"confirmRapAdd()\" style=\"display:none\">确认添加</button>" +
+    "</div>" +
+    "";
+
+  var input = document.getElementById("rapInput");
+  if (input) {
+    input.oninput = function() {
+      var val = this.value.trim();
+      var prv = document.getElementById("rapPreview");
+      var pcontent = document.getElementById("rapPreviewContent");
+      var err = document.getElementById("rapError");
+      var btn = document.getElementById("rapConfirm");
+      if (!val) { prv.style.display = "none"; btn.style.display = "none"; rapData = null; return; }
+      try {
+        var d = JSON.parse(val);
+        if (!d.name || !d.id) throw new Error("name or id");
+        rapData = d;
+        var previewHtml = "<div><strong>" + esc(d.name) + "</strong></div><div>ID: " + esc(d.id) + "</div>";
+        if (d.role) previewHtml += "<div>Role: " + esc(d.role) + "</div>";
+        if (d.avatar) previewHtml += "<div>Avatar: " + esc(d.avatar) + "</div>";
+        if (d.endpoint) previewHtml += "<div>Endpoint: " + esc(d.endpoint) + "</div>";
+        if (d.model) previewHtml += "<div>Model: " + esc(d.model) + "</div>";
+        pcontent.innerHTML = previewHtml;
+        err.style.display = "none";
+        prv.style.display = "block";
+        btn.style.display = "inline-block";
+        btn.disabled = false;
+        btn.textContent = "确认添加";
+      } catch(e) {
+        err.textContent = "JSON: " + e.message;
+        err.style.display = "block";
+        prv.style.display = "none";
+        btn.style.display = "none";
+        rapData = null;
+      }
+    };
+  }
+}
+
+
+
 function confirmRapAdd() {
   if (!rapData) return;
   var btn = document.getElementById("rapConfirm"); btn.disabled=true; btn.textContent="添加中...";
   fetch("/api/members",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(rapData)})
     .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error)});return r.json()})
-    .then(function(){closeRightPanel("addAgentPanel");return fetch("/api/agents")})
+    .then(function(){closeAllRightPanels();return fetch("/api/agents")})
     .then(function(r){return r.json()}).then(function(d){agents=d;renderAgentSidebar()})
     .catch(function(e){alert("Error: "+e.message);btn.disabled=false;btn.textContent="确认添加"});
 }
+
 function populateManageAgentPanel() {
   var panel = document.getElementById("manageAgentPanel");
-  var html = "<div class=\"right-panel-header\"><h3>📋 管理 Agent</h3></div><div class=\"right-panel-body\">";
+  var html = "<div class=\"right-panel-header\"><h3>📋 管理 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div><div class=\"right-panel-body\">";
   agents.forEach(function(a){
     html += "<div style=\"display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-color);\">";
     html += "<span style=\"font-size:20px;\">"+a.avatar+"</span>";
-    html += "<div style=\"flex:1;\"><div style=\"font-size:13px;font-weight:500;\">"+esc(a.nickname||a.name)+"</div><div style=\"font-size:11px;color:var(--text-muted);\">ID: "+esc(a.id)+" | "+esc(a.role)+"</div></div>";
-    if (a.id!=="codex") html += "<button onclick=\"fetch('/api/members/"+a.id+"',{method:'DELETE'}).then(function(){return fetch('/api/agents')}).then(function(r){return r.json()}).then(function(d){agents=d;renderAgentSidebar();populateManageAgentPanel()}).catch(function(e){alert('Error: '+e.message)})\" style=\"padding:4px 10px;border:none;border-radius:6px;background:var(--accent-danger);color:#fff;cursor:pointer;font-size:11px;\">移除</button>";
-    html += "</div>";
+    html += "<div style=\"flex:1;\"><div style=\"font-size:13px;font-weight:500;\">"+escAttr(a.nickname||a.name)+"</div><div style=\"font-size:11px;color:var(--text-muted);\">ID: "+esc(a.id)+" | "+esc(a.role)+"</div></div>";
+    if (a.id!=="codex") html += "<button onclick=\"showConfirmModal('确认移除 Agent "+escAttr(a.nickname||a.name)+" 吗?',function(){fetch('/api/members/"+a.id+"',{method:'DELETE'}).then(function(){return fetch('/api/agents')}).then(function(r){return r.json()}).then(function(d){agents=d;renderAgentSidebar();populateManageAgentPanel()}).catch(function(e){alert('Error: '+e.message)})})\" style=\"padding:4px 10px;border:none;border-radius:6px;background:var(--accent-danger);color:#fff;cursor:pointer;font-size:11px;\">移除</button>";
+    html += "<button onclick=\"editAgent('"+a.id+"')\" style=\"padding:4px 10px;border:none;border-radius:6px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:11px;margin-left:4px;\">编辑</button></div>";
   });
   html += "</div>";
   panel.innerHTML = html;
   panel.classList.add("show");
 }
+var editingAgent = null;
+
+function editAgent(agentId) {
+  for (var i = 0; i < agents.length; i++) {
+    if (agents[i].id === agentId) {
+      editingAgent = agents[i];
+      break;
+    }
+  }
+  openRightPanel("editAgentPanel");
+}
+
+function populateEditAgentPanel() {
+  var panel = document.getElementById("editAgentPanel");
+  if (!editingAgent) { closeAllRightPanels(); return; }
+  var a = editingAgent;
+  var html = "<div class=\"right-panel-header\"><h3>✏️ 编辑 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div class=\"form-group\"><label>昵称</label><input class=\"form-input\" id=\"editNickname\" value=\"" + escAttr(a.nickname || a.name) + "\" placeholder=\"昵称\"></div>" +
+    "<div class=\"form-group\"><label>Endpoint</label><input class=\"form-input\" value=\"" + escAttr(a.endpoint || "") + "\" disabled style=\"opacity:0.7\"></div>" +
+    "<div class=\"form-group\"><label>选择头像</label>" +
+    "<div class=\"avatar-grid\" id=\"editAvatarGrid\">";
+  var emojis = ["🤖","🦞","🦊","🐱","🐶","🐼","🐨","🦁","🐯","🐸","🐵","🦄","🐧","🐦","🐤","🐺","🐍","🐢","🐙","🦑","🐬","🐳","🦋","🐝","🐞","🦀"];
+  for (var i = 0; i < emojis.length; i++) {
+    var sel = emojis[i] === a.avatar ? ' selected' : '';
+    html += "<button class=\"avatar-opt" + sel + "\" onclick=\"setEditAvatar('" + emojis[i] + "')\" data-emoji='" + emojis[i] + "'>" + emojis[i] + "</button>";
+  }
+  html += "</div>" +
+    "<div style=\"margin-top:6px\"><label class=\"upload-avatar-btn\" for=\"editAvatarUpload\">📁 上传自定义头像</label>" +
+    "<input type=\"file\" id=\"editAvatarUpload\" accept=\"image/*\" style=\"display:none\" onchange=\"uploadEditAvatar(event)\">" +
+    "<div id=\"editAvatarPreview\" style=\"display:none;margin-top:6px;font-size:13px;color:var(--text-secondary)\"></div></div>" +
+    "</div></div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels();openRightPanel('manageAgentPanel')\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">← 返回</button>" +
+    "<button class=\"btn-save\" onclick=\"saveEditAgent()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 保存</button></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+function setEditAvatar(emoji) {
+  document.querySelectorAll(".avatar-opt").forEach(function(b){b.classList.remove("selected")});
+  var btns = document.querySelectorAll(".avatar-opt");
+  for (var i = 0; i < btns.length; i++) {
+    if (btns[i].getAttribute("data-emoji") === emoji) {
+      btns[i].classList.add("selected");
+      break;
+    }
+  }
+  editingAgent._pendingAvatar = emoji;
+}
+
+function uploadEditAvatar(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    document.querySelectorAll(".avatar-opt").forEach(function(b){b.classList.remove("selected")});
+    editingAgent._pendingAvatar = dataUrl;
+    document.getElementById("editAvatarPreview").style.display = "block";
+    document.getElementById("editAvatarPreview").innerHTML = "✅ 已选择自定义头像";
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveEditAgent() {
+  var nickname = document.getElementById("editNickname").value.trim();
+  if (!nickname) { alert("昵称不能为空"); return; }
+  var avatar = editingAgent._pendingAvatar || editingAgent.avatar;
+  var body = { nickname: nickname };
+  if (avatar && avatar !== editingAgent.avatar) body.avatar = avatar;
+  var btn = document.querySelector("#editAgentPanel .btn-save");
+  btn.disabled = true; btn.textContent = "保存中...";
+  fetch("/api/members/" + editingAgent.id, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/agents");
+  }).then(function(r) {
+    return r.json();
+  }).then(function(d) {
+    agents = d;
+    renderAgentSidebar();
+    closeAllRightPanels();openRightPanel("manageAgentPanel");
+  }).catch(function(e) {
+    alert("保存失败: " + e.message);
+    btn.disabled = false; btn.textContent = "💾 保存";
+  });
+}
+
+var editingAgent = null;
+
+function editAgent(agentId) {
+  for (var i = 0; i < agents.length; i++) {
+    if (agents[i].id === agentId) {
+      editingAgent = agents[i];
+      break;
+    }
+  }
+  openRightPanel("editAgentPanel");
+}
+
+function populateEditAgentPanel() {
+  var panel = document.getElementById("editAgentPanel");
+  if (!editingAgent) { closeAllRightPanels(); return; }
+  var a = editingAgent;
+  var html = "<div class=\"right-panel-header\"><h3>✏️ 编辑 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div class=\"form-group\"><label>昵称</label><input class=\"form-input\" id=\"editNickname\" value=\"" + escAttr(a.nickname || a.name) + "\" placeholder=\"昵称\"></div>" +
+    "<div class=\"form-group\"><label>Endpoint</label><input class=\"form-input\" value=\"" + escAttr(a.endpoint || "") + "\" disabled style=\"opacity:0.7\"></div>" +
+    "<div class=\"form-group\"><label>选择头像</label>" +
+    "<div class=\"avatar-grid\" id=\"editAvatarGrid\">";
+  var emojis = ["🤖","🦞","🦊","🐱","🐶","🐼","🐨","🦁","🐯","🐸","🐵","🦄","🐧","🐦","🐤","🐺","🐍","🐢","🐙","🦑","🐬","🐳","🦋","🐝","🐞","🦀"];
+  for (var i = 0; i < emojis.length; i++) {
+    var sel = emojis[i] === a.avatar ? " selected" : "";
+    html += "<button class=\"avatar-opt" + sel + "\" onclick=\"setEditAvatar('" + emojis[i] + "')\" data-emoji='" + emojis[i] + "'>" + emojis[i] + "</button>";
+  }
+  html += "</div>" +
+    "<div style=\"margin-top:6px\"><label class=\"upload-avatar-btn\" for=\"editAvatarUpload\">📁 上传自定义头像</label>" +
+    "<input type=\"file\" id=\"editAvatarUpload\" accept=\"image/*\" style=\"display:none\" onchange=\"uploadEditAvatar(event)\">" +
+    "<div id=\"editAvatarPreview\" style=\"display:none;margin-top:6px;font-size:13px;color:var(--text-secondary)\"></div></div>" +
+    "</div></div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels();openRightPanel('manageAgentPanel')\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">← 返回</button>" +
+    "<button class=\"btn-save\" onclick=\"saveEditAgent()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 保存</button></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+function setEditAvatar(emoji) {
+  document.querySelectorAll(".avatar-opt").forEach(function(b){b.classList.remove("selected")});
+  var btns = document.querySelectorAll(".avatar-opt");
+  for (var i = 0; i < btns.length; i++) {
+    if (btns[i].getAttribute("data-emoji") === emoji) {
+      btns[i].classList.add("selected");
+      break;
+    }
+  }
+  editingAgent._pendingAvatar = emoji;
+}
+
+function uploadEditAvatar(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    document.querySelectorAll(".avatar-opt").forEach(function(b){b.classList.remove("selected")});
+    editingAgent._pendingAvatar = dataUrl;
+    document.getElementById("editAvatarPreview").style.display = "block";
+    document.getElementById("editAvatarPreview").innerHTML = "✅ 已选择自定义头像";
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveEditAgent() {
+  var nickname = document.getElementById("editNickname").value.trim();
+  if (!nickname) { alert("昵称不能为空"); return; }
+  var avatar = editingAgent._pendingAvatar || editingAgent.avatar;
+  var body = { nickname: nickname };
+  if (avatar && avatar !== editingAgent.avatar) body.avatar = avatar;
+  var btn = document.querySelector("#editAgentPanel .btn-save");
+  btn.disabled = true; btn.textContent = "保存中...";
+  fetch("/api/members/" + editingAgent.id, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/agents");
+  }).then(function(r) {
+    return r.json();
+  }).then(function(d) {
+    agents = d;
+    renderAgentSidebar();
+    closeAllRightPanels();openRightPanel("manageAgentPanel");
+  }).catch(function(e) {
+    alert("保存失败: " + e.message);
+    btn.disabled = false; btn.textContent = "💾 保存";
+  });
+}
+
+function hideConfirmModal() {
+  document.getElementById("confirmOverlay").classList.remove("show");
+}
+function showConfirmModal(message, onConfirm) {
+  document.getElementById("confirmMessage").textContent = message;
+  var btn = document.getElementById("confirmOkBtn");
+  btn.onclick = function() {
+    hideConfirmModal();
+    if (onConfirm) onConfirm();
+  };
+  document.getElementById("confirmOverlay").classList.add("show");
+}
+
+function populateUserSettingsPanel() {
+  var panel = document.getElementById("userSettingsPanel");
+  var savedAvatar = localStorage.getItem("hub_boss_avatar") || "";
+  var savedName = localStorage.getItem("hub_boss_name") || "力哥";
+  var avatarHtml = savedAvatar ? '<img src="' + savedAvatar + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '👤';
+  var html = "<div class=\"right-panel-header\"><h3>👤 用户设置</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div class=\"form-group\"><label>头像</label>" +
+    "<div style=\"display:flex;align-items:center;gap:10px;margin-top:4px;\">" +
+    "<span id=\"userSettingsAvatarPreview\" style=\"font-size:28px;\">" + avatarHtml + "</span>" +
+    "<label class=\"upload-avatar-btn\" for=\"userSettingsAvatarUpload\" style=\"cursor:pointer\">📁 上传自定义头像</label>" +
+    "<input type=\"file\" id=\"userSettingsAvatarUpload\" accept=\"image/*\" style=\"display:none\" onchange=\"uploadUserAvatar(event)\">" +
+    "</div>" +
+    "<div class=\"form-group\" style=\"margin-top:12px\"><label>昵称</label><input class=\"form-input\" id=\"userSettingsNickname\" value=\"" + escAttr(savedName) + "\" placeholder=\"输入昵称\"></div>" +
+    "</div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">取消</button>" +
+    "<button class=\"btn-save\" onclick=\"saveUserSettingsPanel()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 保存</button></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+function uploadUserAvatar(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    document.getElementById("userSettingsAvatarPreview").innerHTML = '<img src="' + dataUrl + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">';
+    document.getElementById("userSettingsAvatarPreview")._pendingAvatar = dataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveUserSettingsPanel() {
+  var nickname = document.getElementById("userSettingsNickname").value.trim() || "力哥";
+  var avatarEl = document.getElementById("userSettingsAvatarPreview");
+  var avatar = avatarEl._pendingAvatar || localStorage.getItem("hub_boss_avatar") || "";
+  localStorage.setItem("hub_boss_name", nickname);
+  if (avatar) localStorage.setItem("hub_boss_avatar", avatar);
+  closeAllRightPanels();
+}
+
+function populateAgentAnimPanel() {
+  var panel = document.getElementById("agentAnimPanel");
+  var savedSpeed = localStorage.getItem("hub_agent_speed") || "20";
+  var html = "<div class=\"right-panel-header\"><h3>🎬 Agent 动画</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div class=\"form-group\"><label>速度</label>" +
+    "<input type=\"range\" class=\"form-input\" id=\"agentAnimSpeed\" min=\"5\" max=\"100\" value=\"" + savedSpeed + "\" style=\"width:100%\" oninput=\"document.getElementById('speedValue').textContent=this.value\">" +
+    "<div style=\"display:flex;justify-content:space-between;margin-top:4px;\"><span style=\"font-size:12px;color:var(--text-muted);\">慢</span><span id=\"speedValue\" style=\"font-size:13px;font-weight:500;\">" + savedSpeed + "</span><span style=\"font-size:12px;color:var(--text-muted);\">快</span></div>" +
+    "<div style=\"font-size:11px;color:var(--text-muted);margin-top:6px;\">px/s（5-100）</div>" +
+    "</div>" +
+    "</div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">取消</button>" +
+    "<button class=\"btn-save\" onclick=\"saveAgentAnimPanel()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 保存</button></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+function saveAgentAnimPanel() {
+  var speed = document.getElementById("agentAnimSpeed").value;
+  localStorage.setItem("hub_agent_speed", speed);
+  closeAllRightPanels();
+}
+
 function saveRules() {
   var rounds = document.getElementById("ruleRounds").value;
   var grace = document.getElementById("ruleGrace").value;
@@ -478,8 +939,13 @@ function saveRules() {
   alert("规则已保存");
 }
 function exitApp() {
-  if (!confirm("确定要退出 Agent Hub 吗？")) return;
-  fetch("/api/shutdown", { method: "POST" }).then(function(){ alert("正在关闭服务器..."); }).catch(function(){ alert("服务器已关闭"); });
+  showConfirmModal("确定要退出 Agent Hub 吗？", function(){
+    fetch("/api/shutdown", { method: "POST" }).then(function(){
+      closeSettings();
+    }).catch(function(){
+      closeSettings();
+    });
+  });
 }
 
 ;(function(){var s=localStorage.getItem("hub_theme");if(s){document.documentElement.setAttribute("data-theme",s);document.querySelectorAll('.theme-card[data-theme="'+s+'"]').forEach(function(c){c.classList.add("active")})}})()

@@ -360,12 +360,22 @@ function exportChat() {
   if (!content) { alert("（无内容可导出）"); return; }
   var now = new Date();
   var dateStr = now.getFullYear() + "-" + (now.getMonth()+1) + "-" + now.getDate() + "_" + now.getHours() + "-" + now.getMinutes();
-  var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-  var a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "chat-export-" + dateStr + ".txt";
-  a.click();
-  URL.revokeObjectURL(a.download);
+  var filename = "chat-export-" + dateStr + ".txt";
+  fetch("/api/export", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content: content, filename: filename, exportPath: savePath })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.success) { alert("导出成功: " + d.path); }
+    else { alert("导出失败: " + (d.error || "未知错误")); }
+  }).catch(function(){
+    var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.download);
+  });
 }
 
 // ============ Manage Members ============

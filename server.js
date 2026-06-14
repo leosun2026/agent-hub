@@ -371,6 +371,11 @@ io.on('connection', function(socket) {
 
 // ============ Health check ============
 
+app.get('/api/basepath', function(req, res) {
+  res.json({ basePath: __dirname });
+});
+
+// ============ API: Log ============
 app.get('/api/log', function(req, res) {
   fs.readFile(LOG_FILE, 'utf8', function(err, data) {
     if (err) {
@@ -388,6 +393,22 @@ app.get('/api/health', function(_req, res) {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 
+app.post('/api/export', function(req, res) {
+  var exportPath = req.body.exportPath || path.join(__dirname, 'exports');
+  var filename = req.body.filename || 'export.txt';
+  var content = req.body.content || '';
+  var fullPath = path.join(exportPath, filename);
+  fs.mkdir(exportPath, { recursive: true }, function(mkErr) {
+    if (mkErr) return res.status(500).json({ error: 'Failed to create directory: ' + mkErr.message });
+    fs.writeFile(fullPath, content, 'utf8', function(wErr) {
+      if (wErr) return res.status(500).json({ error: 'Failed to write file: ' + wErr.message });
+      writeLog('INFO', 'Export saved: ' + fullPath);
+      res.json({ success: true, path: fullPath });
+    });
+  });
+});
+
+// ============ API: Shutdown ============
 app.post('/api/shutdown', function(req, res) {
   writeLog('INFO', 'Shutdown requested via API');
   res.json({ status: 'shutting_down' });
