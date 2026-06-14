@@ -177,12 +177,15 @@ function getMessages(opts) {
   if (opts.since) {
     sql += ' AND id > ?';
     params.push(opts.since);
+    sql += ' ORDER BY id ASC LIMIT ?';
+    params.push(opts.limit || 500);
+    return queryAll(sql, params);
   }
 
-  sql += ' ORDER BY id ASC LIMIT ?';
-  params.push(opts.limit || 50);
-
-  return queryAll(sql, params);
+  // Default: most recent N messages (DESC + reverse → oldest-first)
+  sql += ' ORDER BY id DESC LIMIT ?';
+  params.push(opts.limit || 500);
+  return queryAll(sql, params).reverse();
 }
 
 // === Tasks ===
@@ -362,9 +365,18 @@ function setRoomMemberNickname(roomId, agentId, nickname) {
 }
 
 function syncAgentsToDb(agents) {
+  // Preserve existing nicknames from DB before clearing
+  var existing = queryAll("SELECT id, nickname FROM agents WHERE nickname IS NOT NULL");
+  var nicknameMap = {};
+  existing.forEach(function(row) { nicknameMap[row.id] = row.nickname; });
+
   // Clear and re-insert
   db.run("DELETE FROM agents");
   for (const agent of agents) {
+    // Restore DB nickname if it existed (survives git checkout of agents.json)
+    if (nicknameMap[agent.id]) {
+      agent.nickname = nicknameMap[agent.id];
+    }
     saveAgentToDb(agent);
   }
   console.log('[DB] Synced ' + agents.length + ' agents to database');

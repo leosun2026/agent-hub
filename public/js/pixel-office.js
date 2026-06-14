@@ -69,7 +69,7 @@ function randomWalkablePoint() {
 
 var activeWalkers = {};
 var dirMap = { right: 'walk-right', left: 'walk-left', down: 'walk-down', up: 'walk-up' };
-var WALK_SPEED = parseInt(localStorage.getItem("hub_agent_speed")) || 20;
+function getWalkSpeed() { return parseInt(localStorage.getItem("hub_agent_speed")) || 20; }
 
 function moveWalkerById(id) {
   var w = activeWalkers[id];
@@ -79,7 +79,7 @@ function moveWalkerById(id) {
   var dist = Math.sqrt(dx*dx + dy*dy);
   if (dist < 20) { w.moveTimer = setTimeout(function() { moveWalkerById(id); }, 1000); return; }
   var dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
-  var duration = dist / WALK_SPEED;
+  var duration = dist / getWalkSpeed();
   w.el.querySelector('.sprite-sheet').src = '/office-assets/' + w.prefix + '-' + dirMap[dir] + '.png';
   w.el.style.transitionDuration = duration + 's';
   requestAnimationFrame(function() {

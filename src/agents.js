@@ -126,6 +126,15 @@ function updateAgent(id, updates) {
   return JSON.parse(JSON.stringify(AGENTS[idx]));
 }
 
+// In-memory-only update — does NOT write to agents.json
+// Used to restore DB-persisted nicknames on startup
+function setInMemoryProperty(agentId, key, value) {
+  const agent = AGENT_MAP[agentId];
+  if (!agent) return false;
+  agent[key] = value;
+  return true;
+}
+
 // === Agent Call ===
 
 async function callAgent(agentId, messages) {
@@ -228,6 +237,7 @@ module.exports = {
   addAgent,
   removeAgent,
   updateAgent,
+  setInMemoryProperty,
   reloadAgents,
   callAgent,
   checkAgentStatus,

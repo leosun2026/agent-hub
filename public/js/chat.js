@@ -49,6 +49,9 @@ socket.on("agent:state", function(data) {
   if (dot) {
     dot.className = "status-dot " + (data.state === "thinking" ? "thinking" : (dot.dataset.online === "true" ? "online" : "offline"));
   }
+  if (typeof renderPixelOffice === "function") {
+    renderPixelOffice();
+  }
 });
 
 socket.on("member:added", refreshAgents);
@@ -149,8 +152,7 @@ function renderAgentSidebar() {
     card.className = "agent-card";
     card.setAttribute("data-id", a.id);
 
-    var onlineClass = "offline";
-    if (!a.endpoint) onlineClass = "offline";
+    var onlineClass = a.endpoint ? "online" : "offline";
 
     var displayName = a.nickname || a.name;
     var idLabel = a.id;
@@ -453,7 +455,24 @@ function startEditNickname(agentId, currentName) {
 
 function saveNickname(agentId, nickname) {
   var trimmed = (nickname || "").trim().substring(0, 20);
-  renderAgentSidebar();
+  if (!trimmed) { renderAgentSidebar(); return; }
+  fetch("/api/members/" + agentId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nickname: trimmed })
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/agents");
+  }).then(function(r) { return r.json(); })
+  .then(function(d) {
+    agents = d;
+    renderAgentSidebar();
+  }).catch(function(e) {
+    console.error("Failed to save nickname:", e.message);
+    renderAgentSidebar();
+  });
 }
 
 // ============ Utilities ============
@@ -504,4 +523,181 @@ function openPick() {
   document.getElementById("pickOverlay").classList.add("show");
   document.querySelector(".pick-modal .btn-confirm").textContent = "确认（0/2）";
   document.querySelector(".pick-modal .btn-confirm").style.opacity = "0.5";
+}
+function initCmdBar() {
+  var cmdItems = document.querySelectorAll(".cmd-item");
+  for (var i = 0; i < cmdItems.length; i++) {
+    (function(el) {
+      el.addEventListener("click", function() {
+        var cmd = "/help";
+        for (var j = 0; j < el.childNodes.length; j++) {
+          if (el.childNodes[j].nodeType === 3) {
+            cmd = el.childNodes[j].textContent.trim();
+            break;
+          }
+        }
+        if (cmd === "/new") {
+          var cm = document.getElementById("chatMessages");
+          if (cm) cm.innerHTML = "";
+          return;
+        }
+        if (cmd === "/stop") {
+          if (typeof socket !== "undefined" && socket) {
+            socket.emit("chat:stop", {});
+            var cm = document.getElementById("chatMessages");
+            if (cm) {
+              var div = document.createElement("div");
+              div.className = "chat-msg system";
+              div.innerHTML = "<div class=\"msg-text\">⏹️ 已发送停止指令</div>";
+              cm.appendChild(div);
+              cm.scrollTop = cm.scrollHeight;
+            }
+          }
+          return;
+        }
+        if (cmd === "/save") {
+          if (typeof exportChat === "function") exportChat();
+          return;
+        }
+        if (cmd === "/Battle") {
+          if (typeof openPick === "function") openPick();
+          return;
+        }
+        if (cmd === "/help") {
+          var cm = document.getElementById("chatMessages");
+          if (cm) {
+            var div = document.createElement("div");
+            div.className = "chat-msg system";
+            div.innerHTML = "<div class=\"msg-text\">📋 可用命令：<br>/help - 帮助<br>/stop - 停止回复<br>/new - 清屏<br>/save - 导出对话<br>/search - 搜索历史<br>/Battle - Agent 对谈</div>";
+            cm.appendChild(div);
+            cm.scrollTop = cm.scrollHeight;
+          }
+          return;
+        }
+        if (cmd === "/search") {
+          showSearchModal();
+          return;
+        }
+        var inputs = document.querySelectorAll("#chatInput, #messageInput, .chat-input");
+        if (inputs.length) {
+          inputs[0].value = cmd;
+          if (typeof sendMessage === "function") sendMessage();
+        }
+      });
+    })(cmdItems[i]);
+  }
+}
+if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", initCmdBar); } else { initCmdBar(); }
+
+function showSearchModal() {
+  var overlay = document.getElementById("searchOverlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "searchOverlay";
+    overlay.className = "overlay";
+    overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:2000;display:flex;align-items:center;justify-content:center;";
+    overlay.onclick = function(e) { if (e.target === overlay) hideSearchModal(); };
+    overlay.innerHTML = "<div style=\"background:var(--bg-secondary);border-radius:12px;padding:20px;width:420px;max-width:90vw;box-shadow:var(--shadow-lg);\"><h3 style=\"margin:0 0 12px;font-size:15px;\">🔍 搜索聊天记录</h3><div style=\"display:flex;gap:8px;\"><input id=\"searchInput\" type=\"text\" placeholder=\"输入关键词...\" style=\"flex:1;padding:8px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-input);color:var(--text-primary);font-size:13px;outline:none;box-sizing:border-box;\"><button onclick=\"doSearch()\" style=\"padding:8px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;white-space:nowrap;\">搜索</button></div><div id=\"searchResults\" style=\"margin-top:12px;max-height:300px;overflow-y:auto;font-size:13px;\"></div><button onclick=\"hideSearchModal()\" style=\"margin-top:12px;padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">关闭</button></div>";
+    document.body.appendChild(overlay);
+    var input = document.getElementById("searchInput");
+    if (input) {
+      input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") doSearch();
+        if (e.key === "Escape") hideSearchModal();
+      });
+    }
+  }
+  overlay.style.display = "flex";
+  var input = document.getElementById("searchInput");
+  if (input) { input.value = ""; input.focus(); document.getElementById("searchResults").innerHTML = ""; }
+}
+
+function hideSearchModal() {
+  var overlay = document.getElementById("searchOverlay");
+  if (overlay) overlay.style.display = "none";
+}
+
+function doSearch() {
+  var keyword = document.getElementById("searchInput").value.trim();
+  if (!keyword) return;
+  var results = document.getElementById("searchResults");
+  results.innerHTML = "<div style=\"color:var(--text-muted);\">搜索中...</div>";
+  fetch("/api/messages?room_id=room-general")
+    .then(function(r) { return r.json(); })
+    .then(function(msgs) {
+      var lowerKeyword = keyword.toLowerCase();
+      var matches = [];
+      for (var i = 0; i < msgs.length; i++) {
+        var msg = msgs[i];
+        var content = msg.content || "";
+        if (content.toLowerCase().indexOf(lowerKeyword) >= 0) {
+          matches.push(msg);
+        }
+      }
+      if (matches.length === 0) {
+        results.innerHTML = "<div style=\"color:var(--text-muted);padding:8px;\">未找到包含「" + keyword + "」的消息</div>";
+        return;
+      }
+      var html = "<div style=\"color:var(--text-secondary);margin-bottom:6px;font-size:12px;\">找到 " + matches.length + " 条结果：</div>";
+      for (var i = 0; i < Math.min(matches.length, 50); i++) {
+        var m = matches[i];
+        var label = m.role === "user" ? "🧑 我" : (m.agent_id ? "🤖 " + m.agent_id : "🤖 Agent");
+        var preview = m.content.length > 120 ? m.content.substring(0, 120) + "..." : m.content;
+        html += "<div class=\"search-result-item\" style=\"padding:6px 8px;border-radius:6px;cursor:pointer;margin-bottom:2px;\" onmouseover=\"this.style.background='var(--bg-hover)'\" onmouseout=\"this.style.background=''\" onclick=\"scrollToSearchResult(" + i + "," + (m.id || 0) + ")\"><div style=\"font-size:11px;color:var(--text-muted);\">" + label + "</div><div style=\"font-size:12px;color:var(--text-primary);\">" + esc(preview) + "</div></div>";
+      }
+      results.innerHTML = html;
+    })
+    .catch(function(e) {
+      results.innerHTML = "<div style=\"color:var(--accent-danger);\">搜索失败: " + e.message + "</div>";
+    });
+}
+
+function scrollToSearchResult(idx, msgId) {
+  var chatMsgs = document.getElementById("chatMessages");
+  if (!chatMsgs) return;
+  var children = chatMsgs.children;
+  for (var i = 0; i < children.length; i++) {
+    var textEl = children[i].querySelector(".msg-text");
+    if (textEl) {
+      // Match by finding a message that contains searchable text
+      children[i].scrollIntoView({ behavior: "smooth", block: "center" });
+      children[i].style.background = "var(--accent-bg)";
+      setTimeout(function(el) { return function() { el.style.background = ""; }; }(children[i]), 2000);
+      break;
+    }
+  }
+  hideSearchModal();
+}
+
+
+
+(function(){
+  var s = document.createElement("style");
+  s.textContent = ".agent-edit-btn{margin-left:auto!important}";
+  document.head.appendChild(s);
+})();
+
+// Override Battle confirm — set up @-based debate
+var _origConfirmPick = typeof confirmPick !== "undefined" ? confirmPick : function(){};
+function confirmPick() {
+  if (typeof picked === "undefined" || picked.length !== 2) {
+    if (typeof alert === "function") alert("请选择 2 个 Agent");
+    return;
+  }
+  var agentNames = [];
+  for (var _i = 0; _i < picked.length; _i++) {
+    var nameEl = picked[_i].querySelector(".name");
+    if (nameEl) agentNames.push(nameEl.textContent);
+  }
+  if (agentNames.length < 2) { alert("无法获取 Agent 名称"); return; }
+  closePick();
+  
+  var topic = prompt("请输入探讨话题：");
+  if (!topic || !topic.trim()) return;
+  
+  var input = document.getElementById("chatInput");
+  if (input) {
+    input.value = "@" + agentNames[0] + " @" + agentNames[1] + " 请就「" + topic.trim() + "」展开深入探讨。双方必须以@对方开头来阐述各自观点，进行多轮辩论。";
+    if (typeof sendMessage === "function") sendMessage();
+  }
 }

@@ -9,8 +9,8 @@ const fs = require('fs');
 const LOG_FILE = path.join(__dirname, 'hub.log');
 ;
 const { setupRoutes } = require('./src/routes');
-const { saveMessage, getMessages, getDb, getRoom, syncAgentsToDb } = require('./src/db');
-const { callAgent, getAgent, listAgents } = require('./src/agents');
+const { saveMessage, getMessages, getDb, getRoom, syncAgentsToDb, listAgentsFromDb } = require('./src/db');
+const { callAgent, getAgent, listAgents, setInMemoryProperty } = require('./src/agents');
 const {
   initDefaultRoom,
   getRoomAgents,
@@ -38,6 +38,7 @@ setupRoutes(app, io);
 // ============ Anti-spam & dedup ============
 
 const agentLastReply = {};
+let stopBroadcast = false;
 const MIN_REPLY_INTERVAL = 3000;
 const recentReplies = [];
 const DEDUP_WINDOW = 5000;
@@ -115,6 +116,7 @@ async function askAgent(agentId, userMessage, taskId, roomId) {
       return { agentId, silent: true };
     }
 
+    if (stopBroadcast) { io.emit("agent:state", { agentId: agentId, state: "idle" }); return null; }
     if (isDuplicateReply(agentId, content)) {
       console.log('[Dedup] Agent ' + agentId + ' duplicate reply, skipping');
       writeLog('WARN', '[Dedup] Agent ' + agentId + ' duplicate reply, skipping');
@@ -170,6 +172,7 @@ async function askAgent(agentId, userMessage, taskId, roomId) {
 
 async function broadcastToRoom(roomId, senderId, senderName, content, taskId, depth) {
   if (depth === undefined) depth = 0;
+    if (stopBroadcast) { stopBroadcast = false; return; }
   const room = getRoom(roomId);
   if (!room) {
     console.log('[Broadcast] Room not found:', roomId);
@@ -350,6 +353,13 @@ io.on('connection', function(socket) {
     broadcastToRoom(roomId, agent_id || 'user', senderName, content, task_id, 0);
   });
 
+    // --- Stop broadcast ---
+  socket.on("chat:stop", function() {
+    stopBroadcast = true;
+    console.log("Broadcast stopped by user");
+    writeLog("INFO", "Broadcast stopped by user");
+  });
+
   // --- Message history ---
   socket.on('chat:history', function(data, callback) {
     const roomId = data?.room_id || currentRoom;
@@ -425,6 +435,15 @@ async function start() {
   // Sync agents.json to hub.db
   const allAgents = listAgents();
   syncAgentsToDb(allAgents);
+
+  // Restore DB-persisted nicknames into in-memory cache
+  // This makes nickname survive git checkout of agents.json
+  const dbAgents = listAgentsFromDb();
+  for (const dbAgent of dbAgents) {
+    if (dbAgent.nickname) {
+      setInMemoryProperty(dbAgent.id, 'nickname', dbAgent.nickname);
+    }
+  }
 
   // Initialize default room
   initDefaultRoom(require('./src/db'));
