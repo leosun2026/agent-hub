@@ -4,7 +4,7 @@
       "id": "expert",
       "name": "龙虾专家",
       "role": "orchestrator",
-      "avatar": "🦞",
+      "avatar": "/avatars/expert.jpg",
       "endpoint": "http://127.0.0.1:18789/v1/chat/completions",
       "model": "deepseek/deepseek-v4-pro",
       "auth": "$AUTH_EXPERT",
@@ -24,7 +24,7 @@
         "can_send_active": true,
         "can_see_history": true
       },
-      "nickname": "🦞龙虾小助理",
+      "nickname": "🦞 龙虾专家",
       "added_at": "2026-06-02T11:26:22.125Z",
       "added_by": "user"
     },
@@ -32,7 +32,7 @@
       "id": "hermes-main",
       "name": "Hermes大主管",
       "role": "executor",
-      "avatar": "🤵🏼",
+      "avatar": "/avatars/hermes-main.jpg",
       "endpoint": "http://127.0.0.1:8642/v1/chat/completions",
       "model": "deepseek-v4-flash",
       "auth": "$AUTH_HERMES_MAIN",
@@ -50,7 +50,7 @@
         "can_send_active": true,
         "can_see_history": true
       },
-      "nickname": "Hermes大主管",
+      "nickname": "Hermes 助理",
       "added_at": "2026-06-02T11:32:56.641Z",
       "added_by": "user"
     },
@@ -58,7 +58,7 @@
       "id": "hermes-expert-deepseek",
       "name": "Hermes专家",
       "role": "executor",
-      "avatar": "🧑🏼‍🔬",
+      "avatar": "/avatars/hermes-expert-deepseek.jpg",
       "endpoint": "http://127.0.0.1:8643/v1/chat/completions",
       "model": "deepseek-v4-pro",
       "auth": "$AUTH_HERMES_EXPERT_DEEPSEEK",
@@ -80,7 +80,7 @@
         "can_send_active": true,
         "can_see_history": true
       },
-      "nickname": null,
+      "nickname": "Hermes 专家",
       "added_at": "2026-06-02T11:36:39.003Z",
       "added_by": "user"
     }

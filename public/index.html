@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN" data-theme="white">
 <head>
 <meta charset="UTF-8">
@@ -36,7 +36,7 @@ main{flex:1;display:flex;overflow:hidden}
 .agent-card{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;transition:background .12s;position:relative}
 .agent-card:hover{background:var(--sidebar-agent-hover)}
 .agent-card-left{display:flex;align-items:center;gap:8px;min-width:0}
-.agent-avatar{width:24px;text-align:center;font-size:18px;flex-shrink:0}
+.agent-avatar{width:28px;text-align:center;font-size:24px;flex-shrink:0}
 .agent-info{min-width:0}
 .agent-info .name{font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary)}
 .agent-info .agent-id{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -699,7 +699,7 @@ function populateManageAgentPanel() {
   var html = "<div class=\"right-panel-header\"><h3>📋 管理 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div><div class=\"right-panel-body\">";
   agents.forEach(function(a){
     html += "<div style=\"display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-color);\">";
-    html += "<span style=\"font-size:20px;\">"+a.avatar+"</span>";
+    html += "<span style=\"font-size:20px;\">" + renderAgentAvatar(a.avatar, 20) + "</span>";
     html += "<div style=\"flex:1;\"><div style=\"font-size:13px;font-weight:500;\">"+escAttr(a.nickname||a.name)+"</div><div style=\"font-size:11px;color:var(--text-muted);\">ID: "+esc(a.id)+" | "+esc(a.role)+"</div></div>";
     if (a.id!=="codex") html += "<button onclick=\"showConfirmModal('确认移除 Agent "+escAttr(a.nickname||a.name)+" 吗?',function(){fetch('/api/members/"+a.id+"',{method:'DELETE'}).then(function(){return fetch('/api/agents')}).then(function(r){return r.json()}).then(function(d){agents=d;renderAgentSidebar();populateManageAgentPanel()}).catch(function(e){alert('Error: '+e.message)})})\" style=\"padding:4px 10px;border:none;border-radius:6px;background:var(--accent-danger);color:#fff;cursor:pointer;font-size:11px;\">移除</button>";
     html += "<button onclick=\"editAgent('"+a.id+"')\" style=\"padding:4px 10px;border:none;border-radius:6px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:11px;margin-left:4px;\">编辑</button></div>";
@@ -724,7 +724,9 @@ function populateEditAgentPanel() {
   var panel = document.getElementById("editAgentPanel");
   if (!editingAgent) { closeAllRightPanels(); return; }
   var a = editingAgent;
-  var html = "<div class=\"right-panel-header\"><h3>✏️ 编辑 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+  var currentAvatarHtml = renderAgentAvatar(a.avatar, 36);
+  var html = "<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:12px;\">" + currentAvatarHtml + "<strong style=\"font-size:15px;\">" + escAttr(a.nickname || a.name) + "</strong></div>" +
+    "<div class=\"right-panel-header\"><h3>✏️ 编辑 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
     "<div class=\"right-panel-body\">" +
     "<div class=\"form-group\"><label>昵称</label><input class=\"form-input\" id=\"editNickname\" value=\"" + escAttr(a.nickname || a.name) + "\" placeholder=\"昵称\"></div>" +
     "<div class=\"form-group\"><label>Endpoint</label><input class=\"form-input\" value=\"" + escAttr(a.endpoint || "") + "\" disabled style=\"opacity:0.7\"></div>" +
@@ -818,7 +820,9 @@ function populateEditAgentPanel() {
   var panel = document.getElementById("editAgentPanel");
   if (!editingAgent) { closeAllRightPanels(); return; }
   var a = editingAgent;
-  var html = "<div class=\"right-panel-header\"><h3>✏️ 编辑 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+  var currentAvatarHtml = renderAgentAvatar(a.avatar, 36);
+  var html = "<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:12px;\">" + currentAvatarHtml + "<strong style=\"font-size:15px;\">" + escAttr(a.nickname || a.name) + "</strong></div>" +
+    "<div class=\"right-panel-header\"><h3>✏️ 编辑 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
     "<div class=\"right-panel-body\">" +
     "<div class=\"form-group\"><label>昵称</label><input class=\"form-input\" id=\"editNickname\" value=\"" + escAttr(a.nickname || a.name) + "\" placeholder=\"昵称\"></div>" +
     "<div class=\"form-group\"><label>Endpoint</label><input class=\"form-input\" value=\"" + escAttr(a.endpoint || "") + "\" disabled style=\"opacity:0.7\"></div>" +
@@ -996,6 +1000,14 @@ function exitApp() {
 }
 
 ;(function(){var s=localStorage.getItem("hub_theme");if(s){document.documentElement.setAttribute("data-theme",s);document.querySelectorAll('.theme-card[data-theme="'+s+'"]').forEach(function(c){c.classList.add("active")})}})()
+
+function renderAgentAvatar(avatar, size) {
+  if (!avatar) return avatar || "";
+  if (avatar.indexOf("data:") === 0 || avatar.indexOf("/") === 0 || avatar.indexOf("http") === 0) {
+    return '<img src="' + avatar + '" style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;object-fit:cover">';
+  }
+  return avatar;
+}
 </script>
 <script src="/js/chat.js"></script>
 <script src="/js/pixel-office.js"></script>

@@ -2,10 +2,33 @@
 // Features: members CRUD, rooms, messages, tasks
 
 const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
 const db = require('./db');
 const agents = require('./agents');
 const tasksMod = require('./tasks');
 const roomsMod = require('./rooms');
+
+const AVATAR_DIR = path.join(__dirname, '..', 'public', 'avatars');
+// Ensure avatars directory exists
+if (!fs.existsSync(AVATAR_DIR)) {
+  fs.mkdirSync(AVATAR_DIR, { recursive: true });
+}
+
+/**
+ * Compress a raw image buffer and save to avatars/{agentId}.jpg
+ * Returns the public URL path
+ */
+async function saveAvatarFile(agentId, buffer) {
+  const sharp = require('sharp');
+  const filename = agentId + '.jpg';
+  const outputPath = path.join(AVATAR_DIR, filename);
+  await sharp(buffer)
+    .resize(200, 200, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 80 })
+    .toFile(outputPath);
+  return '/avatars/' + filename;
+}
 
 function setupRoutes(app, io) {
 
@@ -162,10 +185,20 @@ function setupRoutes(app, io) {
   });
 
   // Update a member
-  app.patch('/api/members/:id', (req, res) => {
+  app.patch('/api/members/:id', async (req, res) => {
     try {
       const id = req.params.id;
-      const updated = agents.updateAgent(id, req.body);
+      const updates = { ...req.body };
+
+      // Auto-convert base64 avatar to compressed file
+      if (updates.avatar && updates.avatar.indexOf('data:') === 0) {
+        const commaIdx = updates.avatar.indexOf(',');
+        const base64Data = updates.avatar.substring(commaIdx + 1);
+        const imgBuffer = Buffer.from(base64Data, 'base64');
+        updates.avatar = await saveAvatarFile(id, imgBuffer);
+      }
+
+      const updated = agents.updateAgent(id, updates);
 
       // Sync to DB
       db.saveAgentToDb(updated);
@@ -177,6 +210,32 @@ function setupRoutes(app, io) {
       res.json(updated);
     } catch (err) {
       console.error('[Members] Update error:', err.message);
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // Upload avatar as file (multipart/form-data)
+  function uploadAvatarMw(req, res, next) {
+    const multer = require('multer');
+    const upload = multer({
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_r, f, cb) => {
+        if (f.mimetype.startsWith('image/')) return cb(null, true);
+        cb(new Error('Only image files are allowed'));
+      },
+    });
+    upload.single('avatar')(req, res, next);
+  }
+  app.post('/api/agents/:id/avatar', uploadAvatarMw, async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+      const avatarUrl = await saveAvatarFile(req.params.id, req.file.buffer);
+      const updated = agents.updateAgent(req.params.id, { avatar: avatarUrl });
+      db.saveAgentToDb(updated);
+      io.emit('member:updated', updated);
+      res.json({ avatar: avatarUrl, agent: updated });
+    } catch (err) {
       res.status(400).json({ error: err.message });
     }
   });

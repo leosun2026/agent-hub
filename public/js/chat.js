@@ -1,4 +1,4 @@
-﻿// Chat logic — Agent Hub v2.1 UI (room-less frontend)
+// Chat logic — Agent Hub v2.1 UI (room-less frontend)
 var chatMessages = document.getElementById("chatMessages");
 var chatInput = document.getElementById("chatInput");
 var addMemberStep = 1;
@@ -107,7 +107,7 @@ function appendMessage(msg) {
     if (msg.id) div.setAttribute("data-msg-id", msg.id);
     div.setAttribute("data-date", msg.created_at ? msg.created_at.substring(0, 10) : "");
     div.innerHTML =
-      renderAvatarHtml(getBossAvatar(), 22) +
+      renderAvatarHtml(getBossAvatar(), 28) +
       '<div class="msg-body">' +
       '<div class="msg-header">' + getBossName() + " \u00b7 " + formatTime(msg.created_at) + "</div>" +
       '<div class="msg-text">' + esc(msg.content) + "</div>" +
@@ -120,7 +120,7 @@ function appendMessage(msg) {
     var name = agent ? (agent.nickname || agent.name) : (msg.agent_id || "Agent");
     div.setAttribute("data-date", msg.created_at ? msg.created_at.substring(0, 10) : "");
     div.innerHTML =
-      renderAvatarHtml(avatar, 22) +
+      renderAvatarHtml(avatar, 28) +
       '<div class="msg-body">' +
       '<div class="msg-header">' + name + " \u00b7 " + formatTime(msg.created_at) + "</div>" +
       '<div class="msg-text">' + esc(msg.content) + "</div>" +
@@ -164,7 +164,7 @@ function renderAgentSidebar() {
 
     card.innerHTML =
       "<div class=\"agent-card-left\">" +
-      '<span class="agent-avatar">' + (a.avatar && a.avatar.indexOf('data:') === 0 ? '<img src="' + a.avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover">' : a.avatar) + "</span>" +
+      '<span class="agent-avatar">' + renderAvatarHtml(a.avatar, 28) + '</span>' +
       '<div class="agent-info">' +
       '<div class="name">' + esc(displayName) + "</div>" +
       '<div class="agent-id">' + esc(idLabel) + "</div>" +
@@ -546,10 +546,13 @@ function escAttr(str) {
 
 
 function renderAvatarHtml(avatar, size) {
-  if (avatar && avatar.indexOf("data:") === 0) {
+  if (!avatar) return "<span class=\"agent-avatar\"></span>";
+  // data URI (base64) or file path (/avatars/...) or URL
+  if (avatar.indexOf("data:") === 0 || avatar.indexOf("/") === 0 || avatar.indexOf("http") === 0) {
     return "<span class=\"agent-avatar\"><img src=\"" + avatar + "\" style=\"width:" + size + "px;height:" + size + "px;border-radius:50%;object-fit:cover\"></span>";
   }
-  return "<span class=\"agent-avatar\">" + (avatar || "") + "</span>";
+  // Emoji / single character
+  return "<span class=\"agent-avatar\">" + avatar + "</span>";
 }
 function formatTime(isoStr) {
   if (!isoStr) return "";
@@ -563,7 +566,7 @@ function formatTime(isoStr) {
 
 function getBossAvatar() {
   var saved = localStorage.getItem("hub_boss_avatar");
-  if (saved) return '<img src="' + saved + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">';
+  if (saved) return '<img src="' + saved + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover">';
   return "👤";
 }
 function getBossName() {
