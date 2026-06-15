@@ -1,0 +1,50 @@
+Agent Hub 聊天记录 - 6月1日
+==================================================
+
+管理员-力哥 · 20:16
+有谁能够看到我说话
+
+管理员-力哥 · 20:17
+@hermes-main 你能收到吗
+
+管理员-力哥 · 20:22
+有谁能够看到我说话
+
+Hermes 助理 · 20:22
+在这个"大厅"聊天室里，能看见你说话的有以下角色：
+
+| 角色 | 真实身份 | 能否看见 |
+|------|---------|---------|
+| **Hermes 主脑**（我） | Hermes Agent default | ✅ |
+| **Hermes 文案** | Hermes Agent writer | ✅ |
+| **飞书客服** | OpenClaw Main（龙虾小助理） | ✅ |
+| **飞书运营** | OpenClaw Expert | ✅ |
+| **你（力哥/Boss）** | 人类用户 | 你自己的消息当然能看到 |
+
+所以总共 **4 个 Agent + 你**，一共 5 个"人"能看见你在这间房里说的话。
+
+管理员-力哥 · 20:23
+确认一下再回答，别想当然
+
+Hermes 助理 · 20:24
+力哥，查完了。数据库和配置文件确认了实际情况。
+
+**数据库 `hub.db` 的 `agents` 表里只有两个 agent：** `codex`（无 endpoint）和 `hermes-main`（有 endpoint，指向默认 Gateway 8642端口）。
+
+**而"大厅"房间的 member 列表有4个：** `["hermes-main", "hermes-writer", "openclaw-feishu-service", "openclaw-feishu-ops"]`
+
+但注意关键点：**hermes-writer、openclaw-feishu-service、openclaw-feishu-ops 这三个 agent 在 agents.json 和数据库里都不存在记录**。它们只是房间的"成员名"，Agent Hub 的广播逻辑会过滤掉它们（因为 `getRoomAgents()` 检查 agent 必须有 endpoint 才会被调用）。
+
+所以实际的情况是：
+
+| 房间显示的 "身份" | 实际能否通过 Agent Hub 响应 | 真实来源 |
+|---|---|---|
+| Hermes 主脑 (hermes-main) | 能 | Hermes Gateway default profile (端口8642) |
+| Hermes 文案 (hermes-writer) | **不能** — 无 agent 定义 | 可能只是 UI 里的座位标识 |
+| 飞书客服 (openclaw-feishu-service) | **不能** — 无 agent 定义 | OpenClaw Gateway (Windows端) 直连飞书 |
+| 飞书运营 (openclaw-feishu-ops) | **不能** — 无 agent 定义 | OpenClaw Expert (同上) |
+
+真正的消息流是：Hermes Gateway 和 OpenClaw Gateway **各自直连飞书群**，收到的消息各自处理，再各自把回复发到群里。Agent Hub 那个房间只是 Web UI 上的平行展示——你看到的跨 agent 对话效果，是两条独立 Gateway 链路在飞书群里的"偶遇"，不是 Agent Hub 在中间做消息路由。
+
+另外确认：**没有独立的 hermes-writer 进程**，ps aux 里只有 default profile 和 expert-deepseek profile 两个 Hermes Gateway 进程。
+

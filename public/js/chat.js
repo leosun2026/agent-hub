@@ -13,14 +13,15 @@ var pasteData = null;
     .then(function(data) {
       agents = data;
       renderAgentSidebar();
+      loadHistory();
     })
     .catch(function(e) { console.error("Failed to load agents:", e); });
-
-  loadHistory();
 })();
 
-function loadHistory() {
-  fetch("/api/messages?room_id=room-general")
+function loadHistory(taskId) {
+  var url = "/api/messages?room_id=room-general&limit=500";
+  if (taskId) url += "&task_id=" + encodeURIComponent(taskId);
+  fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(msgs) {
       chatMessages.innerHTML = "";
@@ -103,19 +104,23 @@ function appendMessage(msg) {
     div.innerHTML = "<div class=\"msg-text\">" + esc(msg.content) + "</div>";
   } else if (msg.role === "user") {
     div.className = "chat-msg user";
+    if (msg.id) div.setAttribute("data-msg-id", msg.id);
+    div.setAttribute("data-date", msg.created_at ? msg.created_at.substring(0, 10) : "");
     div.innerHTML =
-      "<span class=\"msg-avatar\">" + getBossAvatar() + "</span>" +
+      renderAvatarHtml(getBossAvatar(), 22) +
       '<div class="msg-body">' +
       '<div class="msg-header">' + getBossName() + " \u00b7 " + formatTime(msg.created_at) + "</div>" +
       '<div class="msg-text">' + esc(msg.content) + "</div>" +
       "</div>";
   } else {
     div.className = "chat-msg";
+    if (msg.id) div.setAttribute("data-msg-id", msg.id);
     var agent = agents.find(function(a) { return a.id === msg.agent_id; });
     var avatar = agent ? agent.avatar : "\u{1F916}";
     var name = agent ? (agent.nickname || agent.name) : (msg.agent_id || "Agent");
+    div.setAttribute("data-date", msg.created_at ? msg.created_at.substring(0, 10) : "");
     div.innerHTML =
-      "<span class=\"msg-avatar\">" + avatar + "</span>" +
+      renderAvatarHtml(avatar, 22) +
       '<div class="msg-body">' +
       '<div class="msg-header">' + name + " \u00b7 " + formatTime(msg.created_at) + "</div>" +
       '<div class="msg-text">' + esc(msg.content) + "</div>" +
@@ -159,13 +164,12 @@ function renderAgentSidebar() {
 
     card.innerHTML =
       "<div class=\"agent-card-left\">" +
-      '<span class="agent-avatar">' + a.avatar + "</span>" +
+      '<span class="agent-avatar">' + (a.avatar && a.avatar.indexOf('data:') === 0 ? '<img src="' + a.avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover">' : a.avatar) + "</span>" +
       '<div class="agent-info">' +
-      '<div class="name" ondblclick="startEditNickname(\'' + a.id + "','" + escAttr(displayName) + "')\">" + esc(displayName) + "</div>" +
+      '<div class="name">' + esc(displayName) + "</div>" +
       '<div class="agent-id">' + esc(idLabel) + "</div>" +
       "</div></div>" +
-      '<button class="agent-edit-btn" onclick="event.stopPropagation();startEditNickname(\'' + a.id + "','" + escAttr(displayName) + "')\" title=\"编辑昵称\">✏️</button>" +
-      '<span class="status-dot ' + onlineClass + '" id="dot-' + a.id + '" data-online="' + (onlineClass === "online") + '"></span>';
+      '<span class="status-dot ' + onlineClass + '" id="dot-' + a.id + '" data-online="' + (onlineClass === 'online') + '"></span>';
 
     // Click agent card to insert @mention in input
     card.onclick = function() {
@@ -198,7 +202,7 @@ function renderAgentSidebar() {
 }
 
 function loadHistorySidebar() {
-  fetch("/api/messages?room_id=room-general")
+  fetch("/api/messages?room_id=room-general&limit=500")
     .then(function(r) { return r.json(); })
     .then(function(msgs) {
       var histList = document.getElementById("historyList");
@@ -210,27 +214,57 @@ function loadHistorySidebar() {
       msgs.forEach(function(msg) {
         if (!msg.created_at) return;
         var d = new Date(msg.created_at);
-        var key = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+        var key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
         if (!groups[key]) groups[key] = { date: d, count: 0 };
         groups[key].count++;
       });
 
       // Sort dates descending
-      var keys = Object.keys(groups).sort().reverse();
-      keys.forEach(function(key) {
+      var keys = Object.keys(groups).sort(function(a,b) { return groups[b].date - groups[a].date; });
+      var showAll = histList.getAttribute('data-show-all') === 'true';
+      var keysToShow = showAll ? keys : keys.slice(0, 3);
+      keysToShow.forEach(function(key) {
         var g = groups[key];
         var day = document.createElement("div");
         day.className = "history-day";
         var month = (g.date.getMonth() + 1) + "月" + g.date.getDate() + "日";
+        day.style.cursor = "pointer";
+        day.setAttribute("data-date-key", key);
+        day.onclick = function() { scrollToDate(key); };
         day.innerHTML =
           "<span>" + month + "</span>" +
           '<span class="day-count">' + g.count + '条</span>' +
           '<div class="day-actions">' +
-          '<button title="导出" onclick="event.stopPropagation();exportMonthChat(month)">↗</button>' +
-          '<button class="danger" title="删除" onclick="event.stopPropagation();deleteMonthChat(month)">✕</button>' +
+          '<button class="day-export-btn" title="导出">↗</button>' +
+          '<button class="day-delete-btn danger" title="删除">✕</button>' +
           "</div>";
+        var exportBtn = day.querySelector(".day-export-btn");
+        if (exportBtn) {
+          exportBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            exportMonthChat(key);
+          });
+        }
+        var deleteBtn = day.querySelector(".day-delete-btn");
+        if (deleteBtn) {
+          deleteBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            deleteMonthChat(key);
+          });
+        }
         histList.appendChild(day);
       });
+      // Add "more" link at bottom
+      var moreBtn = document.createElement('div');
+      moreBtn.className = 'history-more';
+      if (!showAll && keys.length > 3) {
+        moreBtn.innerHTML = '<span style="cursor:pointer;color:var(--accent-primary);font-size:12px;">\u25bc \u66f4\u591a</span>';
+        moreBtn.onclick = function() { histList.setAttribute("data-show-all", "true"); loadHistorySidebar(); };
+      } else if (showAll) {
+        moreBtn.innerHTML = '<span style="cursor:pointer;color:var(--accent-primary);font-size:12px;">\u25b2 \u6536\u8d77</span>';
+        moreBtn.onclick = function() { histList.removeAttribute("data-show-all"); loadHistorySidebar(); };
+      }
+      histList.appendChild(moreBtn);
     })
     .catch(function(e) { console.error("Failed to load history sidebar:", e); });
 }
@@ -239,50 +273,73 @@ function loadHistorySidebar() {
 
 // ============ History Export / Delete ============
 
-function exportMonthChat(monthLabel) {
-  var msgs = chatMessages.querySelectorAll(".chat-msg:not(.system)");
-  var monthMsgs = [];
-  msgs.forEach(function(msg) {
-    var header = msg.querySelector(".msg-header");
-    if (header && header.textContent.indexOf(monthLabel) !== -1) {
-      monthMsgs.push(msg);
+function exportMonthChat(dateKey) {
+  var msgs = chatMessages.querySelectorAll(".chat-msg");
+  var dayMsgs = [];
+  for (var i = 0; i < msgs.length; i++) {
+    if (msgs[i].getAttribute("data-date") === dateKey) {
+      dayMsgs.push(msgs[i]);
     }
-  });
-  if (monthMsgs.length === 0) {
-    alert("该月没有消息");
+  }
+  if (dayMsgs.length === 0) {
+    alert("There is nothing to export");
     return;
   }
-  var text = "Agent Hub 聊天记录 - " + monthLabel + "\n";
+  var parts = dateKey.split("-");
+  var label = parseInt(parts[1]) + "\u6708" + parseInt(parts[2]) + "\u65e5";
+  var text = "Agent Hub \u804a\u5929\u8bb0\u5f55 - " + label + "\n";
   text += "=".repeat(50) + "\n\n";
-  monthMsgs.forEach(function(msg) {
-    var sender = msg.querySelector(".msg-header");
-    var content = msg.querySelector(".msg-text");
+  for (var i = 0; i < dayMsgs.length; i++) {
+    var sender = dayMsgs[i].querySelector(".msg-header");
+    var content = dayMsgs[i].querySelector(".msg-text");
     if (sender) text += sender.textContent.trim() + "\n";
     if (content) text += content.textContent.trim() + "\n";
     text += "\n";
+  }
+  // Use server-side export with configured path
+  var filename = "chat-history-" + dateKey + ".txt";
+  fetch("/api/export", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content: text, filename: filename })
+  }).then(function(r) {
+    if (r.ok) return r.json();
+    throw new Error("Server export failed");
+  }).then(function(d) {
+    alert("\u5bfc\u51fa\u6210\u529f: " + d.path);
+  }).catch(function() {
+    // Fallback to browser download
+    var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
   });
-  var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-  var a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "chat-" + monthLabel + ".txt";
-  a.click();
-  URL.revokeObjectURL(a.href);
 }
 
-function deleteMonthChat(month) {
-  if (!confirm("确定要删除 " + month + " 的聊天记录吗？此操作不可撤销。")) return;
-  var msgs = chatMessages.querySelectorAll(".chat-msg");
+function deleteMonthChat(dateKey) {
+  var parts = dateKey.split("-");
+  var label = parseInt(parts[1]) + "月" + parseInt(parts[2]) + "日";
+  if (!confirm("确定要删除 " + label + " 的聊天记录吗？此操作不可撤销。")) return;
+  var msgs = document.querySelectorAll("#chatMessages .chat-msg");
+  var ids = [];
   var count = 0;
-  msgs.forEach(function(msg) {
-    var header = msg.querySelector(".msg-header");
-    if (header && header.textContent.indexOf(month) !== -1) {
-      msg.remove();
+  for (var i = 0; i < msgs.length; i++) {
+    if (msgs[i].getAttribute("data-date") === dateKey) {
+      ids.push(msgs[i].getAttribute("data-msg-id"));
+      msgs[i].remove();
       count++;
     }
-  });
+  }
   if (count > 0) {
-    // Reload history
-    loadChatHistory();
+    fetch("/api/messages/delete-by-date", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date_key: dateKey, room_id: "room-general" })
+    }).catch(function(e) { console.error("Server delete error:", e); });
+    loadHistorySidebar();
+
   }
 }
 
@@ -487,6 +544,13 @@ function escAttr(str) {
   return (str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+
+function renderAvatarHtml(avatar, size) {
+  if (avatar && avatar.indexOf("data:") === 0) {
+    return "<span class=\"agent-avatar\"><img src=\"" + avatar + "\" style=\"width:" + size + "px;height:" + size + "px;border-radius:50%;object-fit:cover\"></span>";
+  }
+  return "<span class=\"agent-avatar\">" + (avatar || "") + "</span>";
+}
 function formatTime(isoStr) {
   if (!isoStr) return "";
   try {
@@ -622,7 +686,7 @@ function doSearch() {
   if (!keyword) return;
   var results = document.getElementById("searchResults");
   results.innerHTML = "<div style=\"color:var(--text-muted);\">搜索中...</div>";
-  fetch("/api/messages?room_id=room-general")
+  fetch("/api/messages?room_id=room-general&limit=500")
     .then(function(r) { return r.json(); })
     .then(function(msgs) {
       var lowerKeyword = keyword.toLowerCase();
@@ -647,6 +711,7 @@ function doSearch() {
       }
       results.innerHTML = html;
     })
+      // Add "more" link at bottom
     .catch(function(e) {
       results.innerHTML = "<div style=\"color:var(--accent-danger);\">搜索失败: " + e.message + "</div>";
     });
@@ -659,7 +724,6 @@ function scrollToSearchResult(idx, msgId) {
   for (var i = 0; i < children.length; i++) {
     var textEl = children[i].querySelector(".msg-text");
     if (textEl) {
-      // Match by finding a message that contains searchable text
       children[i].scrollIntoView({ behavior: "smooth", block: "center" });
       children[i].style.background = "var(--accent-bg)";
       setTimeout(function(el) { return function() { el.style.background = ""; }; }(children[i]), 2000);
@@ -669,15 +733,29 @@ function scrollToSearchResult(idx, msgId) {
   hideSearchModal();
 }
 
-
+function scrollToDate(dateKey) {
+  var msgs = document.getElementById("chatMessages");
+  if (!msgs) return;
+  var children = msgs.children;
+  for (var i = 0; i < children.length; i++) {
+    if (children[i].getAttribute("data-date") === dateKey) {
+      children[i].scrollIntoView({ behavior: "smooth", block: "start" });
+      children[i].style.background = "var(--accent-bg)";
+      (function(el) {
+        setTimeout(function() { el.style.background = ""; }, 2000);
+      })(children[i]);
+      break;
+    }
+  }
+}
 
 (function(){
   var s = document.createElement("style");
-  s.textContent = ".agent-edit-btn{margin-left:auto!important}";
+  s.textContent = "";
   document.head.appendChild(s);
 })();
 
-// Override Battle confirm — set up @-based debate
+// Override Battle confirm
 var _origConfirmPick = typeof confirmPick !== "undefined" ? confirmPick : function(){};
 function confirmPick() {
   if (typeof picked === "undefined" || picked.length !== 2) {
@@ -697,7 +775,7 @@ function confirmPick() {
   
   var input = document.getElementById("chatInput");
   if (input) {
-    input.value = "@" + agentNames[0] + " @" + agentNames[1] + " 请就「" + topic.trim() + "」展开深入探讨。双方必须以@对方开头来阐述各自观点，进行多轮辩论。";
+    input.value = "@" + agentNames[0] + " @" + agentNames[1] + " 请就\u300c" + topic.trim() + "\u300d展开深入探讨。双方必须以@对方开头来阐述各自观点，进行多轮辩论。";
     if (typeof sendMessage === "function") sendMessage();
   }
 }

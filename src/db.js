@@ -1,4 +1,4 @@
-// Database module — SQLite via sql.js
+﻿// Database module — SQLite via sql.js
 // Tables: messages, tasks, rooms, agents
 
 const initSqlJs = require('sql.js');
@@ -168,10 +168,16 @@ function getMessages(opts) {
   }
 
   if (opts.task_id) {
-    sql += ' AND task_id = ?';
+    sql += ' AND (task_id = ? OR task_id IS NULL)';
     params.push(opts.task_id);
   } else if (!opts.room_id) {
     sql += ' AND task_id IS NULL';
+  }
+
+  // Filter by days (e.g. last 5 days)
+  if (opts.days) {
+    sql += ' AND created_at >= datetime(\'now\', ?)';
+    params.push('-' + opts.days + ' days');
   }
 
   if (opts.since) {
@@ -186,6 +192,21 @@ function getMessages(opts) {
   sql += ' ORDER BY id DESC LIMIT ?';
   params.push(opts.limit || 500);
   return queryAll(sql, params).reverse();
+}
+
+// === Delete messages by date ===
+function deleteMessagesByDate(opts) {
+  var sql = "DELETE FROM messages WHERE substr(created_at, 1, 10) = ?";
+  var params = [opts.date_key];
+  
+  if (opts.room_id) {
+    sql += " AND room_id = ?";
+    params.push(opts.room_id);
+  }
+  
+  db.run(sql, params);
+  saveDb();
+  return { deleted: true };
 }
 
 // === Tasks ===
@@ -238,6 +259,17 @@ function updateTaskPlan(id, plan) {
     [JSON.stringify(plan), id]);
   return getTask(id);
 }
+
+function deleteTask(id) {
+  run("DELETE FROM tasks WHERE id = ?", [id]);
+  return { success: true };
+}
+
+function updateTaskTitle(id, title) {
+  run("UPDATE tasks SET title = ?, updated_at = datetime('now') WHERE id = ?", [title, id]);
+  return getTask(id);
+}
+
 
 function updateTaskResult(id, result) {
   run("UPDATE tasks SET result_json = ?, status = 'reviewing', updated_at = datetime('now') WHERE id = ?",
@@ -393,12 +425,15 @@ module.exports = {
   saveDb,
   saveMessage,
   getMessages,
+  deleteMessagesByDate,
   createTask,
   getTask,
   listTasks,
   updateTaskStatus,
   updateTaskPlan,
   updateTaskResult,
+  updateTaskTitle,
+  deleteTask,
   createRoom,
   getRoom,
   listRooms,
@@ -415,3 +450,4 @@ module.exports = {
   setRoomMemberNickname,
   syncAgentsToDb,
 };
+

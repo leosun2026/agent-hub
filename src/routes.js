@@ -1,4 +1,4 @@
-// Routes module — REST API
+﻿// Routes module — REST API
 // Features: members CRUD, rooms, messages, tasks
 
 const crypto = require('crypto');
@@ -372,14 +372,31 @@ app.delete('/api/rooms/:id', (req, res) => {
   });
 
   app.get('/api/messages', (req, res) => {
-    const { task_id, room_id, since, limit } = req.query;
+    const { task_id, room_id, since, limit, days } = req.query;
     const msgs = db.getMessages({
       task_id: task_id || null,
       room_id: room_id || null,
+      days: days ? parseInt(days) : null,
       since: since ? parseInt(since) : null,
       limit: limit ? parseInt(limit) : 50,
     });
     res.json(msgs);
+  });
+
+  // ============ Delete messages by date ============
+  app.post('/api/messages/delete-by-date', (req, res) => {
+    const { date_key, room_id } = req.body;
+    if (!date_key) return res.status(400).json({ error: 'date_key required' });
+    
+    try {
+      const count = db.deleteMessagesByDate({ 
+        date_key: date_key, 
+        room_id: room_id || null 
+      });
+      res.json({ deleted: count });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   // ============ Task endpoints ============
@@ -401,6 +418,26 @@ app.delete('/api/rooms/:id', (req, res) => {
     const id = 'task-' + crypto.randomBytes(4).toString('hex');
     const task = db.createTask({ id, title, description, participants });
     res.status(201).json(task);
+  });
+
+  
+  // PATCH /api/tasks/:id — update task title
+  app.patch('/api/tasks/:id', (req, res) => {
+    const { title } = req.body;
+    if (!title) return res.status(400).json({ error: 'title required' });
+    const current = db.getTask(req.params.id);
+    if (!current) return res.status(404).json({ error: 'Task not found' });
+    const updated = db.updateTaskTitle(req.params.id, title);
+    res.json(updated);
+  });
+
+  
+  // DELETE /api/tasks/:id
+  app.delete('/api/tasks/:id', (req, res) => {
+    const current = db.getTask(req.params.id);
+    if (!current) return res.status(404).json({ error: 'Task not found' });
+    db.deleteTask(req.params.id);
+    res.json({ success: true });
   });
 
   app.patch('/api/tasks/:id/status', (req, res) => {
