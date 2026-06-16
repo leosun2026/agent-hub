@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="zh-CN" data-theme="white">
+<html lang="zh-CN" data-theme="gray">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1032,6 +1032,9 @@ function saveRules() {
   });
 }
 function exitApp() {
+  if (typeof currentTaskId !== "undefined" && currentTaskId) {
+    try { localStorage.setItem("agentHubLastTaskId", currentTaskId); } catch(e) {}
+  }
   showConfirmModal("确定要退出 Agent Hub 吗？", function(){
     fetch("/api/shutdown", { method: "POST" }).then(function(){
       closeSettings();
@@ -1040,9 +1043,7 @@ function exitApp() {
     });
   });
 }
-
-;(function(){var s=localStorage.getItem("hub_theme");if(s){document.documentElement.setAttribute("data-theme",s);document.querySelectorAll('.theme-card[data-theme="'+s+'"]').forEach(function(c){c.classList.add("active")})}})()
-
+;(function(){var s=localStorage.getItem("hub_theme")||'gray';document.documentElement.setAttribute("data-theme",s);document.querySelectorAll('.theme-card[data-theme="'+s+'"]').forEach(function(c){c.classList.add("active")})})()
 function renderAgentAvatar(avatar, size) {
   if (!avatar) return avatar || "";
   if (avatar.indexOf("data:") === 0 || avatar.indexOf("/") === 0 || avatar.indexOf("http") === 0) {
