@@ -269,6 +269,11 @@ function updateTaskTitle(id, title) {
   run("UPDATE tasks SET title = ?, updated_at = datetime('now') WHERE id = ?", [title, id]);
   return getTask(id);
 }
+function updateTaskParticipants(id, participants) {
+  run("UPDATE tasks SET participants = ?, updated_at = datetime('now') WHERE id = ?", [JSON.stringify(participants || []), id]);
+  return getTask(id);
+}
+
 
 
 function updateTaskResult(id, result) {
@@ -433,6 +438,7 @@ module.exports = {
   updateTaskPlan,
   updateTaskResult,
   updateTaskTitle,
+  updateTaskParticipants,
   deleteTask,
   createRoom,
   getRoom,

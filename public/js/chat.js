@@ -79,9 +79,9 @@ function selectTask(taskId) {
   var title = task ? task.title : "任务";
   var btn = document.querySelector(".task-selector-btn");
   if (btn) btn.innerHTML = '📋 ' + esc(title) + ' <span class="arrow">▼</span>';
+  renderAgentSidebar();
   loadHistory(taskId);
   renderTaskDropdown();
-  loadHistorySidebar();
 }function loadHistory(taskId) {
   var url = "/api/messages?room_id=room-general&limit=500";
   if (taskId) url += "&task_id=" + encodeURIComponent(taskId);
@@ -226,7 +226,20 @@ function renderAgentSidebar() {
   listTitle.textContent = "Agent 列表";
   sidebar.appendChild(listTitle);
 
-  agents.forEach(function(a) {
+  // Filter agents by current task's participants
+  var filteredAgents = agents;
+  if (currentTaskId) {
+    var currentTask = null;
+    for (var ti = 0; ti < tasks.length; ti++) {
+      if (tasks[ti].id === currentTaskId) { currentTask = tasks[ti]; break; }
+    }
+    if (currentTask && currentTask.participants && currentTask.participants.length > 0) {
+      filteredAgents = agents.filter(function(a) {
+        return currentTask.participants.indexOf(a.id) >= 0;
+      });
+    }
+  }
+  filteredAgents.forEach(function(a) {
     var card = document.createElement("div");
     card.className = "agent-card";
     card.setAttribute("data-id", a.id);

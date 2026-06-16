@@ -482,12 +482,18 @@ app.delete('/api/rooms/:id', (req, res) => {
   
   // PATCH /api/tasks/:id — update task title
   app.patch('/api/tasks/:id', (req, res) => {
-    const { title } = req.body;
-    if (!title) return res.status(400).json({ error: 'title required' });
+    const { title, participants } = req.body;
     const current = db.getTask(req.params.id);
     if (!current) return res.status(404).json({ error: 'Task not found' });
-    const updated = db.updateTaskTitle(req.params.id, title);
-    res.json(updated);
+    if (title) {
+      const updated = db.updateTaskTitle(req.params.id, title);
+      res.json(updated);
+    } else if (participants) {
+      const updated = db.updateTaskParticipants(req.params.id, participants);
+      res.json(updated);
+    } else {
+      return res.status(400).json({ error: 'title or participants required' });
+    }
   });
 
   

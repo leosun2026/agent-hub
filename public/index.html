@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN" data-theme="white">
 <head>
 <meta charset="UTF-8">
@@ -315,14 +315,17 @@ main{flex:1;display:flex;overflow:hidden}
 
     <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🎨 主题配色</h3>
       <div class="theme-row">
-        <button class="theme-card active" data-theme="white" onclick="setTheme('white',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#f5f7fa;border:1px solid #e2e6ed;border-radius:6px;margin-bottom:4px;"></div>极简白</button>
+        <button class="theme-card" data-theme="white" onclick="setTheme('white',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#f5f7fa;border:1px solid #e2e6ed;border-radius:6px;margin-bottom:4px;"></div>极简白</button>
         <button class="theme-card" data-theme="gray" onclick="setTheme('gray',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#555557;border:1px solid #78787a;border-radius:6px;margin-bottom:4px;"></div>高级灰</button>
         <button class="theme-card" data-theme="blue" onclick="setTheme('blue',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#0a1628;border:1px solid #1e3a5f;border-radius:6px;margin-bottom:4px;"></div>深海幽蓝</button>
       </div>
     </div>
 
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">📁 项目管理</h3>
+      <div class="settings-card" onclick="openRightPanel('projectManagePanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">📁 项目管理</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">新建/重命名项目，选择参与 Agent</div></div>
+    </div>
+
     <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🤖 Agent 管理</h3>
-      <div class="settings-card" onclick="openRightPanel('addAgentPanel')" style="padding:10px 12px;margin-bottom:6px;"><div style="font-size:13px;font-weight:500;">＋ 添加新 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">通过邀请链接添加 Agent</div></div>
       <div class="settings-card" onclick="openRightPanel('manageAgentPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">📋 管理 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">查看/编辑/移除已添加的 Agent</div></div>
     </div>
 
@@ -388,6 +391,9 @@ main{flex:1;display:flex;overflow:hidden}
   </div>
   <div class="right-panel-footer"><button class="btn-save" onclick="saveRules()">保存规则</button></div>
 </div>
+
+<div class="right-panel" id="projectManagePanel"></div>
+<div class="right-panel" id="projectEditPanel"></div>
 
 <!-- Confirm Modal -->
 <div class="confirm-overlay" id="confirmOverlay">
@@ -484,6 +490,7 @@ function setTheme(t, el) {
 
 /* 设置面板 */
 function openSettings() {
+  ;(function(){var t=localStorage.getItem('hub_theme')||'gray';document.querySelectorAll('.theme-card').forEach(function(c){c.classList.remove('active')});document.querySelectorAll('.theme-card[data-theme="'+t+'"]').forEach(function(c){c.classList.add('active')})})();
   document.getElementById("settingsOverlay").classList.add("show");
   var savedName = localStorage.getItem("hub_boss_name");
   var exportInput = document.getElementById("settingsExportPath");
@@ -581,7 +588,8 @@ function openRightPanel(panelId) {
   if (panelId === "editAgentPanel") populateEditAgentPanel();
   if (panelId === "userSettingsPanel") populateUserSettingsPanel();
   if (panelId === "agentAnimPanel") populateAgentAnimPanel();
-  if (panelId === "editAgentPanel") populateEditAgentPanel();
+  if (panelId === "projectManagePanel") populateProjectManagePanel();
+  if (panelId === "projectEditPanel") populateProjectEditPanel();
 }
 function closeAllRightPanels() {
   document.querySelectorAll(".right-panel").forEach(function(p){p.classList.remove("show")});
@@ -600,7 +608,7 @@ function copyRapInvite() {
     navigator.clipboard.writeText(text).then(function() {
       btn.textContent = "OK 已复制";
       btn.style.background = "var(--online-dot)";
-      setTimeout(function() { btn.textContent = "Copy 复制邀请"; btn.style.background = ""; }, 2000);
+      setTimeout(function() { btn.textContent = "复制邀请"; btn.style.background = ""; }, 2000);
     }).catch(function() {
       fallbackCopyRap(text, btn);
     });
@@ -619,7 +627,7 @@ function fallbackCopyRap(text, btn) {
   document.body.removeChild(ta);
   btn.textContent = "OK 已复制";
   btn.style.background = "var(--online-dot)";
-  setTimeout(function() { btn.textContent = "Copy 复制邀请"; btn.style.background = ""; }, 2000);
+  setTimeout(function() { btn.textContent = "复制邀请"; btn.style.background = ""; }, 2000);
 }
 
 function showRapStep(step) {
@@ -634,13 +642,13 @@ function populateAddAgentPanel() {
   var inviteText = generateRapInviteText();
   var panel = document.getElementById("addAgentPanel");
   panel.innerHTML =
-    "<div class=\"right-panel-header\"><h3>Add 邀请新 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div>" +
+    "<div class=\"right-panel-header\"><h3>邀请新 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div>" +
     "<div class=\"right-panel-body\">" +
     "<div id=\"rapStep1\">" +
     "<h3 style=\"font-size:13px;margin-bottom:8px;\">Step1 第1步：发送邀请</h3>" +
     "<p style=\"font-size:12px;color:var(--text-secondary);margin-bottom:8px;\">复制下方邀请文案，发送给目标 Agent（通过飞书、WebUI 等渠道）：</p>" +
     "<div class=\"invite-text\" id=\"rapInviteText\" style=\"background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:12px;font-size:11px;line-height:1.5;white-space:pre-wrap;max-height:280px;overflow-y:auto;color:var(--text-primary);margin-bottom:8px;\">" + esc(inviteText) + "</div>" +
-    "<button class=\"copy-btn\" id=\"copyRapInviteBtn\" onclick=\"copyRapInvite()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">Copy 复制邀请</button>" +
+    "<button class=\"copy-btn\" id=\"copyRapInviteBtn\" onclick=\"copyRapInvite()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">复制邀请</button>" +
     "</div>" +
     "<div id=\"rapStep2\" style=\"display:none\">" +
     "<h3 style=\"font-size:13px;margin-bottom:8px;\">Step2 第2步：粘贴 Agent 配置 JSON</h3>" +
@@ -653,8 +661,8 @@ function populateAddAgentPanel() {
     "</div>" +
     "</div>" +
     "<div class=\"right-panel-footer\">" +
-    "<button class=\"btn-secondary\" id=\"rapBtnPrev\" onclick=\"showRapStep(1)\" style=\"display:none;padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">Back 上一步</button>" +
-    "<button class=\"btn-primary\" id=\"rapBtnNext\" onclick=\"showRapStep(2)\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">Next 下一步</button>" +
+    "<button class=\"btn-secondary\" id=\"rapBtnPrev\" onclick=\"showRapStep(1)\" style=\"display:none;padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">上一步</button>" +
+    "<button class=\"btn-primary\" id=\"rapBtnNext\" onclick=\"showRapStep(2)\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">下一步</button>" +
     "<button class=\"btn-save\" id=\"rapConfirm\" onclick=\"confirmRapAdd()\" style=\"display:none\">确认添加</button>" +
     "</div>" +
     "";
@@ -708,7 +716,8 @@ function confirmRapAdd() {
 
 function populateManageAgentPanel() {
   var panel = document.getElementById("manageAgentPanel");
-  var html = "<div class=\"right-panel-header\"><h3>📋 管理 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div><div class=\"right-panel-body\">";
+  var html = "<div class=\"right-panel-header\"><h3>📋 管理 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div><div class=\"right-panel-body\">" +
+    "<button onclick=\"closeAllRightPanels();openRightPanel('addAgentPanel')\" style=\"padding:8px 14px;width:100%;border:1px dashed var(--accent-primary);border-radius:8px;background:var(--accent-bg);color:var(--accent-primary);cursor:pointer;font-size:13px;margin-bottom:10px;text-align:center;\">➕ 添加 Agent</button>";
   agents.forEach(function(a){
     html += "<div style=\"display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-color);\">";
     html += "<span style=\"font-size:20px;\">" + renderAgentAvatar(a.avatar, 20) + "</span>";
@@ -1023,5 +1032,172 @@ function renderAgentAvatar(avatar, size) {
 </script>
 <script src="/js/chat.js"></script>
 <script src="/js/pixel-office.js"></script>
+<script>
+function populateProjectManagePanel() {
+  var panel = document.getElementById("projectManagePanel");
+  var allAgents = typeof agents !== 'undefined' ? agents : [];
+  var html = "<div class=\"right-panel-header\"><h3>📁 项目管理</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div><div class=\"right-panel-body\">" +
+    "<div style=\"margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-color);\">" +
+    "<h4 style=\"font-size:13px;margin-bottom:8px;\">➕ 新建项目</h4>" +
+    "<input class=\"form-input\" id=\"newProjectName\" placeholder=\"请输入项目名称\" style=\"width:100%;margin-bottom:8px;\">" +
+    "<div style=\"font-size:12px;color:var(--text-secondary);margin-bottom:6px;\">选择参与 Agent：</div>" +
+    "<div id=\"newProjectAgents\" style=\"margin-bottom:8px;max-height:120px;overflow-y:auto;\">";
+  for (var i = 0; i < allAgents.length; i++) {
+    html += "<label style=\"display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer;\">" +
+      "<input type=\"checkbox\" class=\"project-agent-cb\" data-agent-id=\"" + allAgents[i].id + "\" checked>" +
+      "<span>" + (allAgents[i].nickname || allAgents[i].name) + "</span></label>";
+  }
+  html += "</div>" +
+    "<button onclick=\"createProject()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;width:100%;\">创建项目</button>" +
+    "</div>" +
+    "<h4 style=\"font-size:13px;margin-bottom:8px;\">已有项目</h4>" +
+    "<div id=\"projectList\" style=\"max-height:260px;overflow-y:auto;\">";
+  var hasProjects = typeof tasks !== 'undefined' && tasks.length > 0;
+  if (!hasProjects) {
+    html += "<div style=\"font-size:12px;color:var(--text-muted);text-align:center;padding:16px;\">暂无项目</div>";
+  } else {
+    for (var i = 0; i < tasks.length; i++) {
+      var t = tasks[i];
+      html += "<div style=\"display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--border-color);\">" +
+        "<span style=\"font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\">" + escAttr(t.title) + "</span>" +
+        "<button onclick=\"editProject('" + t.id + "')\" style=\"padding:3px 8px;border:none;border-radius:4px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:11px;\">✏️</button>" +
+        "<button onclick=\"deleteProject('" + t.id + "','" + escAttr(t.title.replace(/'/g,'')) + "')\" style=\"padding:3px 8px;border:none;border-radius:4px;background:var(--accent-danger);color:#fff;cursor:pointer;font-size:11px;\">🗑️</button></div>";
+    }
+  }
+  html += "</div></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+var editingProjectId = null;
+
+function populateProjectEditPanel() {
+  var panel = document.getElementById("projectEditPanel");
+  var allAgents = typeof agents !== 'undefined' ? agents : [];
+  var project = null;
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].id === editingProjectId) { project = tasks[i]; break; }
+  }
+  if (!project) { closeAllRightPanels(); return; }
+  var currentParticipants = (project.participants && project.participants.length > 0) ? project.participants : (typeof agents !== 'undefined' ? agents.map(function(a){return a.id}) : []);
+  var html = "<div class=\"right-panel-header\"><h3>✏️ 编辑项目</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div class=\"form-group\"><label>项目名称</label>" +
+    "<input class=\"form-input\" id=\"editProjectName\" value=\"" + escAttr(project.title) + "\" placeholder=\"项目名称\"></div>" +
+    "<div style=\"font-size:12px;color:var(--text-secondary);margin-bottom:6px;\">选择参与 Agent：</div>" +
+    "<div id=\"editProjectAgents\" style=\"margin-bottom:8px;max-height:200px;overflow-y:auto;\">";
+  for (var i = 0; i < allAgents.length; i++) {
+    var checked = currentParticipants.indexOf(allAgents[i].id) >= 0;
+    html += "<label style=\"display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer;\">" +
+      "<input type=\"checkbox\" class=\"project-agent-cb\" data-agent-id=\"" + allAgents[i].id + "\"" + (checked ? " checked" : "") + ">" +
+      "<span>" + (allAgents[i].nickname || allAgents[i].name) + "</span></label>";
+  }
+  html += "</div></div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels();openRightPanel('projectManagePanel')\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">← 返回</button>" +
+    "<button class=\"btn-save\" onclick=\"saveProjectEdit()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 保存</button></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+function createProject() {
+  var name = document.getElementById("newProjectName").value.trim();
+  if (!name) { alert("请输入项目名称"); return; }
+  var cbs = document.querySelectorAll("#newProjectAgents .project-agent-cb");
+  var participants = [];
+  for (var i = 0; i < cbs.length; i++) {
+    if (cbs[i].checked) participants.push(cbs[i].getAttribute("data-agent-id"));
+  }
+  fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: name, participants: participants })
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/tasks");
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    tasks = d;
+    renderTaskDropdown();
+    populateProjectManagePanel();
+  }).catch(function(e) {
+    alert("创建失败: " + e.message);
+  });
+}
+
+function editProject(projectId) {
+  editingProjectId = projectId;
+  openRightPanel("projectEditPanel");
+}
+
+function deleteProject(projectId, projectName) {
+  showConfirmModal("确认删除项目 \\u201C" + projectName + "\\u201D 吗？该项目下的聊天记录也将被清除。", function() {
+    fetch("/api/tasks/" + projectId, { method: "DELETE" }).then(function(r) {
+      if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+      return r.json();
+    }).then(function() {
+      return fetch("/api/tasks");
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      tasks = d;
+      renderTaskDropdown();
+      if (currentTaskId === projectId && tasks.length > 0) {
+        selectTask(tasks[0].id);
+      } else if (tasks.length === 0) {
+        currentTaskId = null;
+        renderTaskDropdown();
+      }
+      populateProjectManagePanel();
+    }).catch(function(e) {
+      alert("删除失败: " + e.message);
+    });
+  });
+}
+
+function saveProjectEdit() {
+  var name = document.getElementById("editProjectName").value.trim();
+  if (!name) { alert("项目名称不能为空"); return; }
+  var cbs = document.querySelectorAll("#editProjectAgents .project-agent-cb");
+  var participants = [];
+  for (var i = 0; i < cbs.length; i++) {
+    if (cbs[i].checked) participants.push(cbs[i].getAttribute("data-agent-id"));
+  }
+  // If all agents are checked, save empty array (meaning "all agents")
+  if (participants.length === (typeof agents !== 'undefined' ? agents.length : 0)) {
+    participants = [];
+  }
+  var btn = document.querySelector("#projectEditPanel .btn-save");
+  btn.disabled = true; btn.textContent = "保存中...";
+  fetch("/api/tasks/" + editingProjectId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: name })
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/tasks/" + editingProjectId, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ participants: participants })
+    });
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/tasks");
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    tasks = d;
+    renderTaskDropdown();
+    closeAllRightPanels(); openRightPanel("projectManagePanel");
+  }).catch(function(e) {
+    alert("保存失败: " + e.message);
+    btn.disabled = false; btn.textContent = "💾 保存";
+  });
+}
+
+
+</script>
+</script>
 </body>
 </html>
