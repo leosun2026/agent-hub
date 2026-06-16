@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN" data-theme="white">
 <head>
 <meta charset="UTF-8">
@@ -14,7 +14,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .header-left{display:flex;align-items:center;gap:16px}
 .header-brand{font-size:20px;font-weight:700;color:var(--accent-primary);white-space:nowrap;cursor:default;user-select:none;margin:0;line-height:1}
 .task-selector{position:relative}
-.task-selector-btn{padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:background .15s}
+.task-selector-btn{padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;transition:background .15s}
 .task-selector-btn:hover{background:var(--bg-hover)}
 .task-selector-btn .arrow{font-size:10px;color:var(--text-muted);transition:transform .2s}
 .task-selector-btn.open .arrow{transform:rotate(180deg)}
@@ -27,6 +27,18 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .task-edit-btn{display:inline;margin-left:6px;cursor:pointer;opacity:0;font-size:12px;transition:opacity .12s;user-select:none}
 .task-option:hover .task-edit-btn{opacity:.6}
 .task-edit-btn:hover{opacity:1!important}
+
+
+
+
+.task-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.task-selector-btn{max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.inline-rename-form{display:flex;align-items:center;gap:4px;padding:2px 0;width:100%}
+.rename-input{flex:1;padding:4px 6px;border:1px solid var(--accent-primary);border-radius:4px;font-size:12px;background:var(--bg-primary);color:var(--text-primary);outline:none}
+.rename-save-btn,.rename-cancel-btn{padding:3px 8px;border:none;border-radius:4px;cursor:pointer;font-size:11px}
+.rename-save-btn{background:var(--accent-primary);color:#fff}
+.rename-cancel-btn{background:var(--bg-tertiary);color:var(--text-primary)}
+
 .header-right{display:flex;align-items:center;gap:8px}
 .btn-hall{width:36px;height:36px;border:none;border-radius:8px;background:var(--hall-btn-bg);color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .btn-hall:hover{background:var(--hall-btn-hover)}

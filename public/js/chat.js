@@ -1,9 +1,11 @@
-// Chat logic — Agent Hub v2.1 UI (room-less frontend)
+﻿// Chat logic — Agent Hub v2.1 UI (room-less frontend)
 var chatMessages = document.getElementById("chatMessages");
 var chatInput = document.getElementById("chatInput");
 var addMemberStep = 1;
 var pasteValid = false;
 var pasteData = null;
+var currentTaskId = null;
+var tasks = [];
 
 // ============ Initialization ============
 
@@ -14,11 +16,73 @@ var pasteData = null;
       agents = data;
       renderAgentSidebar();
       loadHistory();
+      return fetch("/api/tasks");
     })
-    .catch(function(e) { console.error("Failed to load agents:", e); });
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      tasks = data;
+      renderTaskDropdown();
+      if (tasks.length > 0) {
+        // Restore last selected task from localStorage, or use first task
+        var lastTaskId = localStorage.getItem("agentHubLastTaskId");
+        var taskToSelect = null;
+        for (var ti = 0; ti < tasks.length; ti++) {
+          if (tasks[ti].id === lastTaskId) { taskToSelect = tasks[ti]; break; }
+        }
+        if (!taskToSelect) taskToSelect = tasks[0];
+        selectTask(taskToSelect.id);
+        // Force sidebar refresh after task select
+        loadHistorySidebar();
+      }
+    })
+    .catch(function(e) { console.error("Failed to init:", e); });
 })();
 
-function loadHistory(taskId) {
+function loadTasks() {
+  return fetch("/api/tasks")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      tasks = data;
+      renderTaskDropdown();
+      if (tasks.length > 0) selectTask(tasks[0].id);
+    })
+    .catch(function(e) { console.error("Failed to load tasks:", e); });
+}
+
+function renderTaskDropdown() {
+  var dd = document.getElementById("taskDropdown");
+  if (!dd) return;
+  var html = "";
+  for (var i = 0; i < tasks.length; i++) {
+    var t = tasks[i];
+    var activeClass = t.id === currentTaskId ? " active" : "";
+    html += '<div class="task-option' + activeClass + '" data-task-id="' + escAttr(t.id) + '" onclick="switchTask(this)">';
+    html += '  <span class="task-title-text">📋 ' + esc(t.title) + '</span>';
+    html += '</div>';
+  }
+  dd.innerHTML = html;
+}
+
+function switchTask(el) {
+  var taskId = el.getAttribute("data-task-id");
+  if (taskId) selectTask(taskId);
+}
+
+function selectTask(taskId) {
+  currentTaskId = taskId;
+  // Remember last selected task
+  try { localStorage.setItem("agentHubLastTaskId", taskId); } catch(e) {}
+  var task = null;
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].id === taskId) { task = tasks[i]; break; }
+  }
+  var title = task ? task.title : "任务";
+  var btn = document.querySelector(".task-selector-btn");
+  if (btn) btn.innerHTML = '📋 ' + esc(title) + ' <span class="arrow">▼</span>';
+  loadHistory(taskId);
+  renderTaskDropdown();
+  loadHistorySidebar();
+}function loadHistory(taskId) {
   var url = "/api/messages?room_id=room-general&limit=500";
   if (taskId) url += "&task_id=" + encodeURIComponent(taskId);
   fetch(url)
@@ -26,6 +90,11 @@ function loadHistory(taskId) {
     .then(function(msgs) {
       chatMessages.innerHTML = "";
       appendSystemMessage("💡 输入 / 查看全部命令");
+      if (msgs.length === 0 && taskId) {
+        var d = new Date();
+        var ds = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+        appendSystemMessage("📅 " + ds + " — 新对话");
+      }
       msgs.forEach(function(msg) { appendMessage(msg); });
     })
     .catch(function(e) { console.error("Failed to load history:", e); });
@@ -90,7 +159,9 @@ document.addEventListener("click", function(e) {
 function sendMessage() {
   var content = chatInput.value.trim();
   if (!content) return;
-  socket.emit("chat:send", { room_id: "room-general", agent_id: "user", role: "user", content: content });
+  var payload = { room_id: "room-general", agent_id: "user", role: "user", content: content };
+  if (currentTaskId) payload.task_id = currentTaskId;
+  socket.emit("chat:send", payload);
   chatInput.value = "";
   hideMentionDropdown();
 }
@@ -133,6 +204,9 @@ function appendMessage(msg) {
 function appendSystemMessage(text) {
   var div = document.createElement("div");
   div.className = "chat-msg system";
+  var now = new Date();
+  var ds = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0") + "-" + String(now.getDate()).padStart(2,"0");
+  div.setAttribute("data-date", ds);
   div.innerHTML = "<div class=\"msg-text\">" + esc(text) + "</div>";
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -202,7 +276,9 @@ function renderAgentSidebar() {
 }
 
 function loadHistorySidebar() {
-  fetch("/api/messages?room_id=room-general&limit=500")
+  var url = "/api/messages?room_id=room-general&limit=500";
+  if (currentTaskId) url += "&task_id=" + encodeURIComponent(currentTaskId);
+  fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(msgs) {
       var histList = document.getElementById("historyList");
@@ -211,6 +287,12 @@ function loadHistorySidebar() {
 
       // Group messages by date
       var groups = {};
+      if (msgs.length === 0 && currentTaskId) {
+        // New task with no messages — show today as placeholder
+        var d = new Date();
+        var key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+        groups[key] = { date: d, count: 0 };
+      }
       msgs.forEach(function(msg) {
         if (!msg.created_at) return;
         var d = new Date(msg.created_at);
@@ -740,16 +822,20 @@ function scrollToDate(dateKey) {
   var msgs = document.getElementById("chatMessages");
   if (!msgs) return;
   var children = msgs.children;
+  // Find the LAST message matching this date
+  var lastTarget = null;
   for (var i = 0; i < children.length; i++) {
     if (children[i].getAttribute("data-date") === dateKey) {
-      children[i].scrollIntoView({ behavior: "smooth", block: "start" });
-      children[i].style.background = "var(--accent-bg)";
-      (function(el) {
-        setTimeout(function() { el.style.background = ""; }, 2000);
-      })(children[i]);
-      break;
+      lastTarget = children[i];
     }
   }
+  if (!lastTarget) return;
+  // Scroll so the target is at the BOTTOM of the container
+  msgs.scrollTop = lastTarget.offsetTop + lastTarget.offsetHeight - msgs.clientHeight;
+  lastTarget.style.background = "var(--accent-bg)";
+  (function(el) {
+    setTimeout(function() { el.style.background = ""; }, 2000);
+  })(lastTarget);
 }
 
 (function(){

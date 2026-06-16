@@ -168,7 +168,7 @@ function getMessages(opts) {
   }
 
   if (opts.task_id) {
-    sql += ' AND (task_id = ? OR task_id IS NULL)';
+    sql += ' AND task_id = ?';
     params.push(opts.task_id);
   } else if (!opts.room_id) {
     sql += ' AND task_id IS NULL';
