@@ -236,7 +236,14 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
       reply_to: replyTo || null,
     };
 
-    const messages = buildGroupChatMessages(room, recentMsgs, currentMsg, agent, isMentioned);
+    // Check round limit before calling agent
+    if (!canAgentReplyInRound(agent.id, taskId, content)) {
+      io.emit('agent:state', { agentId: agent.id, state: 'idle' });
+      return { agentId: agent.id, name: agent.name, skipped: true, reason: 'round limit' };
+    }
+    
+    // Pass rules to buildGroupChatMessages
+    const messages = buildGroupChatMessages(room, recentMsgs, currentMsg, agent, isMentioned, chatRules);
 
     try {
       io.emit('agent:state', { agentId: agent.id, state: 'thinking' });
@@ -255,6 +262,7 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
       }
 
       recordAgentReply(agent.id);
+      incrementAgentRound(agent.id, taskId);
 
       const msg = saveMessage({
         task_id: taskId || null,
@@ -319,6 +327,7 @@ io.on('connection', function(socket) {
 
   // --- Send message (broadcast mode core) ---
   socket.on('chat:send', async function(data) {
+    resetTaskRounds(data.task_id);
     const { task_id, agent_id, role, content, room_id, reply_to } = data;
     if (!content) return;
 
@@ -474,7 +483,56 @@ function writeLog(level, msg) {
   });
 }
 
-module.exports = { broadcastToRoom };
+// Round counters per task per agent
+var agentRoundCounts = {};
+
+// In-memory rules cache  
+var chatRules = { rounds: 3, customRules: "" };
+
+// Load rules from DB on startup
+try {
+  const db = require('./src/db');
+  chatRules.rounds = db.getSetting("chat_rounds", 3);
+  chatRules.customRules = db.getSetting("chat_custom_rules", "");
+} catch(e) { /* use defaults */ }
+
+// Make accessible to routes.js
+global.__chatRules = chatRules;
+
+// Reset round counters for a task (called when user sends a message)
+function resetTaskRounds(taskId) {
+  if (taskId) {
+    delete agentRoundCounts[taskId];
+  }
+}
+
+// Check if an agent can reply in this round
+function canAgentReplyInRound(agentId, taskId, content) {
+  // @mentions and battle mode skip round limits
+  if (isAgentMentioned(content, agentId) || isMentionAll(content) || content.includes("/Battle") || content.includes("/battle")) {
+    return true;
+  }
+  
+  // No task = no round limit
+  if (!taskId) return true;
+  
+  if (!agentRoundCounts[taskId]) agentRoundCounts[taskId] = {};
+  var counts = agentRoundCounts[taskId];
+  var count = counts[agentId] || 0;
+  
+  return count < chatRules.rounds;
+}
+
+// Increment agent round count
+function incrementAgentRound(agentId, taskId) {
+  if (!taskId) return;
+  if (!agentRoundCounts[taskId]) agentRoundCounts[taskId] = {};
+  if (!agentRoundCounts[taskId][agentId]) agentRoundCounts[taskId][agentId] = 0;
+  agentRoundCounts[taskId][agentId]++;
+}
+
+module.exports = { broadcastToRoom, resetTaskRounds, chatRules };
+
 
 
 

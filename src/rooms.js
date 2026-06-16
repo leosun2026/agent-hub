@@ -94,11 +94,11 @@ function getRoomAgents(room, excludeSender, content) {
 /**
  * Build group chat messages array for agent API call
  */
-function buildGroupChatMessages(room, history, currentMsg, agent, isMentioned) {
+function buildGroupChatMessages(room, history, currentMsg, agent, isMentioned, chatRules) {
   const messages = [];
 
   // System prompt: group chat behavior instructions
-  const groupInstructions = buildGroupInstructions(room, agent, isMentioned);
+  const groupInstructions = buildGroupInstructions(room, agent, isMentioned, chatRules);
   messages.push({ role: 'system', content: groupInstructions });
 
   // Companion list (NEW)
@@ -139,38 +139,27 @@ function buildGroupChatMessages(room, history, currentMsg, agent, isMentioned) {
 /**
  * Build system prompt instructions for group chat
  */
-function buildGroupInstructions(room, agent, isMentioned) {
+function buildGroupInstructions(room, agent, isMentioned, chatRules) {
   const displayName = agent.nickname || agent.name;
   let instructions = '[Group Chat Mode]\n';
   instructions += 'You are a member of the "' + room.name + '" chat room. Your name is "' + displayName + '" (ID: ' + agent.id + ').\n';
-  instructions += 'You will receive all messages in this room. Please follow these rules:\n\n';
+  instructions += 'CRITICAL: You are in a GROUP CHAT with other AI agents. All messages are visible to everyone.\n\n';
 
-  instructions += '1. **Relevance**: If the current message relates to your expertise, or you have valuable input, please respond.\n';
-  instructions += '2. **Silence principle**: If the message is completely irrelevant to you, please do NOT respond (output "[SILENT]" only).\n';
-  instructions += '3. **When @mentioned, MUST respond**';
+  instructions += '=== CORE RULES (MUST FOLLOW) ===\n\n';
 
-  if (isMentioned) {
-    instructions += ': You have been @mentioned! You MUST give a substantive response. Do NOT be silent.\n';
-  } else {
-    instructions += ': You are not @mentioned, you may freely choose whether to respond.\n';
-  }
+  instructions += '1. **Be concise and factual**: No pleasantries, no polite openings, no filler.\n';
+  instructions += '   State your point directly. 1-3 sentences max unless @mentioned.\n';
+  instructions += '   BAD: "Hello! How can I assist you today?" "Sure, let me look into that for you..."\n';
+  instructions += '   GOOD: Direct answer or relevant point without preamble.\n\n';
 
-  instructions += '\n4. **Response style**:\n';
-  instructions += '   - Concise, conversational, like chatting with colleagues\n';
-  instructions += '   - Do not use customer-service phrases like "How may I help you"\n';
-  instructions += '   - Be direct, 1-3 sentences preferred\n';
-  instructions += '5. **Do not reply to yourself**: Do not respond to your own previous messages\n';
-  instructions += '6. **No meaningless filler**: Do not say "OK", "Received", "Understood" with no additional value\n';
-  instructions += '7. **You may challenge/supplement**: If you find issues with other agents or users, politely point them out or supplement\n';
-  instructions += '8. **You can @mention others**: Use @Name to directly address other participants in the room\n\n';
-  instructions += '[IMPORTANT] If you decide NOT to respond, output only "[SILENT]" (without quotes) as content.\n';
+  instructions += '2. **@mentioned mode**: When someone @mentions you directly, you MAY elaborate in detail.\n';
+  instructions += '   In @mode, you are expected to give a substantive response.\n\n';
 
+  instructions += '3. **Relevance**: Only respond when you have something valuable to add.\n';
+  instructions += '   If the topic is outside your expertise, output only "[SILENT]".\n\n';
   return instructions;
 }
 
-/**
- * Build companion list for the system prompt (NEW)
- */
 function buildCompanionList(room, currentAgentId, senderId) {
   const allAgents = agents.AGENTS || agents.listAgents();
   const memberIds = room.members || [];

@@ -110,6 +110,8 @@ function initSchema() {
   db.run("CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)");
   db.run("CREATE INDEX IF NOT EXISTS idx_rooms_mode ON rooms(mode)");
   db.run("CREATE INDEX IF NOT EXISTS idx_agents_role ON agents(role)");
+  // === settings (key-value store for rules, etc.) ===
+  db.run("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
 
   saveDb();
 }
@@ -425,7 +427,22 @@ function safeParse(str, fallback) {
   try { return str ? JSON.parse(str) : fallback; } catch(e) { return fallback; }
 }
 
+// === Settings ===
+
+function getSetting(key, defaultValue) {
+  var row = queryOne("SELECT value FROM settings WHERE key = ?", [key]);
+  return row ? safeParse(row.value, defaultValue) : defaultValue;
+}
+
+function setSetting(key, value) {
+  db.run("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [key, JSON.stringify(value)]);
+  saveDb();
+  return value;
+}
+
 module.exports = {
+  getSetting,
+  setSetting,
   getDb,
   saveDb,
   saveMessage,

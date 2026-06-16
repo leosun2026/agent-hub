@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN" data-theme="white">
 <head>
 <meta charset="UTF-8">
@@ -373,23 +373,29 @@ main{flex:1;display:flex;overflow:hidden}
 
 <!-- ═══ Right Panel: 发言规则 ═══ -->
 <div class="right-panel" id="rulesPanel">
-  <div class="right-panel-header"><h3>📜 发言规则</h3><button class="settings-close" onclick="closeAllRightPanels()" style="position:static;width:auto;height:auto;font-size:18px;">×</button></div>
+  <div class="right-panel-header"><h3>📜 聊天规则</h3><button class="settings-close" onclick="closeAllRightPanels()" style="position:static;width:auto;height:auto;font-size:18px;">×</button></div>
   <div class="right-panel-body">
     <div class="form-group">
-      <label>轮次限制</label>
-      <input class="form-input" id="ruleRounds" type="number" min="1" max="20" value="5" placeholder="每轮最大回复次数">
+      <label>群聊回复轮数限制</label>
+      <input class="form-input" id="ruleRounds" type="number" min="1" max="10" value="3" placeholder="每个 Agent 每轮最多回复次数">
+      <div class="form-hint" style="font-size:11px;color:var(--text-muted);margin-top:4px;">每个 Agent 在同一轮对话中最多回复 N 次，超限自动跳过。@提及和 Battle 模式不受限制。</div>
     </div>
-    <div class="form-group">
-      <label>@模式宽限（秒）</label>
-      <input class="form-input" id="ruleGrace" type="number" min="0" max="60" value="10" placeholder="@模式免打扰宽限秒数">
+
+    <div style="margin-top:16px;padding:12px;background:var(--bg-tertiary);border-radius:8px;font-size:12px;line-height:1.6;color:var(--text-secondary);">
+      <div style="font-weight:600;margin-bottom:6px;color:var(--text-primary);">⚙️ 已生效的内置规则</div>
+      <div>• <strong>Agent 务实精简</strong>：群聊中禁止客套话/废话，直接说重点</div>
+      <div>• <strong>@模式</strong>：被 @提及时 Agent 可展开详述，不受简洁限制</div>
+      <div>• <strong>Battle 模式</strong>：无轮数限制，可引用数据/表格，直到手动 /stop</div>
     </div>
-    <div class="form-group">
+
+    <div class="form-group" style="margin-top:16px;">
       <label>自定义规则</label>
-      <textarea class="form-textarea" id="ruleCustom" placeholder="一行一条规则…"></textarea>
+      <textarea class="form-textarea" id="ruleCustom" rows="4" placeholder="一行一条规则…将作为指令发送给所有 Agent"></textarea>
+      <div class="form-hint" style="font-size:11px;color:var(--text-muted);margin-top:4px;">自定义规则会追加到 Agent 的 system prompt 中，影响其行为</div>
     </div>
-    <div class="form-hint">修改后点击"保存规则"生效</div>
   </div>
   <div class="right-panel-footer"><button class="btn-save" onclick="saveRules()">保存规则</button></div>
+</div>
 </div>
 
 <div class="right-panel" id="projectManagePanel"></div>
@@ -586,6 +592,7 @@ function openRightPanel(panelId) {
   if (panelId === "manageAgentPanel") populateManageAgentPanel();
   if (panelId === "addAgentPanel") populateAddAgentPanel();
   if (panelId === "editAgentPanel") populateEditAgentPanel();
+  if (panelId === "rulesPanel") loadRules();
   if (panelId === "userSettingsPanel") populateUserSettingsPanel();
   if (panelId === "agentAnimPanel") populateAgentAnimPanel();
   if (panelId === "projectManagePanel") populateProjectManagePanel();
@@ -1002,13 +1009,27 @@ function saveAgentAnimPanel() {
 }
 
 function saveRules() {
-  var rounds = document.getElementById("ruleRounds").value;
-  var grace = document.getElementById("ruleGrace").value;
-  var custom = document.getElementById("ruleCustom").value;
+  var rounds = parseInt(document.getElementById("ruleRounds").value) || 3;
+  var custom = document.getElementById("ruleCustom").value.trim();
+  var btn = document.querySelector("#rulesPanel .btn-save");
+  btn.disabled = true; btn.textContent = "保存中...";
   localStorage.setItem("hub_rule_rounds", rounds);
-  localStorage.setItem("hub_rule_grace", grace);
   localStorage.setItem("hub_rule_custom", custom);
-  alert("规则已保存");
+  fetch("/api/rules", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rounds: rounds, customRules: custom })
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.success) {
+      alert("规则已保存，已生效");
+    } else {
+      alert("保存失败");
+    }
+  }).catch(function(e) {
+    alert("保存失败: " + e.message);
+  }).finally(function() {
+    btn.disabled = false; btn.textContent = "保存规则";
+  });
 }
 function exitApp() {
   showConfirmModal("确定要退出 Agent Hub 吗？", function(){
@@ -1197,7 +1218,20 @@ function saveProjectEdit() {
 }
 
 
-</script>
+
+function loadRules() {
+  fetch("/api/rules").then(function(r) { return r.json(); }).then(function(data) {
+    var roundsInput = document.getElementById("ruleRounds");
+    var customInput = document.getElementById("ruleCustom");
+    if (roundsInput) roundsInput.value = data.rounds || 3;
+    if (customInput) customInput.value = data.customRules || "";
+    localStorage.setItem("hub_rule_rounds", data.rounds || 3);
+    localStorage.setItem("hub_rule_custom", data.customRules || "");
+  }).catch(function(e) {
+    console.error("Failed to load rules:", e.message);
+  });
+}
+
 </script>
 </body>
 </html>

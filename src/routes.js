@@ -542,6 +542,40 @@ app.delete('/api/rooms/:id', (req, res) => {
     res.json(updated);
   });
 
+  // === Rules API ===
+  // GET /api/rules - get current chat rules
+  app.get("/api/rules", function(req, res) {
+    var rules = {
+      rounds: db.getSetting("chat_rounds", 3),
+      customRules: db.getSetting("chat_custom_rules", "")
+    };
+    res.json(rules);
+  });
+
+  // POST /api/rules - save chat rules
+  app.post("/api/rules", function(req, res) {
+    var rounds = parseInt(req.body.rounds) || 3;
+    var customRules = (req.body.customRules || "").trim();
+
+    // Validate
+    if (rounds < 1) rounds = 1;
+    if (rounds > 10) rounds = 10;
+
+    db.setSetting("chat_rounds", rounds);
+    db.setSetting("chat_custom_rules", customRules);
+
+    // Update server's in-memory rules
+    try {
+      const server = require("../server");
+      if (server.chatRules) {
+        server.chatRules.rounds = rounds;
+        server.chatRules.customRules = customRules;
+      }
+    } catch(e) { /* server module not available */ }
+
+    res.json({ success: true, rules: { rounds: rounds, customRules: customRules } });
+  });
+
 }
 
 module.exports = { setupRoutes };
