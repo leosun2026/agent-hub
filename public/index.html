@@ -580,15 +580,15 @@ function togglePick(el) {
   if (el.classList.contains("selected")) picked.push(el);
   else picked = picked.filter(function(e){return e !== el});
   var b = document.querySelector(".pick-modal .btn-confirm");
-  if (picked.length === 2) { b.textContent = "确认（2/2）"; b.style.opacity = "1"; }
-  else { b.textContent = "确认（"+picked.length+"/2）"; b.style.opacity = "0.5"; }
+  if (picked.length === 2) { b.textContent = t("battle_confirm") + "（2/2）"; b.style.opacity = "1"; }
+  else { b.textContent = t("battle_confirm") + "（"+picked.length+"/2）"; b.style.opacity = "0.5"; }
 }
 function closePick() {
   document.getElementById("pickOverlay").classList.remove("show");
   picked = [];
 }
 function confirmPick() {
-  if (picked.length !== 2) { alert("请选择 2 个 Agent"); return; }
+  if (picked.length !== 2) { alert(t("msg_battle_select")); return; }
   var n = picked.map(function(r){ return r.querySelector(".name").textContent });
   alert("🔗 私聊通道已建立：" + n[0] + " ↔ " + n[1]);
   closePick();
@@ -636,9 +636,9 @@ function copyRapInvite() {
   if (!text || !btn) return;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(function() {
-      btn.textContent = "OK 已复制";
+      btn.textContent = t("btn_copied");
       btn.style.background = "var(--online-dot)";
-      setTimeout(function() { btn.textContent = "复制邀请"; btn.style.background = ""; }, 2000);
+      setTimeout(function() { btn.textContent = t("btn_copy_invite"); btn.style.background = ""; }, 2000);
     }).catch(function() {
       fallbackCopyRap(text, btn);
     });
@@ -672,17 +672,17 @@ function populateAddAgentPanel() {
   var inviteText = generateRapInviteText();
   var panel = document.getElementById("addAgentPanel");
   panel.innerHTML =
-    "<div class=\"right-panel-header\"><h3>邀请新 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div>" +
+    "<div class=\"right-panel-header\"><h3>" + t("agent_invite_title") + "</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div>" +
     "<div class=\"right-panel-body\">" +
     "<div id=\"rapStep1\">" +
-    "<h3 style=\"font-size:13px;margin-bottom:8px;\">Step1 第1步：发送邀请</h3>" +
-    "<p style=\"font-size:12px;color:var(--text-secondary);margin-bottom:8px;\">复制下方邀请文案，发送给目标 Agent（通过飞书、WebUI 等渠道）：</p>" +
+    "<h3 style=\"font-size:13px;margin-bottom:8px;\">" + t("invite_step1") + "</h3>" +
+    "<p style=\"font-size:12px;color:var(--text-secondary);margin-bottom:8px;\">" + t("invite_step1_desc") + "</p>" +
     "<div class=\"invite-text\" id=\"rapInviteText\" style=\"background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:12px;font-size:11px;line-height:1.5;white-space:pre-wrap;max-height:280px;overflow-y:auto;color:var(--text-primary);margin-bottom:8px;\">" + esc(inviteText) + "</div>" +
     "<button class=\"copy-btn\" id=\"copyRapInviteBtn\" onclick=\"copyRapInvite()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">复制邀请</button>" +
     "</div>" +
     "<div id=\"rapStep2\" style=\"display:none\">" +
-    "<h3 style=\"font-size:13px;margin-bottom:8px;\">Step2 第2步：粘贴 Agent 配置 JSON</h3>" +
-    "<p style=\"font-size:12px;color:var(--text-secondary);margin-bottom:8px;\">粘贴 Agent 回复的 JSON 配置：</p>" +
+    "<h3 style=\"font-size:13px;margin-bottom:8px;\">" + t("invite_step2") + "</h3>" +
+    "<p style=\"font-size:12px;color:var(--text-secondary);margin-bottom:8px;\">" + t("invite_step2_desc") + "</p>" +
     "<textarea class=\"form-textarea\" id=\"rapInput\" rows=\"4\" placeholder=\"粘贴 JSON...\"></textarea>" +
     "<div id=\"rapPreview\" style=\"display:none;margin-top:8px;\">" +
     "<div id=\"rapPreviewContent\" style=\"background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:10px;font-size:12px;line-height:1.5;\"></div>" +
@@ -720,7 +720,7 @@ function populateAddAgentPanel() {
         prv.style.display = "block";
         btn.style.display = "inline-block";
         btn.disabled = false;
-        btn.textContent = "确认添加";
+        btn.textContent = t("btn_confirm_add");
       } catch(e) {
         err.textContent = "JSON: " + e.message;
         err.style.display = "block";
@@ -736,17 +736,17 @@ function populateAddAgentPanel() {
 
 function confirmRapAdd() {
   if (!rapData) return;
-  var btn = document.getElementById("rapConfirm"); btn.disabled=true; btn.textContent="添加中...";
+  var btn = document.getElementById("rapConfirm"); btn.disabled=true; btn.textContent = t("btn_adding");
   fetch("/api/members",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(rapData)})
     .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error)});return r.json()})
     .then(function(){closeAllRightPanels();return fetch("/api/agents")})
     .then(function(r){return r.json()}).then(function(d){agents=d;renderAgentSidebar()})
-    .catch(function(e){alert("Error: "+e.message);btn.disabled=false;btn.textContent="确认添加"});
+    .catch(function(e){alert(t("msg_error_prefix")+e.message);btn.disabled=false;btn.textContent="确认添加"});
 }
 
 function populateManageAgentPanel() {
   var panel = document.getElementById("manageAgentPanel");
-  var html = "<div class=\"right-panel-header\"><h3>📋 管理 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div><div class=\"right-panel-body\">" +
+  var html = "<div class=\"right-panel-header\"><h3>" + t("agent_manage") + "</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div><div class=\"right-panel-body\">" +
     "<button onclick=\"closeAllRightPanels();openRightPanel('addAgentPanel')\" style=\"padding:8px 14px;width:100%;border:1px dashed var(--accent-primary);border-radius:8px;background:var(--accent-bg);color:var(--accent-primary);cursor:pointer;font-size:13px;margin-bottom:10px;text-align:center;\">➕ 添加 Agent</button>";
   agents.forEach(function(a){
     html += "<div style=\"display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-color);\">";
@@ -777,7 +777,7 @@ function populateEditAgentPanel() {
   var a = editingAgent;
   var currentAvatarHtml = renderAgentAvatar(a.avatar, 36);
   var html = "<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:12px;\">" + currentAvatarHtml + "<strong style=\"font-size:15px;\">" + escAttr(a.nickname || a.name) + "</strong></div>" +
-    "<div class=\"right-panel-header\"><h3>✏️ 编辑 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+    "<div class=\"right-panel-header\"><h3>" + t("agent_edit") + "</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
     "<div class=\"right-panel-body\">" +
     "<div class=\"form-group\"><label>昵称</label><input class=\"form-input\" id=\"editNickname\" value=\"" + escAttr(a.nickname || a.name) + "\" placeholder=\"昵称\"></div>" +
     "<div class=\"form-group\"><label>Endpoint</label><input class=\"form-input\" value=\"" + escAttr(a.endpoint || "") + "\" disabled style=\"opacity:0.7\"></div>" +
@@ -794,7 +794,7 @@ function populateEditAgentPanel() {
     "<div id=\"editAvatarPreview\" style=\"display:none;margin-top:6px;font-size:13px;color:var(--text-secondary)\"></div></div>" +
     "</div></div>" +
     "<div class=\"right-panel-footer\">" +
-    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels();openRightPanel('manageAgentPanel')\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">← 返回</button>" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels();openRightPanel('manageAgentPanel')\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">" + t("btn_back") + "</button>" +
     "<button class=\"btn-save\" onclick=\"saveEditAgent()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 保存</button></div>";
   panel.innerHTML = html;
   panel.classList.add("show");
@@ -828,12 +828,12 @@ function uploadEditAvatar(event) {
 
 function saveEditAgent() {
   var nickname = document.getElementById("editNickname").value.trim();
-  if (!nickname) { alert("昵称不能为空"); return; }
+  if (!nickname) { alert(t("msg_nickname_required")); return; }
   var avatar = editingAgent._pendingAvatar || editingAgent.avatar;
   var body = { nickname: nickname };
   if (avatar && avatar !== editingAgent.avatar) body.avatar = avatar;
   var btn = document.querySelector("#editAgentPanel .btn-save");
-  btn.disabled = true; btn.textContent = "保存中...";
+  btn.disabled = true; btn.textContent = t("btn_saving");
   fetch("/api/members/" + editingAgent.id, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -850,7 +850,7 @@ function saveEditAgent() {
     renderAgentSidebar();
     closeAllRightPanels();openRightPanel("manageAgentPanel");
   }).catch(function(e) {
-    alert("保存失败: " + e.message);
+    alert(t("msg_save_fail") + e.message);
     btn.disabled = false; btn.textContent = "💾 保存";
   });
 }
