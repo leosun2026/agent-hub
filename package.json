@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "agent-hub",
     "version": "2.0.0",
     "description": "Multi-Agent collaboration hub with dynamic member management, group chat, and task orchestration",
@@ -14,7 +14,7 @@
         "chat",
         "group-chat"
     ],
-    "author": "",
+    "author": "Leo SuN",
     "license": "MIT",
     "type": "commonjs",
     "dependencies": {
@@ -27,3 +27,4 @@
         "sql.js": "^1.14.1"
     }
 }
+

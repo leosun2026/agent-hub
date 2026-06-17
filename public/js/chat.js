@@ -21,7 +21,6 @@ if (sessionStorage.getItem("hub_splash_done")) {
     .then(function(data) {
       agents = data;
       renderAgentSidebar();
-      loadHistory();
       return fetch("/api/tasks");
     })
     .then(function(r) { return r.json(); })
@@ -526,7 +525,7 @@ function insertMention(agentId) {
 
 function exportChat() {
   var prefix = document.getElementById("settingsExportPath");
-  var savePath = prefix ? prefix.value : "D:\\Agent Hub\\exports\\";
+  var savePath = prefix ? prefix.value : "./exports/";
   var content = "";
   var msgs = chatMessages.querySelectorAll(".chat-msg:not(.system)");
   msgs.forEach(function(m) {
@@ -912,6 +911,8 @@ function confirmPick() {
     if (typeof sendMessage === "function") sendMessage();
   }
 }
+
+
 
 
 

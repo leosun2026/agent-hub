@@ -394,9 +394,6 @@ main{flex:1;display:flex;overflow:hidden}
 <!-- ═══ Right Panel: 编辑 Agent ═══ -->
 <div class="right-panel" id="editAgentPanel"></div>
 
-<!-- ═══ Right Panel: 编辑 Agent ═══ -->
-<div class="right-panel" id="editAgentPanel"></div>
-
 <!-- ═══ Right Panel: 发言规则 ═══ -->
 <div class="right-panel" id="rulesPanel">
   <div class="right-panel-header"><h3>📜 聊天规则</h3><button class="settings-close" onclick="closeAllRightPanels()" style="position:static;width:auto;height:auto;font-size:18px;">×</button></div>
@@ -870,105 +867,6 @@ function editAgent(agentId) {
   openRightPanel("editAgentPanel");
 }
 
-function populateEditAgentPanel() {
-  var panel = document.getElementById("editAgentPanel");
-  if (!editingAgent) { closeAllRightPanels(); return; }
-  var a = editingAgent;
-  var currentAvatarHtml = renderAgentAvatar(a.avatar, 36);
-  var html = "<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:12px;\">" + currentAvatarHtml + "<strong style=\"font-size:15px;\">" + escAttr(a.nickname || a.name) + "</strong></div>" +
-    "<div class=\"right-panel-header\"><h3>✏️ 编辑 Agent</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
-    "<div class=\"right-panel-body\">" +
-    "<div class=\"form-group\"><label>昵称</label><input class=\"form-input\" id=\"editNickname\" value=\"" + escAttr(a.nickname || a.name) + "\" placeholder=\"昵称\"></div>" +
-    "<div class=\"form-group\"><label>Endpoint</label><input class=\"form-input\" value=\"" + escAttr(a.endpoint || "") + "\" disabled style=\"opacity:0.7\"></div>" +
-    "<div class=\"form-group\"><label>选择头像</label>" +
-    "<div class=\"avatar-grid\" id=\"editAvatarGrid\">";
-  var emojis = ["🤖","🦞","🦊","🐱","🐶","🐼","🐨","🦁","🐯","🐸","🐵","🦄","🐧","🐦","🐤","🐺","🐍","🐢","🐙","🦑","🐬","🐳","🦋","🐝","🐞","🦀"];
-  for (var i = 0; i < emojis.length; i++) {
-    var sel = emojis[i] === a.avatar ? " selected" : "";
-    html += "<button class=\"avatar-opt" + sel + "\" onclick=\"setEditAvatar('" + emojis[i] + "')\" data-emoji='" + emojis[i] + "'>" + emojis[i] + "</button>";
-  }
-  html += "</div>" +
-    "<div style=\"margin-top:6px\"><label class=\"upload-avatar-btn\" for=\"editAvatarUpload\">📁 上传自定义头像</label>" +
-    "<input type=\"file\" id=\"editAvatarUpload\" accept=\"image/*\" style=\"display:none\" onchange=\"uploadEditAvatar(event)\">" +
-    "<div id=\"editAvatarPreview\" style=\"display:none;margin-top:6px;font-size:13px;color:var(--text-secondary)\"></div></div>" +
-    "</div></div>" +
-    "<div class=\"right-panel-footer\">" +
-    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels();openRightPanel('manageAgentPanel')\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">← 返回</button>" +
-    "<button class=\"btn-save\" onclick=\"saveEditAgent()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 保存</button></div>";
-  panel.innerHTML = html;
-  panel.classList.add("show");
-}
-
-function setEditAvatar(emoji) {
-  document.querySelectorAll(".avatar-opt").forEach(function(b){b.classList.remove("selected")});
-  var btns = document.querySelectorAll(".avatar-opt");
-  for (var i = 0; i < btns.length; i++) {
-    if (btns[i].getAttribute("data-emoji") === emoji) {
-      btns[i].classList.add("selected");
-      break;
-    }
-  }
-  editingAgent._pendingAvatar = emoji;
-}
-
-function uploadEditAvatar(event) {
-  var file = event.target.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var dataUrl = e.target.result;
-    document.querySelectorAll(".avatar-opt").forEach(function(b){b.classList.remove("selected")});
-    editingAgent._pendingAvatar = dataUrl;
-    document.getElementById("editAvatarPreview").style.display = "block";
-    document.getElementById("editAvatarPreview").innerHTML = "✅ 已选择自定义头像";
-  };
-  reader.readAsDataURL(file);
-}
-
-function saveEditAgent() {
-  var nickname = document.getElementById("editNickname").value.trim();
-  if (!nickname) { alert("昵称不能为空"); return; }
-  var avatar = editingAgent._pendingAvatar || editingAgent.avatar;
-  var body = { nickname: nickname };
-  if (avatar && avatar !== editingAgent.avatar) body.avatar = avatar;
-  var btn = document.querySelector("#editAgentPanel .btn-save");
-  btn.disabled = true; btn.textContent = "保存中...";
-  fetch("/api/members/" + editingAgent.id, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  }).then(function(r) {
-    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
-    return r.json();
-  }).then(function() {
-    return fetch("/api/agents");
-  }).then(function(r) {
-    return r.json();
-  }).then(function(d) {
-    agents = d;
-    renderAgentSidebar();
-    closeAllRightPanels();openRightPanel("manageAgentPanel");
-  }).catch(function(e) {
-    alert("保存失败: " + e.message);
-    btn.disabled = false; btn.textContent = "💾 保存";
-  });
-}
-
-function hideConfirmModal() {
-  document.getElementById("confirmOverlay").classList.remove("show");
-}
-function showConfirmModal(message, onConfirm) {
-  document.getElementById("confirmMessage").textContent = message;
-  var btn = document.getElementById("confirmOkBtn");
-  btn.onclick = function() {
-    hideConfirmModal();
-    if (onConfirm) onConfirm();
-  };
-  document.getElementById("confirmOverlay").classList.add("show");
-}
-
-function populateUserSettingsPanel() {
-  var panel = document.getElementById("userSettingsPanel");
   var savedAvatar = localStorage.getItem("hub_boss_avatar") || "";
   var savedName = localStorage.getItem("hub_boss_name") || "力哥";
   var avatarHtml = savedAvatar ? '<img src="' + savedAvatar + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '👤';
@@ -1262,6 +1160,7 @@ function loadRules() {
 </script>
 </body>
 </html>
+
 
 
 

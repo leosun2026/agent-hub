@@ -208,7 +208,7 @@ function deleteMessagesByDate(opts) {
   
   db.run(sql, params);
   saveDb();
-  return { deleted: true };
+  return { deleted: this.changes || 0 };
 }
 
 // === Tasks ===
@@ -327,7 +327,7 @@ function updateRoomMode(id, mode) {
 function deleteRoom(id) {
   run("DELETE FROM rooms WHERE id = ?", [id]);
   run("DELETE FROM room_members WHERE room_id = ?", [id]);
-  return { deleted: true };
+  return { deleted: this.changes || 0 };
 }
 
 // === Agents (NEW) ===
@@ -376,7 +376,7 @@ function listAgentsFromDb() {
 function deleteAgentFromDb(id) {
   run("DELETE FROM agents WHERE id = ?", [id]);
   run("DELETE FROM room_members WHERE agent_id = ?", [id]);
-  return { deleted: true };
+  return { deleted: this.changes || 0 };
 }
 
 
@@ -473,4 +473,5 @@ module.exports = {
   setRoomMemberNickname,
   syncAgentsToDb,
 };
+
 
