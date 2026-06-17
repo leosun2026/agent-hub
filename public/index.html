@@ -256,10 +256,10 @@ main{flex:1;display:flex;overflow:hidden}
 <body>
 <div id="splashScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-primary,#1c1c1e);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:var(--text-primary,#f5f5f7)">
   <div style="font-size:48px;font-weight:700;color:var(--accent-primary,#d4a373);margin-bottom:16px">Agent Hub</div>
-  <div style="font-size:16px;color:var(--text-secondary,#8e8e93);margin-bottom:32px">多智能体交流平台</div>
-  <div style="font-size:14px;color:var(--text-muted,#636366);margin-bottom:32px">欢迎大家使用</div>
+  <div style="font-size:16px;color:var(--text-secondary,#8e8e93);margin-bottom:32px" data-i18n="splash_subtitle">多智能体交流平台</div>
+  <div style="font-size:14px;color:var(--text-muted,#636366);margin-bottom:32px" data-i18n="splash_welcome">欢迎大家使用</div>
   <div id="splashSpinner" style="width:40px;height:40px;border:3px solid var(--border-color,#48484a);border-top-color:var(--accent-primary,#d4a373);border-radius:50%;animation:splashSpin .8s linear infinite"></div>
-  <div id="splashStatus" style="margin-top:20px;font-size:14px;color:var(--text-muted,#636366)">正在加载...</div>
+  <div id="splashStatus" style="margin-top:20px;font-size:14px;color:var(--text-muted,#636366)" data-i18n="splash_loading">正在加载...</div>
 <div style="position:absolute;bottom:24px;font-size:12px;color:var(--text-muted,#636366);text-align:center;line-height:1.8">
     <div>Agent Hub v0.1.0  © 2026 @ Leo SuN</div>
   </div>
@@ -310,7 +310,7 @@ main{flex:1;display:flex;overflow:hidden}
             <rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2"/>
           </svg>
         </button>
-        <textarea id="chatInput" placeholder="发送消息...（@Agent 提及，点击图标查看命令）"></textarea>
+        <textarea id="chatInput" placeholder="发送消息...（@Agent 提及，点击图标查看命令）" data-i18n-placeholder="chat_placeholder"></textarea>
         <button class="btn-send" onclick="sendMessage()">发送</button>
         <button class="btn-export" onclick="exportChat()">💾</button>
       </div>
@@ -318,7 +318,7 @@ main{flex:1;display:flex;overflow:hidden}
   </div>
   <div class="hall-overlay" id="hallOverlay">
     <div class="hall-header">
-      <h2>🏢 大厅</h2>
+      <h2 data-i18n="hall_title">🏢 大厅</h2>
       <button class="hall-expand" id="hallExpandBtn" onclick="toggleHallWidth()" title="展开大厅">⬚</button>
       <button class="hall-close" onclick="toggleHall()">&times;</button>
     </div>
@@ -337,41 +337,41 @@ main{flex:1;display:flex;overflow:hidden}
 <div class="overlay" id="settingsOverlay">
   <div class="overlay-content" style="padding:16px 24px;">
     <button class="settings-close" onclick="closeSettings()">&times;</button>
-    <h2 style="font-size:16px;margin-bottom:14px;">⚙️ 设置</h2>
+    <h2 style="font-size:16px;margin-bottom:14px;" data-i18n="settings_title">⚙️ 设置</h2>
 
-    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🎨 主题配色</h3>
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_theme">🎨 主题配色</h3>
       <div class="theme-row">
-        <button class="theme-card" data-theme="white" onclick="setTheme('white',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#f5f7fa;border:1px solid #e2e6ed;border-radius:6px;margin-bottom:4px;"></div>极简白</button>
-        <button class="theme-card" data-theme="gray" onclick="setTheme('gray',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#555557;border:1px solid #78787a;border-radius:6px;margin-bottom:4px;"></div>高级灰</button>
-        <button class="theme-card" data-theme="blue" onclick="setTheme('blue',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#0a1628;border:1px solid #1e3a5f;border-radius:6px;margin-bottom:4px;"></div>深海幽蓝</button>
+        <button class="theme-card" data-theme="white" onclick="setTheme('white',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#f5f7fa;border:1px solid #e2e6ed;border-radius:6px;margin-bottom:4px;"></div data-i18n="theme_light">极简白</button>
+        <button class="theme-card" data-theme="gray" onclick="setTheme('gray',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#555557;border:1px solid #78787a;border-radius:6px;margin-bottom:4px;"></div data-i18n="theme_gray">高级灰</button>
+        <button class="theme-card" data-theme="blue" onclick="setTheme('blue',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#0a1628;border:1px solid #1e3a5f;border-radius:6px;margin-bottom:4px;"></div data-i18n="theme_blue">深海幽蓝</button>
       </div>
     </div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">📁 项目管理</h3>
-      <div class="settings-card" onclick="openRightPanel('projectManagePanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">📁 项目管理</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">新建/重命名项目，选择参与 Agent</div></div>
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_project">📁 项目管理</h3>
+      <div class="settings-card" onclick="openRightPanel('projectManagePanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="settings_project" data-i18n="project_manage_title">📁 项目管理</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="project_manage_desc">新建/重命名项目，选择参与 Agent</div></div>
     </div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🤖 Agent 管理</h3>
-      <div class="settings-card" onclick="openRightPanel('manageAgentPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">📋 管理 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">查看/编辑/移除已添加的 Agent</div></div>
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_agent">🤖 Agent 管理</h3>
+      <div class="settings-card" onclick="openRightPanel('manageAgentPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="agent_manage_title">📋 管理 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="agent_manage_desc">查看/编辑/移除已添加的 Agent</div></div>
     </div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">📜 发言规则</h3>
-      <div class="settings-card" onclick="openRightPanel('rulesPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">编辑轮次限制与 @ 模式</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">设置 Agent 回复限制、@ 模式宽限规则等</div></div>
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_rules">📜 发言规则</h3>
+      <div class="settings-card" onclick="openRightPanel('rulesPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="rules_title">编辑轮次限制与 @ 模式</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="rules_desc">设置 Agent 回复限制、@ 模式宽限规则等</div></div>
     </div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">👤 用户设置</h3>
-      <div class="settings-card" onclick="openRightPanel('userSettingsPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">👤 编辑个人信息</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">自定义头像、修改昵称</div></div>
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_user">👤 用户设置</h3>
+      <div class="settings-card" onclick="openRightPanel('userSettingsPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="user_settings_title">👤 编辑个人信息</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="user_settings_desc">自定义头像、修改昵称</div></div>
     </div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">🎬 Agent 动画</h3>
-      <div class="settings-card" onclick="openRightPanel('agentAnimPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">🎬 动画速度</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">设置 Agent 消息动画速度</div></div>
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_animation">🎬 Agent 动画</h3>
+      <div class="settings-card" onclick="openRightPanel('agentAnimPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="anim_speed_title">🎬 动画速度</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="anim_speed_desc">设置 Agent 消息动画速度</div></div>
     </div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><div style="display:flex;gap:16px;"><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;">🪵 日志</h3><button onclick="window.open('/api/log','_blank')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;">📂 打开日志文件</button></div><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;">🌐 语言</h3><select id="settingsLanguage" onchange="setLocale(this.value);" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;"><option value="en">English</option><option value="zh">中文</option></select></div></div></div>
+    <div class="settings-section" style="margin-bottom:10px;"><div style="display:flex;gap:16px;"><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_log">🪵 日志</h3><button onclick="window.open('/api/log','_blank')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;" data-i18n="btn_open_log">📂 打开日志文件</button></div><div style="flex:1;"><h3 data-i18n="settings_language" style="font-size:12px;margin-bottom:6px;">🌐 语言</h3><select id="settingsLanguage" onchange="setLocale(this.value);" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;"><option value="en">English</option><option value="zh">中文</option></select></div></div></div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">📥 导出保存位置</h3>
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_export">📥 导出保存位置</h3>
       <div class="settings-input-row"><input class="settings-input" id="settingsExportPath" value="" onchange="localStorage.setItem('hub_export_path',this.value)" placeholder="路径"></div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">修改后自动保存</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" data-i18n="export_save_hint">修改后自动保存</div>
     </div>
 
     <div style="text-align:right;margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
@@ -870,7 +870,7 @@ function editAgent(agentId) {
   var savedAvatar = localStorage.getItem("hub_boss_avatar") || "";
   var savedName = localStorage.getItem("hub_boss_name") || "力哥";
   var avatarHtml = savedAvatar ? '<img src="' + savedAvatar + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '👤';
-  var html = "<div class=\"right-panel-header\"><h3>👤 用户设置</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+  var html = "<div class=\"right-panel-header\"><h3 data-i18n="settings_user">👤 用户设置</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
     "<div class=\"right-panel-body\">" +
     "<div class=\"form-group\"><label>头像</label>" +
     "<div style=\"display:flex;align-items:center;gap:10px;margin-top:4px;\">" +
@@ -911,7 +911,7 @@ function saveUserSettingsPanel() {
 function populateAgentAnimPanel() {
   var panel = document.getElementById("agentAnimPanel");
   var savedSpeed = localStorage.getItem("hub_agent_speed") || "20";
-  var html = "<div class=\"right-panel-header\"><h3>🎬 Agent 动画</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+  var html = "<div class=\"right-panel-header\"><h3 data-i18n="settings_animation">🎬 Agent 动画</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
     "<div class=\"right-panel-body\">" +
     "<div class=\"form-group\"><label>速度</label>" +
     "<input type=\"range\" class=\"form-input\" id=\"agentAnimSpeed\" min=\"5\" max=\"100\" value=\"" + savedSpeed + "\" style=\"width:100%\" oninput=\"document.getElementById('speedValue').textContent=this.value\">" +
@@ -983,7 +983,7 @@ function renderAgentAvatar(avatar, size) {
 function populateProjectManagePanel() {
   var panel = document.getElementById("projectManagePanel");
   var allAgents = typeof agents !== 'undefined' ? agents : [];
-  var html = "<div class=\"right-panel-header\"><h3>📁 项目管理</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div><div class=\"right-panel-body\">" +
+  var html = "<div class=\"right-panel-header\"><h3 data-i18n="settings_project">📁 项目管理</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div><div class=\"right-panel-body\">" +
     "<div style=\"margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-color);\">" +
     "<h4 style=\"font-size:13px;margin-bottom:8px;\">➕ 新建项目</h4>" +
     "<input class=\"form-input\" id=\"newProjectName\" placeholder=\"请输入项目名称\" style=\"width:100%;margin-bottom:8px;\">" +
@@ -1161,6 +1161,8 @@ function loadRules() {
 </script>
 </body>
 </html>
+
+
 
 
 
