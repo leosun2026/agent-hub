@@ -1,0 +1,1203 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN" data-theme="gray">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Hub</title>
+<style>
+html[data-theme="white"]{--bg-primary:#f5f7fa;--bg-secondary:#fff;--bg-tertiary:#f9fafb;--bg-elevated:#fff;--bg-hover:#f0f1f5;--bg-input:#f9fafb;--bg-message:#f0f1f5;--bg-message-self:#3b82f6;--text-primary:#1a1a2e;--text-secondary:#6b7280;--text-muted:#9ca3af;--text-inverse:#fff;--border-color:#e2e6ed;--border-strong:#d0d5dd;--accent-primary:#3b82f6;--accent-primary-hover:#2563eb;--accent-bg:#eef2ff;--accent-danger:#dc2626;--overlay-bg:rgba(0,0,0,0.3);--shadow-sm:0 1px 3px rgba(0,0,0,0.06);--shadow-md:0 4px 12px rgba(0,0,0,0.08);--shadow-lg:0 8px 32px rgba(0,0,0,0.12);--header-bg:#fff;--header-border:#e2e6ed;--sidebar-bg:#fff;--sidebar-border:#e2e6ed;--sidebar-agent-hover:#f5f7fa;--btn-send-bg:#3b82f6;--btn-send-color:#fff;--chat-user-bg:#3b82f6;--chat-user-color:#fff;--hall-btn-bg:#f0f1f5;--hall-btn-hover:#e5e7eb;--cmd-badge-bg:#eef2ff;--cmd-badge-color:#3b82f6;--scrollbar-thumb:#d0d5dd;--cmd-toggle-bg:#f0f1f5;--cmd-panel-bg:#f9fafb;--settings-float-bg:#f0f1f5;--settings-float-hover:#e5e7eb;--export-btn-bg:#eef2ff;--export-btn-color:#3b82f6;--export-btn-hover:#dbeafe;--online-dot:#059669;--offline-dot:#dc2626}
+html[data-theme="blue"]{--bg-primary:#0a1628;--bg-secondary:#0f1f3d;--bg-tertiary:#1a2d4a;--bg-elevated:#0f1f3d;--bg-hover:#1e3a5f;--bg-input:#0a1628;--bg-message:#1e3a5f;--bg-message-self:#3b82f6;--text-primary:#e0e8f4;--text-secondary:#7a8aa0;--text-muted:#5a7a9a;--text-inverse:#0a1628;--border-color:#1e3a5f;--border-strong:#2a4a6a;--accent-primary:#60a5fa;--accent-primary-hover:#3b82f6;--accent-bg:#1e3a5f;--accent-danger:#ff6b6b;--overlay-bg:rgba(0,0,0,0.5);--shadow-md:0 4px 16px rgba(0,0,0,0.4);--shadow-lg:0 8px 32px rgba(0,0,0,0.4);--header-bg:#0f1f3d;--header-border:#1e3a5f;--sidebar-bg:#0f1f3d;--sidebar-border:#1e3a5f;--sidebar-agent-hover:#1e3a5f;--btn-send-bg:#3b82f6;--btn-send-color:#fff;--chat-user-bg:#3b82f6;--chat-user-color:#fff;--hall-btn-bg:#1e3a5f;--hall-btn-hover:#2a4a6a;--cmd-badge-bg:#1e3a5f;--cmd-badge-color:#60a5fa;--scrollbar-thumb:#2a4a6a;--cmd-toggle-bg:#1a2d4a;--cmd-panel-bg:#0f1f3d;--settings-float-bg:#1a2d4a;--settings-float-hover:#1e3a5f;--export-btn-bg:#1e3a5f;--export-btn-color:#60a5fa;--export-btn-hover:#2a4a6a;--online-dot:#2dd4a0;--offline-dot:#ff6b6b}
+html[data-theme="gray"]{--bg-primary:#1c1c1e;--bg-secondary:#2c2c2e;--bg-tertiary:#3a3a3c;--bg-elevated:#2c2c2e;--bg-hover:#3a3a3c;--bg-input:#1c1c1e;--bg-message:#3a3a3c;--bg-message-self:#d4a373;--text-primary:#f5f5f7;--text-secondary:#8e8e93;--text-muted:#636366;--text-inverse:#1c1c1e;--border-color:#48484a;--border-strong:#48484a;--accent-primary:#d4a373;--accent-primary-hover:#c9955e;--accent-bg:#3a3a3c;--accent-danger:#ff3b30;--overlay-bg:rgba(0,0,0,0.55);--shadow-md:0 4px 16px rgba(0,0,0,0.5);--shadow-lg:0 8px 32px rgba(0,0,0,0.5);--header-bg:#2c2c2e;--header-border:#48484a;--sidebar-bg:#2c2c2e;--sidebar-border:#48484a;--sidebar-agent-hover:#3a3a3c;--btn-send-bg:#d4a373;--btn-send-color:#1c1c1e;--chat-user-bg:#d4a373;--chat-user-color:#1c1c1e;--hall-btn-bg:#3a3a3c;--hall-btn-hover:#48484a;--cmd-badge-bg:#3a3a3c;--cmd-badge-color:#d4a373;--scrollbar-thumb:#48484a;--cmd-toggle-bg:#3a3a3c;--cmd-panel-bg:#2c2c2e;--settings-float-bg:#3a3a3c;--settings-float-hover:#48484a;--export-btn-bg:#3a3a3c;--export-btn-color:#d4a373;--export-btn-hover:#48484a;--online-dot:#30d158;--offline-dot:#ff3b30}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg-primary);color:var(--text-primary);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--header-bg);border-bottom:1px solid var(--header-border);flex-shrink:0;height:56px}
+.header-left{display:flex;align-items:center;gap:16px}
+.header-brand{font-size:20px;font-weight:700;color:var(--accent-primary);white-space:nowrap;cursor:default;user-select:none;margin:0;line-height:1}
+.task-selector{position:relative}
+.task-selector-btn{padding:8px 16px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;transition:background .15s}
+.task-selector-btn:hover{background:var(--bg-hover)}
+.task-selector-btn .arrow{font-size:10px;color:var(--text-muted);transition:transform .2s}
+.task-selector-btn.open .arrow{transform:rotate(180deg)}
+.task-dropdown{position:absolute;top:100%;left:0;margin-top:4px;width:240px;background:var(--bg-elevated);border:1px solid var(--border-color);border-radius:10px;box-shadow:var(--shadow-lg);z-index:1000;display:none;overflow:hidden}
+.task-dropdown.show{display:block}
+.task-option{padding:10px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;transition:background .12s}
+.task-option:hover{background:var(--bg-hover)}
+.task-option.active{background:var(--accent-bg);color:var(--accent-primary);font-weight:500}
+.task-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.task-selector-btn{max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.inline-rename-form{display:flex;align-items:center;gap:4px;padding:2px 0;width:100%}
+.rename-input{flex:1;padding:4px 6px;border:1px solid var(--accent-primary);border-radius:4px;font-size:12px;background:var(--bg-primary);color:var(--text-primary);outline:none}
+.rename-save-btn,.rename-cancel-btn{padding:3px 8px;border:none;border-radius:4px;cursor:pointer;font-size:11px}
+.rename-save-btn{background:var(--accent-primary);color:#fff}
+.rename-cancel-btn{background:var(--bg-tertiary);color:var(--text-primary)}
+
+.header-right{display:flex;align-items:center;gap:8px}
+.btn-hall{width:36px;height:36px;border:none;border-radius:8px;background:var(--hall-btn-bg);color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.btn-hall:hover{background:var(--hall-btn-hover)}
+.btn-hall.active{background:var(--accent-bg);color:var(--accent-primary)}
+main{flex:1;display:flex;overflow:hidden}
+.sidebar{width:220px;min-width:220px;background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;overflow-y:auto;position:relative;padding:12px;gap:4px}
+.agent-card{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;transition:background .12s;position:relative}
+.agent-card:hover{background:var(--sidebar-agent-hover)}
+.agent-card-left{display:flex;align-items:center;gap:8px;min-width:0}
+.agent-avatar{width:28px;text-align:center;font-size:24px;flex-shrink:0}
+.agent-info{min-width:0}
+.agent-info .name{font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary)}
+.agent-info .agent-id{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-left:auto}
+.status-dot.online{background:var(--online-dot)}
+.status-dot.offline{background:var(--offline-dot)}
+.status-dot.thinking{background:var(--accent-primary);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sidebar-section-title{font-size:14px;color:var(--text-primary);font-weight:600;padding:8px 4px 8px}
+.history-list{flex:1;overflow-y:auto;min-height:0;padding-bottom:48px;margin-top:4px}
+.history-day{padding:5px 8px;font-size:13px;color:var(--text-primary);cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-radius:4px;margin-bottom:2px;transition:background .2s}
+.history-day:hover{background:var(--sidebar-agent-hover)}
+.history-day .day-count{font-size:10px;color:var(--text-muted);background:var(--bg-tertiary);padding:1px 6px;border-radius:8px}
+.history-day .day-actions{display:none;gap:3px}
+.history-day:hover .day-actions{display:flex}
+.history-day .day-actions button{background:none;border:none;cursor:pointer;font-size:12px;color:var(--text-muted);padding:2px;line-height:1;opacity:.6}
+.history-day .day-actions button:hover{opacity:1;color:var(--accent-primary)}
+.history-day .day-actions button.danger:hover{color:var(--accent-danger)}
+.btn-settings-float{position:absolute;bottom:12px;left:12px;width:36px;height:36px;border:1px solid var(--border-color);border-radius:8px;background:var(--settings-float-bg);color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s;z-index:5}
+.btn-settings-float:hover{background:var(--settings-float-hover)}
+.agent-edit-btn{width:20px;height:20px;border:none;border-radius:4px;background:transparent;color:var(--text-muted);cursor:pointer;font-size:11px;display:none;align-items:center;justify-content:center;flex-shrink:0;transition:color .12s;padding:0}
+.agent-card:hover .agent-edit-btn{display:flex}
+.agent-edit-btn:hover{color:var(--accent-primary)}
+.content-area{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.chat-messages{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{display:flex;gap:10px;align-items:flex-start;max-width:75%}
+.chat-msg.user{align-self:flex-end;flex-direction:row-reverse}
+.chat-msg.system{align-self:center;max-width:100%}
+.msg-avatar{min-width:30px;text-align:center;font-size:22px;flex-shrink:0}
+.msg-body{min-width:0}
+.msg-header{font-size:11px;color:var(--text-muted);margin-bottom:4px}
+.msg-text{padding:8px 14px;border-radius:12px;background:var(--bg-message);font-size:14px;line-height:1.5;color:var(--text-primary);word-break:break-word}
+.chat-msg.user .msg-text{background:var(--chat-user-bg);color:var(--chat-user-color)}
+.chat-msg.system .msg-text{background:transparent;text-align:center;font-size:12px;color:var(--text-muted);padding:4px 12px}
+.cmd-panel{max-height:0;overflow:hidden;transition:max-height .25s ease;background:var(--cmd-panel-bg);border-top:1px solid var(--border-color)}
+.cmd-panel.show{max-height:200px}
+.cmd-items{display:flex;flex-wrap:wrap;gap:6px 10px;padding:12px 20px;align-items:center}
+.cmd-label{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-right:4px}
+.cmd-item{padding:4px 10px;border-radius:6px;background:var(--cmd-badge-bg);color:var(--cmd-badge-color);font-size:12px;cursor:pointer;transition:opacity .12s;white-space:nowrap}
+.cmd-item:hover{opacity:.8}
+.cmd-text{color:#e8b831;font-weight:500}
+.cmd-item .cmd-desc{color:var(--text-muted);margin-left:4px;font-size:11px}
+.input-area{padding:10px 16px;border-top:1px solid var(--border-color);background:var(--bg-secondary)}
+.input-row{display:flex;gap:6px;align-items:center}
+.btn-cmd-toggle{width:36px;height:36px;border:1px solid var(--border-color);border-radius:8px;background:var(--cmd-toggle-bg);color:var(--text-secondary);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s,border-color .15s}
+.btn-cmd-toggle:hover{background:var(--bg-hover)}
+.btn-cmd-toggle.active{background:var(--accent-bg);color:var(--accent-primary);border-color:var(--accent-primary)}
+#chatInput{flex:1;min-height:36px;max-height:120px;padding:8px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-input);color:var(--text-primary);font-family:inherit;font-size:13.5px;resize:none;outline:none;line-height:1.5;transition:border-color .15s}
+#chatInput:focus{border-color:var(--accent-primary)}
+#chatInput::placeholder{color:var(--text-muted)}
+.btn-send{padding:7px 18px;border:none;border-radius:8px;background:var(--btn-send-bg);color:var(--btn-send-color);cursor:pointer;font-size:14px;font-weight:500;white-space:nowrap;transition:opacity .15s}
+.btn-send:hover{opacity:.9}
+.btn-export{width:36px;height:36px;padding:0;border:1px solid var(--border-color);border-radius:8px;background:var(--export-btn-bg);color:var(--export-btn-color);cursor:pointer;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.btn-export:hover{background:var(--export-btn-hover)}
+.hall-overlay{width:0;overflow:hidden;background:var(--bg-secondary);border-left:1px solid var(--border-color);transition:width .3s ease;flex-shrink:0;display:flex;flex-direction:column}
+.hall-overlay.open{width:720px}
+.hall-overlay.expanded{width:960px}
+.hall-header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border-color);flex-shrink:0}
+.hall-header h2{font-size:15px;flex-shrink:0}
+.hall-header .hall-expand{margin-left:auto}
+.hall-close{width:30px;height:30px;border:none;border-radius:6px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:18px}
+.hall-close:hover{background:var(--bg-hover)}
+.hall-expand{width:32px;height:32px;border:none;border-radius:6px;background:var(--bg-tertiary);color:var(--text-secondary);cursor:pointer;font-size:16px;transition:background .12s}
+.hall-expand:hover{background:var(--bg-hover)}
+#hallContent{position:relative;width:960px;min-height:720px;height:100%;overflow:hidden;image-rendering:pixelated;background:#5a7a5a;transform-origin:top left;transition:transform .3s ease}.hall-overlay.open:not(.expanded) #hallContent{transform:scale(0.75)}
+.hall-floor{position:absolute;inset:0;background:repeating-conic-gradient(#c8b89a 0% 25%,#bfaf8f 0% 50%) 0 0 / 64px 64px;image-rendering:pixelated}
+.hall-wall{position:absolute;top:0;left:0;right:0;height:43px;background:linear-gradient(180deg,#7a8aaa 0%,#6a7a9a 70%,#5a6a8a 100%);border-bottom:4px solid #4a5a7a;z-index:1}
+.hall-wall-title{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);color:#cdf;font-size:16px;font-weight:bold;letter-spacing:3px;text-shadow:0 0 10px rgba(170,200,255,0.6)}
+.deco{position:absolute;image-rendering:pixelated;z-index:3}
+#furniture-layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2}
+#agents-container{position:relative;width:100%;height:100%;min-height:534px;z-index:5}
+#walkers-container{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+.workstation{position:absolute;width:128px;height:160px;z-index:5}
+.workstation .desk-img{position:absolute;bottom:0;left:0;width:128px;height:128px;image-rendering:pixelated;z-index:12}
+.workstation .char-container{position:absolute;bottom:24px;left:32px;width:64px;height:64px;overflow:hidden;z-index:14;image-rendering:pixelated;-webkit-backface-visibility:hidden;backface-visibility:hidden;will-change:contents}
+.workstation .char-container.seated{height:48px;overflow:hidden}
+.workstation .char-sprite{position:absolute;top:-1px;left:0;height:66px;image-rendering:pixelated;will-change:transform}
+.workstation.busy .char-sprite{animation:work-anim 1.2s steps(6) infinite}
+.workstation.idle .char-container{display:none}
+.workstation.offline .char-container{display:none}
+.workstation .label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;color:#fff;background:rgba(0,0,0,0.75);padding:2px 8px;border-radius:3px;z-index:20}
+.workstation .status-dot{position:absolute;top:0;right:0;width:12px;height:12px;border-radius:50%;border:2px solid rgba(0,0,0,0.4);z-index:20}
+.workstation .status-dot.st-online{background:#4f4;box-shadow:0 0 6px #4f4}
+.workstation .status-dot.st-busy{background:#fa0;box-shadow:0 0 6px #fa0}
+.workstation .status-dot.st-idle{background:#4c4;box-shadow:0 0 6px #4c4}
+.workstation .status-dot.st-offline{background:#666;box-shadow:none;animation:none}
+.workstation .task-bubble{position:absolute;bottom:-38px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;color:#ddd;background:rgba(20,20,50,0.95);padding:3px 8px;border-radius:4px;border:1px solid #556;z-index:30;opacity:0;transition:opacity .3s;pointer-events:none}
+.workstation:hover .task-bubble{opacity:1}
+.workstation.busy::after{content:'💬';position:absolute;top:-12px;left:12px;font-size:18px;animation:float-bubble 1.5s ease-in-out infinite;z-index:25}
+@keyframes float-bubble{0%,100%{transform:translateY(0);opacity:0.8}50%{transform:translateY(-10px);opacity:1}}
+.walker{position:absolute;width:64px;height:64px;overflow:hidden;z-index:10;pointer-events:none;transition:left linear,top linear;image-rendering:pixelated}
+.walker .sprite-sheet{position:absolute;top:-1px;left:0;width:384px;height:66px;image-rendering:pixelated;animation:walk-cycle .5s steps(6) infinite;will-change:transform;clip-path:inset(1px 0);-webkit-clip-path:inset(1px 0)}
+.walker .walker-label{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;color:#fff;background:rgba(0,0,0,0.6);padding:1px 6px;border-radius:3px;z-index:11}
+@keyframes work-anim{from{transform:translateX(0)}to{transform:translateX(-384px)}}
+@keyframes walk-cycle{from{transform:translateX(0)}to{transform:translateX(-384px)}}
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:2000;display:none;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.overlay-content{background:var(--bg-elevated);border-radius:14px;padding:28px 32px;width:460px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg);position:relative}
+.settings-close{position:absolute;top:14px;right:16px;width:30px;height:30px;border:none;border-radius:6px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:20px;transition:background .12s}
+.settings-close:hover{background:var(--bg-hover)}
+.settings-section{margin-bottom:24px}
+.settings-section h3{font-size:13px;color:var(--text-secondary);margin-bottom:10px;font-weight:600}
+.theme-row{display:flex;gap:10px}
+.theme-card{flex:1;padding:14px;border:2px solid var(--border-color);border-radius:10px;text-align:center;cursor:pointer;transition:border-color .15s,background .12s;font-size:12px;background:transparent;color:var(--text-primary)}
+.theme-card:hover{border-color:var(--accent-primary)}
+.theme-card.active{border-color:var(--accent-primary);background:var(--accent-bg)}
+.theme-card .preview-box{width:100%;height:36px;border-radius:6px;margin-bottom:6px;border:1px solid var(--border-color)}
+.settings-card{padding:12px 14px;border:1px solid var(--border-color);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .12s}
+.settings-card:hover{border-color:var(--accent-primary)}
+.settings-input-row{display:flex;gap:8px;align-items:center}
+.settings-input{flex:1;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-primary);font-size:13px;outline:none}
+.settings-input:focus{border-color:var(--accent-primary)}
+.settings-btn-danger{padding:8px 20px;border:2px solid var(--accent-danger);border-radius:8px;background:transparent;color:var(--accent-danger);cursor:pointer;font-size:13px;font-weight:600;transition:background .12s}
+.settings-btn-danger:hover{background:var(--accent-danger);color:var(--text-inverse)}
+.settings-btn-close{padding:8px 20px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;font-weight:600}
+.upload-avatar-btn:hover{border-color:var(--accent-primary);color:var(--accent-primary)}
+
+.confirm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:3000;display:none;align-items:center;justify-content:center}
+.confirm-overlay.show{display:flex}
+.confirm-modal{background:var(--bg-elevated);border-radius:14px;padding:24px;width:360px;max-width:90vw;box-shadow:var(--shadow-lg)}
+.confirm-modal h3{font-size:15px;margin-bottom:4px}
+.confirm-modal .btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.confirm-modal .btn-row button{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px}
+.confirm-modal .btn-cancel{background:var(--bg-hover);color:var(--text-primary)}
+.confirm-modal .btn-confirm{background:var(--accent-primary);color:#fff}
+
+.pick-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:3000;display:none;align-items:center;justify-content:center}
+.pick-overlay.show{display:flex}
+.pick-modal{background:var(--bg-elevated);border-radius:14px;padding:24px;width:360px;max-width:90vw;box-shadow:var(--shadow-lg)}
+.pick-modal h3{font-size:15px;margin-bottom:14px}
+.pick-agent-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;margin-bottom:4px;border:1px solid transparent}
+.pick-agent-row:hover{background:var(--bg-hover)}
+.pick-agent-row.selected{border-color:var(--accent-primary);background:var(--accent-bg)}.pick-agent-row .name{font-size:13px}
+.pick-modal .btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.pick-modal .btn-row button{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px}
+.pick-modal .btn-cancel{background:var(--bg-hover);color:var(--text-primary)}
+.pick-modal .btn-confirm{background:var(--accent-primary);color:#fff}
+.mention-dropdown{background:var(--bg-elevated);border:1px solid var(--border-color);border-radius:10px;box-shadow:var(--shadow-lg);z-index:1500;max-height:200px;overflow-y:auto}
+.mention-item{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;transition:background .12s;font-size:12px}
+.mention-item:hover{background:var(--bg-hover)}
+.mention-item code{margin-left:auto;font-size:11px;color:var(--text-muted)}
+.mention-avatar{width:20px;text-align:center;font-size:16px}
+.manage-panel{position:fixed;top:0;right:0;bottom:0;width:400px;background:var(--bg-elevated);border-left:1px solid var(--border-color);box-shadow:var(--shadow-lg);z-index:2000;display:none;flex-direction:column}
+.manage-panel.show{display:flex}
+.manage-panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-color)}
+.manage-panel-body{flex:1;overflow-y:auto;padding:12px 16px}
+.manage-agent-card{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--border-color)}
+.manage-agent-card .agent-info{flex:1}
+.manage-agent-card .agent-name{font-size:13px;font-weight:500}
+.manage-agent-card .agent-meta{font-size:11px;color:var(--text-muted)}
+.manage-agent-card .agent-actions button{padding:4px 10px;border:none;border-radius:6px;background:var(--accent-danger);color:#fff;cursor:pointer;font-size:11px}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:2000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-container{background:var(--bg-elevated);border-radius:14px;width:520px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-color)}
+.modal-header h2{font-size:16px}
+.modal-close{width:30px;height:30px;border:none;border-radius:6px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:22px;transition:background .12s}
+.modal-close:hover{background:var(--bg-hover)}
+.modal-body{flex:1;overflow-y:auto;padding:20px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border-color)}
+.invite-text{background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:14px;font-size:12px;line-height:1.6;white-space:pre-wrap;margin:10px 0;color:var(--text-primary)}
+.paste-area{width:100%;min-height:120px;padding:10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-input);color:var(--text-primary);font-family:monospace;font-size:12px;resize:vertical;outline:none}
+.paste-area:focus{border-color:var(--accent-primary)}
+.paste-error{color:var(--accent-danger);font-size:12px;margin-top:6px;display:none}
+.preview-panel{background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:12px;margin-top:8px;font-size:12px;line-height:1.6}
+.preview-valid{color:var(--online-dot);font-weight:500;margin-bottom:6px}
+.copy-btn{padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px}
+.btn-primary,.btn-secondary,.btn-success{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px}
+.btn-primary{background:var(--accent-primary);color:#fff}
+.btn-secondary{background:var(--bg-hover);color:var(--text-primary)}
+.btn-success{background:var(--online-dot);color:#fff}
+
+/* Right Panel */
+.right-panel{position:fixed;top:50%;right:20px;left:auto;transform:translateY(-50%);width:460px;max-height:75vh;border-radius:14px;background:var(--bg-elevated);box-shadow:var(--shadow-lg);z-index:2002;display:none;flex-direction:column}
+.right-panel.show{display:flex}
+.right-panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-color)}
+.right-panel-body{flex:1;overflow-y:auto;padding:16px 20px}
+.right-panel-body h3{font-size:14px;margin-bottom:10px}
+.right-panel-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--border-color)}
+/* Form controls */
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px}
+.form-input{width:100%;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-primary);font-size:13px;outline:none;font-family:inherit}
+.form-input:focus{border-color:var(--accent-primary)}
+.form-textarea{width:100%;min-height:80px;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-primary);font-size:13px;resize:vertical;outline:none;font-family:inherit}
+.form-textarea:focus{border-color:var(--accent-primary)}
+.form-slider-row{display:flex;align-items:center;gap:10px}
+.form-slider{flex:1;accent-color:var(--accent-primary);cursor:pointer}
+.form-slider-value{min-width:30px;text-align:center;font-size:13px;font-weight:600;color:var(--accent-primary)}
+.form-hint{font-size:11px;color:var(--text-muted);margin-top:2px}
+.btn-save{padding:7px 18px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;font-weight:500}
+.btn-save:hover{opacity:.9}
+
+.right-panel-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:2001;display:none}.right-panel-overlay.show{display:block}
+</style>
+<script>
+(function(){
+  var splash = document.getElementById("splashScreen");
+  // 10秒安全兜底：JS加载失败时显示错误页
+  setTimeout(function(){
+    if (splash && splash.style.display !== "none") {
+      var sp = document.getElementById("splashSpinner");
+      var st = document.getElementById("splashStatus");
+      if (sp) sp.style.display = "none";
+      if (st) st.innerHTML = t("msg_load_error")+' <button onclick="location.reload()" style="margin:0 8px;padding:6px 16px;border-radius:6px;border:1px solid var(--accent-primary,#d4a373);background:transparent;color:var(--accent-primary,#d4a373);cursor:pointer">'+t("btn_retry")+'</button><button onclick="fetch(&#39;/api/exit&#39;,{method:&#39;POST&#39;}).then(function(){setTimeout(function(){window.close()},300)})" style="margin:0 8px;padding:6px 16px;border-radius:6px;border:none;background:var(--accent-danger,#ff3b30);color:#fff;cursor:pointer">'+t("btn_exit")+'</button>';
+    }
+  }, 10000);
+  window.hideSplash = function() { var el = document.getElementById("splashScreen"); if (el) el.style.display = "none"; };
+})();
+</script>
+
+</head>
+<body>
+<div id="splashScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-primary,#1c1c1e);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:var(--text-primary,#f5f5f7)">
+  <div style="margin-bottom:16px"><svg viewBox="0 0 280 48" width="280" height="48" style="vertical-align:middle"><text x="140" y="38" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="42" font-weight="700" fill="var(--accent-primary,#d4a373)">Agent Hub</text></svg></div>
+  <div style="font-size:16px;color:var(--text-secondary,#8e8e93);margin-bottom:32px" data-i18n="splash_subtitle">Multi-Agent Collaboration Platform</div>
+  <div style="font-size:14px;color:var(--text-muted,#636366);margin-bottom:32px" data-i18n="splash_welcome">Welcome!</div>
+  <div id="splashSpinner" style="width:40px;height:40px;border:3px solid var(--border-color,#48484a);border-top-color:var(--accent-primary,#d4a373);border-radius:50%;animation:splashSpin .8s linear infinite"></div>
+  <div id="splashStatus" style="margin-top:20px;font-size:14px;color:var(--text-muted,#636366)" data-i18n="splash_loading">Loading...</div>
+<div style="position:absolute;bottom:24px;font-size:12px;color:var(--text-muted,#636366);text-align:center;line-height:1.8">
+    <div>Agent Hub v0.1.0  © 2026 @ Leosun2026</div>
+  </div>
+
+</div>
+<style>
+@keyframes splashSpin{to{transform:rotate(360deg)}}
+</style>
+
+<header>
+  <div class="header-left">
+    <h1 class="header-brand"><svg viewBox="0 0 140 24" width="140" height="24" style="vertical-align:middle;display:inline;overflow:visible"><text x="70" text-anchor="middle" y="18" font-family="inherit" font-size="20" font-weight="700" fill="currentColor">Agent Hub</text></svg></h1>
+    <div class="task-selector">
+      <button class="task-selector-btn" onclick="toggleTaskDropdown()">📋 当前任务 <span class="arrow">▼</span></button>
+      <div class="task-dropdown" id="taskDropdown">
+        <div class="task-option active" onclick="switchTask(this)">📋 Agent Hub 开发</div>
+        <div class="task-option" onclick="switchTask(this)">🛠️ 系统维护</div>
+      <div class="task-divider"></div>
+    </div>
+  </div>
+</div>
+<div class="header-right">
+    <button class="btn-hall" id="btnHall" onclick="toggleHall()" data-i18n-title="hall_toggle" title="Toggle Hall">🏢</button>
+  </div>
+</header>
+<main>
+  <div class="sidebar" id="sidebar"></div>
+  <div class="content-area">
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="cmd-panel" id="cmdPanel">
+      <div class="cmd-items">
+        <span class="cmd-label" data-i18n="cmd_label">Commands</span>
+        <span class="cmd-item" data-cmd="/help"><span class="cmd-text" data-i18n="cmd_help">Help</span> <span class="cmd-desc" data-i18n="cmd_desc_help">Command list</span></span>
+        <span class="cmd-item" data-cmd="/stop"><span class="cmd-text" data-i18n="cmd_stop">Stop</span> <span class="cmd-desc" data-i18n="cmd_desc_stop">Stop replies</span></span>
+        <span class="cmd-item" data-cmd="/new"><span class="cmd-text" data-i18n="cmd_new">Clear</span> <span class="cmd-desc" data-i18n="cmd_desc_new">Clear display</span></span>
+        <span class="cmd-item" data-cmd="/save"><span class="cmd-text" data-i18n="cmd_save">Export</span> <span class="cmd-desc" data-i18n="cmd_desc_save">Export conversation</span></span>
+        <span class="cmd-item" data-cmd="/Battle"><span class="cmd-text">Battle</span> <span class="cmd-desc" data-i18n="cmd_desc_battle">Deep discussion</span></span>
+        <span class="cmd-item" data-cmd="/search"><span class="cmd-text" data-i18n="cmd_search">Search</span> <span class="cmd-desc" data-i18n="cmd_desc_search">Search history</span></span>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="input-row">
+        <button class="btn-cmd-toggle" id="btnCmdToggle" onclick="toggleCmd()" data-i18n-title="cmd_toggle" title="Toggle commands">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2"/>
+            <rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2"/>
+            <rect x="9" y="9" width="5.5" height="5.5" rx="1.2"/>
+            <rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2"/>
+          </svg>
+        </button>
+        <textarea id="chatInput" placeholder="Type a message... (@Agent to mention, click icon for commands)" data-i18n-placeholder="chat_placeholder"></textarea>
+        <button class="btn-send" onclick="sendMessage()" data-i18n="btn_send">Send</button>
+        <button class="btn-export" onclick="exportChat()">💾</button>
+      </div>
+    </div>
+  </div>
+  <div class="hall-overlay" id="hallOverlay">
+    <div class="hall-header">
+      <h2 data-i18n="hall_title">🏢 大厅</h2>
+      <button class="hall-expand" id="hallExpandBtn" onclick="toggleHallWidth()" data-i18n-title="hall_expand" title="Expand Hall">⬚</button>
+      <button class="hall-close" onclick="toggleHall()">&times;</button>
+    </div>
+    <div class="hall-content" id="hallContent">
+      <div class="hall-floor"></div>
+      <div class="hall-wall"><div class="hall-wall-title"><svg viewBox="0 0 140 16" width="140" height="16" style="vertical-align:middle"><text x="0" y="13" font-family="inherit" font-size="12" font-weight="600" fill="currentColor">Agent Hub Office</text></svg></div></div>
+      <div id="agents-container"></div>
+      <div id="walkers-container"></div>
+    </div>
+    <div style="padding:8px 16px;text-align:center;font-size:11px;color:var(--text-muted,#636366);border-top:1px solid var(--border-color,#48484a);flex-shrink:0;line-height:1.6">
+      <span>Hall animation adapted from openclaw-virtual-office (based on <a href="https://github.com/RingHyacinth/Star-Office-UI" target="_blank" rel="noopener" style="color:var(--accent-primary,#d4a373);text-decoration:none">Star-Office-UI</a>) · Pixel art assets copyright owned by original authors, for non-commercial learning use only</span>
+    </div>
+  </div>
+</main>
+<div class="right-panel-overlay" id="rightPanelOverlay" onclick="closeAllRightPanels()"></div>
+<div class="overlay" id="settingsOverlay">
+  <div class="overlay-content" style="padding:16px 24px;">
+    <button class="settings-close" onclick="closeSettings()">&times;</button>
+    <h2 style="font-size:16px;margin-bottom:14px;" data-i18n="settings_title">⚙️ 设置</h2>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_theme">🎨 主题配色</h3>
+      <div class="theme-row">
+        <button class="theme-card" data-theme="white" onclick="setTheme('white',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#f5f7fa;border:1px solid #e2e6ed;border-radius:6px;margin-bottom:4px;"></div><span data-i18n="theme_light">Light</span></button>
+        <button class="theme-card" data-theme="gray" onclick="setTheme('gray',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#555557;border:1px solid #78787a;border-radius:6px;margin-bottom:4px;"></div><span data-i18n="theme_gray">Gray</span></button>
+        <button class="theme-card" data-theme="blue" onclick="setTheme('blue',this)" style="padding:8px 10px;"><div class="preview-box" style="height:24px;background:#0a1628;border:1px solid #1e3a5f;border-radius:6px;margin-bottom:4px;"></div><span data-i18n="theme_blue">Deep Blue</span></button>
+      </div>
+    </div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_project">📁 项目管理</h3>
+      <div class="settings-card" onclick="openRightPanel('projectManagePanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="project_manage_title">📁 项目管理</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="project_manage_desc">新建/重命名项目，选择参与 Agent</div></div>
+    </div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_agent">🤖 Agent 管理</h3>
+      <div class="settings-card" onclick="openRightPanel('manageAgentPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="agent_manage_title">📋 管理 Agent</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="agent_manage_desc">查看/编辑/移除已添加的 Agent</div></div>
+    </div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_rules">📜 发言规则</h3>
+      <div class="settings-card" onclick="openRightPanel('rulesPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="rules_title">编辑轮次限制与 @ 模式</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="rules_desc">设置 Agent 回复限制、@ 模式宽限规则等</div></div>
+    </div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_user">👤 用户设置</h3>
+      <div class="settings-card" onclick="openRightPanel('userSettingsPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="user_settings_title">👤 编辑个人信息</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="user_settings_desc">自定义头像、修改昵称</div></div>
+    </div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_animation">🎬 Agent 动画</h3>
+      <div class="settings-card" onclick="openRightPanel('agentAnimPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;" data-i18n="anim_speed_title">🎬 动画速度</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;" data-i18n="anim_speed_desc">设置 Agent 消息动画速度</div></div>
+    </div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><div style="display:flex;gap:16px;"><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_log">🪵 日志</h3><button onclick="window.open('/api/log','_blank')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;" data-i18n="btn_open_log">📂 打开日志文件</button></div><div style="flex:1;"><h3 data-i18n="settings_language" style="font-size:12px;margin-bottom:6px;">🌐 语言</h3><select id="settingsLanguage" onchange="setLocale(this.value);" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;"><option value="en">English</option><option value="zh">中文</option></select></div></div></div>
+
+    <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;" data-i18n="settings_export">📥 导出保存位置</h3>
+      <div class="settings-input-row"><input class="settings-input" id="settingsExportPath" value="" onchange="localStorage.setItem('hub_export_path',this.value)" data-i18n-placeholder="export_path_placeholder" placeholder="Export Path"></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" data-i18n="export_save_hint">修改后自动保存</div>
+    </div>
+
+    <div style="text-align:right;margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="exitApp()" class="settings-btn-danger" style="padding:7px 18px;font-size:12px;" data-i18n="btn_exit_label">⏻ Exit</button>
+      
+    </div>
+  </div>
+</div>
+    <div class="right-panel" id="addAgentPanel"></div>
+
+<!-- ═══ Right Panel: 管理 Agent ═══ -->
+<div class="right-panel" id="manageAgentPanel"></div>
+
+<!-- ═══ Right Panel: 用户设置 ═══ -->
+<div class="right-panel" id="userSettingsPanel"></div>
+
+<!-- ═══ Right Panel: Agent 动画 ═══ -->
+<div class="right-panel" id="agentAnimPanel"></div>
+
+<!-- ═══ Right Panel: 编辑 Agent ═══ -->
+<div class="right-panel" id="editAgentPanel"></div>
+
+<!-- ═══ Right Panel: 发言规则 ═══ -->
+<div class="right-panel" id="rulesPanel">
+  <div class="right-panel-header"><h3 data-i18n="rules_title">📜 Chat Rules</h3><button class="settings-close" onclick="closeAllRightPanels()" style="position:static;width:auto;height:auto;font-size:18px;">×</button></div>
+  <div class="right-panel-body">
+    <div class="form-group">
+      <label data-i18n="rules_rounds">Max replies per round per Agent</label>
+      <input class="form-input" id="ruleRounds" type="number" min="1" max="10" value="3" data-i18n-placeholder="rules_rounds" placeholder="Max replies per round per Agent">
+      <div class="form-hint" style="font-size:11px;color:var(--text-muted);margin-top:4px;" data-i18n="rules_rounds_desc">@mention and Battle mode are not limited</div>
+    </div>
+
+    <div style="margin-top:16px;padding:12px;background:var(--bg-tertiary);border-radius:8px;font-size:12px;line-height:1.6;color:var(--text-secondary);">
+      <div style="font-weight:600;margin-bottom:6px;color:var(--text-primary);" data-i18n="rules_builtin_header">⚙️ Active Built-in Rules</div>
+      <div data-i18n="rules_rule1">• <strong>Concise Agent speech:</strong> no greetings/fluff in group chat</div>
+      <div data-i18n="rules_rule2">• <strong>@mode:</strong> When @mentioned, Agent can elaborate</div>
+      <div data-i18n="rules_rule3">• <strong>Battle mode:</strong> no round limit, can cite data/tables</div>
+    </div>
+
+    <div class="form-group" style="margin-top:16px;">
+      <label data-i18n="rules_custom">Custom Rules</label>
+      <textarea class="form-textarea" id="ruleCustom" rows="4" data-i18n-placeholder="rules_custom_placeholder" placeholder="One rule per line... Sent as instructions to all Agents"></textarea>
+      <div class="form-hint" style="font-size:11px;color:var(--text-muted);margin-top:4px;" data-i18n="rules_custom_hint">Custom rules are appended to Agent system prompt</div>
+    </div>
+  </div>
+  <div class="right-panel-footer"><button class="btn-save" onclick="saveRules()" data-i18n="btn_save_rules">Save Rules</button></div>
+</div>
+</div>
+
+<div class="right-panel" id="projectManagePanel"></div>
+<div class="right-panel" id="projectEditPanel"></div>
+
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-modal">
+    <h3 id="confirmTitle" data-i18n="confirm_title">Confirm</h3>
+    <p id="confirmMessage" style="font-size:14px;color:var(--text-secondary);margin:8px 0 16px;line-height:1.5"></p>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="hideConfirmModal()" data-i18n="confirm_cancel">Cancel</button>
+      <button class="btn-confirm" id="confirmOkBtn" style="background:var(--accent-danger);color:#fff" data-i18n="confirm_ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="pick-overlay" id="pickOverlay">
+  <div class="pick-modal">
+    <h3 data-i18n="battle_title">👥 Select 2 Agents</h3>
+    <div id="pickAgentList"></div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closePick()" data-i18n="battle_cancel">Cancel</button>
+      <button class="btn-confirm" onclick="confirmPick()" style="opacity:0.5;">"+t("battle_confirm")+"（0/2）</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = null;
+try { socket = io(); } catch(e) { console.warn("Socket.IO not loaded:", e.message); }
+var agents = [];
+var picked = [];
+
+/* 任务下拉菜单 */
+function toggleTaskDropdown() {
+  document.getElementById("taskDropdown").classList.toggle("show");
+  document.querySelector(".task-selector-btn").classList.toggle("open");
+}
+function switchTask(el) {
+  document.querySelectorAll(".task-option").forEach(function(o){o.classList.remove("active")});
+  el.classList.add("active");
+  document.getElementById("taskDropdown").classList.remove("show");
+  document.querySelector(".task-selector-btn").classList.remove("open");
+  document.querySelector(".task-selector-btn").innerHTML = el.textContent + ' <span class="arrow">▼</span>';
+}
+document.addEventListener("click", function(e){
+  if (!e.target.closest(".task-selector")) {
+    document.getElementById("taskDropdown").classList.remove("show");
+    var b = document.querySelector(".task-selector-btn");
+    if (b) b.classList.remove("open");
+  }
+});
+
+/* 命令面板 */
+function toggleCmd() {
+  document.getElementById("cmdPanel").classList.toggle("show");
+  document.getElementById("btnCmdToggle").classList.toggle("active");
+}
+
+/* 大厅 */
+function toggleHall() {
+  var hall = document.getElementById("hallOverlay");
+  var isOpening = !hall.classList.contains("open");
+  hall.classList.toggle("open");
+  document.getElementById("btnHall").classList.toggle("active");
+  if (!isOpening) {
+    hall.classList.remove("expanded");
+    clearWalkerTimers();
+  } else {
+    if (typeof renderPixelOffice === "function") renderPixelOffice();
+  }
+}
+function toggleHallWidth() {
+  document.getElementById("hallOverlay").classList.toggle("expanded");
+}
+function clearWalkerTimers() {
+  if (typeof activeWalkers !== "undefined") {
+    for (var id in activeWalkers) {
+      if (activeWalkers.hasOwnProperty(id) && activeWalkers[id].moveTimer) {
+        clearTimeout(activeWalkers[id].moveTimer);
+        activeWalkers[id].moveTimer = null;
+      }
+    }
+  }
+}
+
+
+/* 主题切换 */
+function setTheme(t, el) {
+  document.documentElement.setAttribute("data-theme", t);
+  localStorage.setItem("hub_theme", t);
+  document.querySelectorAll(".theme-card").forEach(function(c){c.classList.remove("active")});
+  if (el) el.classList.add("active");
+  document.querySelectorAll('.theme-card[data-theme="'+t+'"]').forEach(function(c){c.classList.add("active")});
+}
+
+/* 设置面板 */
+function openSettings() {
+  ;(function(){var t=localStorage.getItem('hub_theme')||'gray';document.querySelectorAll('.theme-card').forEach(function(c){c.classList.remove('active')});document.querySelectorAll('.theme-card[data-theme="'+t+'"]').forEach(function(c){c.classList.add('active')})})();
+  document.getElementById("settingsOverlay").classList.add("show");
+  var savedName = localStorage.getItem("hub_boss_name");
+  var exportInput = document.getElementById("settingsExportPath");
+  if (exportInput) {
+    fetch("/api/basepath").then(function(r){return r.json()}).then(function(d){
+      var base = d.basePath;
+      if (base.charAt(base.length-1) !== "\\") base += "\\";
+      exportInput.value = base + "exports\\";
+      localStorage.setItem("hub_export_path", base + "exports\\");
+    }).catch(function(){
+      if (!exportInput.value) exportInput.value = localStorage.getItem("hub_export_path") || "";
+    });
+  }
+  var langSel = document.getElementById("settingsLanguage");
+  if (langSel) {
+    var detectedLang = (navigator.language || "en").startsWith("zh") ? "zh" : "en";
+    var savedLang = localStorage.getItem("hub_locale") || localStorage.getItem("hub_language");
+    langSel.value = savedLang || detectedLang;
+    if (!savedLang) localStorage.setItem("hub_locale", langSel.value);
+  }
+  var nickInput = document.getElementById("settingsNickname");
+  if (nickInput && savedName) nickInput.value = savedName;
+  var savedAvatar = localStorage.getItem("hub_boss_avatar");
+  var avatarInput = document.getElementById("settingsAvatarUrl");
+  if (avatarInput && savedAvatar) { avatarInput.value = savedAvatar; document.getElementById('settingsAvatarPreview').innerHTML = '<img src=\"' + savedAvatar + '\" style=\"width:36px;height:36px;border-radius:50%;object-fit:cover\">'; }
+  var savedSpeed = localStorage.getItem("hub_agent_speed");
+  var speedInput = document.getElementById("agentSpeed");
+  if (speedInput && savedSpeed) speedInput.value = savedSpeed;
+}
+function closeSettings() {
+  document.getElementById("settingsOverlay").classList.remove("show");
+}
+document.getElementById("settingsOverlay").addEventListener("click", function(e){
+  if (e.target === this) closeSettings();
+});
+
+function uploadSettingsAvatar(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    document.getElementById("settingsAvatarUrl").value = dataUrl;
+    document.getElementById("settingsAvatarPreview").innerHTML = '<img src="' + dataUrl + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">';
+    saveUserSettings();
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveUserSettings() {
+  localStorage.setItem("hub_boss_name", document.getElementById("settingsNickname").value || t("default_user_name"));
+  localStorage.setItem("hub_boss_avatar", document.getElementById("settingsAvatarUrl").value || "");
+}
+
+/* Agent 对谈选人 */
+function togglePick(el) {
+  el.classList.toggle("selected");
+  if (el.classList.contains("selected")) picked.push(el);
+  else picked = picked.filter(function(e){return e !== el});
+  var b = document.querySelector(".pick-modal .btn-confirm");
+  if (picked.length === 2) { b.textContent = t("battle_confirm") + "（2/2）"; b.style.opacity = "1"; }
+  else { b.textContent = t("battle_confirm") + "（"+picked.length+"/2）"; b.style.opacity = "0.5"; }
+}
+function closePick() {
+  document.getElementById("pickOverlay").classList.remove("show");
+  picked = [];
+}
+function confirmPick() {
+  if (picked.length !== 2) { alert(t("msg_battle_select")); return; }
+  var n = picked.map(function(r){ return r.querySelector(".name").textContent });
+  alert("🔗 私聊通道已建立：" + n[0] + " ↔ " + n[1]);
+  closePick();
+}
+document.addEventListener("DOMContentLoaded", function() {
+  var i = document.getElementById("chatInput");
+  if (i) {
+    i.addEventListener("input", function() {
+      if (this.value.includes("/Battle")) {
+        setTimeout(function(){
+          openPick();
+          i.value = i.value.replace("/Battle", "");
+        }, 100);
+      }
+    });
+  }
+});
+
+/* 右侧面板 */
+function openRightPanel(panelId) {
+  closeSettings();
+  document.getElementById("rightPanelOverlay").classList.add("show");
+  document.getElementById(panelId).classList.add("show");
+  if (panelId === "manageAgentPanel") populateManageAgentPanel();
+  if (panelId === "addAgentPanel") populateAddAgentPanel();
+  if (panelId === "editAgentPanel") populateEditAgentPanel();
+  if (panelId === "rulesPanel") loadRules();
+  if (panelId === "userSettingsPanel") populateUserSettingsPanel();
+  if (panelId === "agentAnimPanel") populateAgentAnimPanel();
+  if (panelId === "projectManagePanel") populateProjectManagePanel();
+  if (panelId === "projectEditPanel") populateProjectEditPanel();
+}
+function closeAllRightPanels() {
+  document.querySelectorAll(".right-panel").forEach(function(p){p.classList.remove("show")});
+  document.getElementById("rightPanelOverlay").classList.remove("show");
+}
+
+function generateRapInviteText() {
+  return "## Agent Hub Invitation - Join the Chat Room\n\nPlease provide the following information to join the Agent Hub chat room:\n\n1. **agent_id**: Unique identifier (letters, numbers, underscores, e.g. \"hermes-main\")\n2. **name**: Display name\n3. **role**: orchestrator | executor | specialist\n4. **avatar** (optional): emoji icon\n5. **endpoint** (optional): API endpoint URL\n6. **model** (optional): Model name\n7. **auth** (optional): Authentication token\n8. **system_prompt** (optional): System prompt\n9. **capabilities** (optional): Capability tag array\n10. **group_permissions** (optional): Permission settings\n\n---\n\nPlease reply with the following JSON format configuration:\n\n\\json\n{\n  \"id\": \"agent-id\",\n  \"name\": \"Agent Name\",\n  \"role\": \"executor\",\n  \"avatar\": \"robot\",\n  \"endpoint\": \"http://127.0.0.1:xxxx/v1/chat/completions\",\n  \"model\": \"deepseek-v4-flash\",\n  \"auth\": null,\n  \"system_prompt\": \"You are a helpful assistant.\",\n  \"capabilities\": [\"chat\"],\n  \"group_permissions\": { \"receive_all\": true, \"receive_at_only\": false, \"can_send_active\": true, \"can_see_history\": true }\n}\n\nPlease reply with your configuration JSON."; 
+}
+
+function copyRapInvite() {
+  var text = document.getElementById("rapInviteText").textContent || "";
+  var btn = document.getElementById("copyRapInviteBtn");
+  if (!text || !btn) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = t("btn_copied");
+      btn.style.background = "var(--online-dot)";
+      setTimeout(function() { btn.textContent = t("btn_copy_invite"); btn.style.background = ""; }, 2000);
+    }).catch(function() {
+      fallbackCopyRap(text, btn);
+    });
+  } else {
+    fallbackCopyRap(text, btn);
+  }
+}
+
+function fallbackCopyRap(text, btn) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed"; ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); } catch(e) {}
+  document.body.removeChild(ta);
+  btn.textContent = t("btn_copied");
+  btn.style.background = "var(--online-dot)";
+  setTimeout(function() { btn.textContent = t("btn_copy_invite"); btn.style.background = ""; }, 2000);
+}
+
+function showRapStep(step) {
+  document.getElementById("rapStep1").style.display = step === 1 ? "block" : "none";
+  document.getElementById("rapStep2").style.display = step === 2 ? "block" : "none";
+  document.getElementById("rapBtnPrev").style.display = step === 2 ? "inline-block" : "none";
+  document.getElementById("rapBtnNext").style.display = step === 1 ? "inline-block" : "none";
+  document.getElementById("rapConfirm").style.display = step === 2 ? "inline-block" : "none";
+}
+
+function populateAddAgentPanel() {
+  var inviteText = generateRapInviteText();
+  var panel = document.getElementById("addAgentPanel");
+  panel.innerHTML =
+    "<div class=\"right-panel-header\"><h3>" + t("agent_invite_title") + "</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div id=\"rapStep1\">" +
+    "<h3 style=\"font-size:13px;margin-bottom:8px;\">" + t("invite_step1") + "</h3>" +
+    "<p style=\"font-size:12px;color:var(--text-secondary);margin-bottom:8px;\">" + t("invite_step1_desc") + "</p>" +
+    "<div class=\"invite-text\" id=\"rapInviteText\" style=\"background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:12px;font-size:11px;line-height:1.5;white-space:pre-wrap;max-height:280px;overflow-y:auto;color:var(--text-primary);margin-bottom:8px;\">" + esc(inviteText) + "</div>" +
+    "<button class=\"copy-btn\" id=\"copyRapInviteBtn\" onclick=\"copyRapInvite()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">" + t("btn_copy_invite") + "</button>" +
+    "</div>" +
+    "<div id=\"rapStep2\" style=\"display:none\">" +
+    "<h3 style=\"font-size:13px;margin-bottom:8px;\">" + t("invite_step2") + "</h3>" +
+    "<p style=\"font-size:12px;color:var(--text-secondary);margin-bottom:8px;\">" + t("invite_step2_desc") + "</p>" +
+    "<textarea class=\"form-textarea\" id=\"rapInput\" rows=\"4\" placeholder=\"" + t("invite_json_placeholder") + "\"></textarea>" +
+    "<div id=\"rapPreview\" style=\"display:none;margin-top:8px;\">" +
+    "<div id=\"rapPreviewContent\" style=\"background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:8px;padding:10px;font-size:12px;line-height:1.5;\"></div>" +
+    "<div id=\"rapError\" style=\"color:var(--accent-danger);font-size:12px;margin-top:4px;display:none;\"></div>" +
+    "</div>" +
+    "</div>" +
+    "</div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" id=\"rapBtnPrev\" onclick=\"showRapStep(1)\" style=\"display:none;padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">" + t("btn_prev") + "</button>" +
+    "<button class=\"btn-primary\" id=\"rapBtnNext\" onclick=\"showRapStep(2)\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">"+t("agent_invite_next")+"</button>" +
+    "<button class=\"btn-save\" id=\"rapConfirm\" onclick=\"confirmRapAdd()\" style=\"display:none\">" + t("btn_confirm_add") + "</button>" +
+    "</div>" +
+    "";
+
+  var input = document.getElementById("rapInput");
+  if (input) {
+    input.oninput = function() {
+      var val = this.value.trim();
+      var prv = document.getElementById("rapPreview");
+      var pcontent = document.getElementById("rapPreviewContent");
+      var err = document.getElementById("rapError");
+      var btn = document.getElementById("rapConfirm");
+      if (!val) { prv.style.display = "none"; btn.style.display = "none"; rapData = null; return; }
+      try {
+        var d = JSON.parse(val);
+        if (!d.name || !d.id) throw new Error("name or id");
+        rapData = d;
+        var previewHtml = "<div><strong>" + esc(d.name) + "</strong></div><div>ID: " + esc(d.id) + "</div>";
+        if (d.role) previewHtml += "<div>Role: " + esc(d.role) + "</div>";
+        if (d.avatar) previewHtml += "<div>Avatar: " + esc(d.avatar) + "</div>";
+        if (d.endpoint) previewHtml += "<div>Endpoint: " + esc(d.endpoint) + "</div>";
+        if (d.model) previewHtml += "<div>Model: " + esc(d.model) + "</div>";
+        pcontent.innerHTML = previewHtml;
+        err.style.display = "none";
+        prv.style.display = "block";
+        btn.style.display = "inline-block";
+        btn.disabled = false;
+        btn.textContent = t("btn_confirm_add");
+      } catch(e) {
+        err.textContent = "JSON: " + e.message;
+        err.style.display = "block";
+        prv.style.display = "none";
+        btn.style.display = "none";
+        rapData = null;
+      }
+    };
+  }
+}
+
+
+
+function confirmRapAdd() {
+  if (!rapData) return;
+  var btn = document.getElementById("rapConfirm"); btn.disabled=true; btn.textContent = t("btn_adding");
+  fetch("/api/members",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(rapData)})
+    .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error)});return r.json()})
+    .then(function(){closeAllRightPanels();return fetch("/api/agents")})
+    .then(function(r){return r.json()}).then(function(d){agents=d;renderAgentSidebar()})
+    .catch(function(e){alert(t("msg_error_prefix")+e.message);btn.disabled=false;btn.textContent=t("btn_confirm_add")});
+}
+
+function populateManageAgentPanel() {
+  var panel = document.getElementById("manageAgentPanel");
+  var html = "<div class=\"right-panel-header\"><h3>" + t("agent_manage") + "</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div><div class=\"right-panel-body\">" +
+    "<button onclick=\"closeAllRightPanels();openRightPanel('addAgentPanel')\" style=\"padding:8px 14px;width:100%;border:1px dashed var(--accent-primary);border-radius:8px;background:var(--accent-bg);color:var(--accent-primary);cursor:pointer;font-size:13px;margin-bottom:10px;text-align:center;\">➕ "+t("agent_add")+"</button>";
+  agents.forEach(function(a){
+    html += "<div style=\"display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-color);\">";
+    html += "<span style=\"font-size:20px;\">" + renderAgentAvatar(a.avatar, 20) + "</span>";
+    html += "<div style=\"flex:1;\"><div style=\"font-size:13px;font-weight:500;\">"+escAttr(a.nickname||a.name)+"</div><div style=\"font-size:11px;color:var(--text-muted);\">ID: "+esc(a.id)+" | "+esc(a.role)+"</div></div>";
+    var remMsg = t("confirm_delete_agent").replace("{id}", escAttr(a.nickname||a.name));
+  var errPref = t("msg_error_prefix");
+  if (a.id!=="codex") html += "<button onclick=\"showConfirmModal('"+remMsg+"',function(){fetch('/api/members/"+a.id+"',{method:'DELETE'}).then(function(){return fetch('/api/agents')}).then(function(r){return r.json()}).then(function(d){agents=d;renderAgentSidebar();populateManageAgentPanel()}).catch(function(e){alert(errPref+e.message)})})\" style=\"padding:4px 10px;border:none;border-radius:6px;background:var(--accent-danger);color:#fff;cursor:pointer;font-size:11px;\">"+t("agent_remove")+"</button>";
+    html += "<button onclick=\"editAgent('"+a.id+"')\" style=\"padding:4px 10px;border:none;border-radius:6px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:11px;margin-left:4px;\">"+t("btn_edit")+"</button></div>";
+  });
+  html += "</div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+var editingAgent = null;
+
+function editAgent(agentId) {
+  for (var i = 0; i < agents.length; i++) {
+    if (agents[i].id === agentId) {
+      editingAgent = agents[i];
+      break;
+    }
+  }
+  openRightPanel("editAgentPanel");
+}
+
+function populateEditAgentPanel() {
+  var panel = document.getElementById("editAgentPanel");
+  if (!editingAgent) { closeAllRightPanels(); return; }
+  var a = editingAgent;
+  var currentAvatarHtml = renderAgentAvatar(a.avatar, 36);
+  var html = "<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:12px;\">" + currentAvatarHtml + "<strong style=\"font-size:15px;\">" + escAttr(a.nickname || a.name) + "</strong></div>" +
+    "<div class=\"right-panel-header\"><h3>" + t("agent_edit") + "</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div class=\"form-group\">"+t("user_nickname")+"</label><input class=\"form-input\" id=\"editNickname\" value=\"" + escAttr(a.nickname || a.name) + "\" data-i18n-placeholder='nickname_placeholder' placeholder='Nickname'></div>" +
+    "<div class=\"form-group\"><label>Endpoint</label><input class=\"form-input\" value=\"" + escAttr(a.endpoint || "") + "\" disabled style=\"opacity:0.7\"></div>" +
+    "<div class=\"form-group\"><label>"+t("select_avatar")+"</label>" +
+    "<div class=\"avatar-grid\" id=\"editAvatarGrid\">";
+  var emojis = ["🤖","🦞","🦊","🐱","🐶","🐼","🐨","🦁","🐯","🐸","🐵","🦄","🐧","🐦","🐤","🐺","🐍","🐢","🐙","🦑","🐬","🐳","🦋","🐝","🐞","🦀"];
+  for (var i = 0; i < emojis.length; i++) {
+    var sel = emojis[i] === a.avatar ? ' selected' : '';
+    html += "<button class=\"avatar-opt" + sel + "\" onclick=\"setEditAvatar('" + emojis[i] + "')\" data-emoji='" + emojis[i] + "'>" + emojis[i] + "</button>";
+  }
+  html += "</div>" +
+    "<div style=\"margin-top:6px\"><label class=\"upload-avatar-btn\" for=\"editAvatarUpload\">"+t("btn_upload_avatar_label")+"</label>" +
+    "<input type=\"file\" id=\"editAvatarUpload\" accept=\"image/*\" style=\"display:none\" onchange=\"uploadEditAvatar(event)\">" +
+    "<div id=\"editAvatarPreview\" style=\"display:none;margin-top:6px;font-size:13px;color:var(--text-secondary)\"></div></div>" +
+    "</div></div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels();openRightPanel('manageAgentPanel')\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">" + t("btn_back") + "</button>" +
+    "<button class=\"btn-save\" onclick=\"saveEditAgent()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 "+t("btn_save")+"</button></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+function setEditAvatar(emoji) {
+  document.querySelectorAll(".avatar-opt").forEach(function(b){b.classList.remove("selected")});
+  var btns = document.querySelectorAll(".avatar-opt");
+  for (var i = 0; i < btns.length; i++) {
+    if (btns[i].getAttribute("data-emoji") === emoji) {
+      btns[i].classList.add("selected");
+      break;
+    }
+  }
+  editingAgent._pendingAvatar = emoji;
+}
+
+function uploadEditAvatar(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    document.querySelectorAll(".avatar-opt").forEach(function(b){b.classList.remove("selected")});
+    editingAgent._pendingAvatar = dataUrl;
+    document.getElementById("editAvatarPreview").style.display = "block";
+    document.getElementById("editAvatarPreview").innerHTML = t("avatar_selected");
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveEditAgent() {
+  var nickname = document.getElementById("editNickname").value.trim();
+  if (!nickname) { alert(t("msg_nickname_required")); return; }
+  var avatar = editingAgent._pendingAvatar || editingAgent.avatar;
+  var body = { nickname: nickname };
+  if (avatar && avatar !== editingAgent.avatar) body.avatar = avatar;
+  var btn = document.querySelector("#editAgentPanel .btn-save");
+  btn.disabled = true; btn.textContent = t("btn_saving");
+  fetch("/api/members/" + editingAgent.id, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/agents");
+  }).then(function(r) {
+    return r.json();
+  }).then(function(d) {
+    agents = d;
+    renderAgentSidebar();
+    closeAllRightPanels();openRightPanel("manageAgentPanel");
+  }).catch(function(e) {
+    alert(t("msg_save_fail") + e.message);
+    btn.disabled = false; btn.textContent = "💾 "+t("btn_save");
+  });
+}
+
+var editingAgent = null;
+
+function editAgent(agentId) {
+  for (var i = 0; i < agents.length; i++) {
+    if (agents[i].id === agentId) {
+      editingAgent = agents[i];
+      break;
+    }
+  }
+  openRightPanel("editAgentPanel");
+}
+
+function populateUserSettingsPanel() {
+  var panel = document.getElementById("userSettingsPanel");
+  if (!panel) return;
+  var savedAvatar = localStorage.getItem("hub_boss_avatar") || "";
+  var savedName = localStorage.getItem("hub_boss_name") || t("default_user_name");
+  var avatarHtml = savedAvatar ? '<img src="' + savedAvatar + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '👤';
+  var html = "<div class=\"right-panel-header\"><h3 >"+t("settings_user")+"</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div class=\"form-group\"><label>"+t("user_avatar")+"</label>" +
+    "<div style=\"display:flex;align-items:center;gap:10px;margin-top:4px;\">" +
+    "<span id=\"userSettingsAvatarPreview\" style=\"font-size:28px;\">" + avatarHtml + "</span>" +
+    "<label class=\"upload-avatar-btn\" for=\"userSettingsAvatarUpload\" style=\"cursor:pointer\">"+t("btn_upload_avatar_label")+"</label>" +
+    "<input type=\"file\" id=\"userSettingsAvatarUpload\" accept=\"image/*\" style=\"display:none\" onchange=\"uploadUserAvatar(event)\">" +
+    "</div>" +
+    "<div class=\"form-group\" style=\"margin-top:12px\"><label>"+t("user_nickname")+"</label><input class=\"form-input\" id=\"userSettingsNickname\" value=\"" + escAttr(savedName) + "\" data-i18n-placeholder='nickname_placeholder' placeholder='Enter nickname'></div>" +
+    "</div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">"+t("confirm_cancel")+"</button>" +
+    "<button class=\"btn-save\" onclick=\"saveUserSettingsPanel()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 "+t("btn_save")+"</button></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+function uploadUserAvatar(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    document.getElementById("userSettingsAvatarPreview").innerHTML = '<img src="' + dataUrl + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">';
+    document.getElementById("userSettingsAvatarPreview")._pendingAvatar = dataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveUserSettingsPanel() {
+  var nickname = document.getElementById("userSettingsNickname").value.trim() || t("default_user_name");
+  var avatarEl = document.getElementById("userSettingsAvatarPreview");
+  var avatar = avatarEl._pendingAvatar || localStorage.getItem("hub_boss_avatar") || "";
+  localStorage.setItem("hub_boss_name", nickname);
+  if (avatar) localStorage.setItem("hub_boss_avatar", avatar);
+  closeAllRightPanels();
+}
+
+function populateAgentAnimPanel() {
+  var panel = document.getElementById("agentAnimPanel");
+  var savedSpeed = localStorage.getItem("hub_agent_speed") || "20";
+  var html = "<div class=\"right-panel-header\"><h3 >"+t("settings_animation")+"</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div class=\"form-group\"><label>"+t("anim_speed")+"</label>" +
+    "<input type=\"range\" class=\"form-input\" id=\"agentAnimSpeed\" min=\"5\" max=\"100\" value=\"" + savedSpeed + "\" style=\"width:100%\" oninput=\"document.getElementById('speedValue').textContent=this.value\">" +
+    "<div style=\"display:flex;justify-content:space-between;margin-top:4px;\"><span style=\"font-size:12px;color:var(--text-muted);\">"+t("anim_slow")+"</span><span id=\"speedValue\" style=\"font-size:13px;font-weight:500;\">" + savedSpeed + "</span><span style=\"font-size:12px;color:var(--text-muted);\">"+t("anim_fast")+"</span></div>" +
+    "<div style=\"font-size:11px;color:var(--text-muted);margin-top:6px;\">"+t("anim_unit")+"</div>" +
+    "</div>" +
+    "</div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">"+t("confirm_cancel")+"</button>" +
+    "<button class=\"btn-save\" onclick=\"saveAgentAnimPanel()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 "+t("btn_save")+"</button></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+function saveAgentAnimPanel() {
+  var speed = document.getElementById("agentAnimSpeed").value;
+  localStorage.setItem("hub_agent_speed", speed);
+  closeAllRightPanels();
+}
+
+function saveRules() {
+  var rounds = parseInt(document.getElementById("ruleRounds").value) || 3;
+  var custom = document.getElementById("ruleCustom").value.trim();
+  var btn = document.querySelector("#rulesPanel .btn-save");
+  btn.disabled = true; btn.textContent = t("btn_saving");
+  localStorage.setItem("hub_rule_rounds", rounds);
+  localStorage.setItem("hub_rule_custom", custom);
+  fetch("/api/rules", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rounds: rounds, customRules: custom })
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.success) {
+      alert(t("btn_save_rules"));
+    } else {
+      alert("保存失败");
+    }
+  }).catch(function(e) {
+    alert(t("msg_save_fail") + e.message);
+  }).finally(function() {
+    btn.disabled = false; btn.textContent = t("btn_save_rules");
+  });
+}
+
+// --- show/hide confirm modal ---
+var confirmCallback = null;
+function showConfirmModal(msg, callback) {
+  var overlay = document.getElementById("confirmOverlay");
+  var msgEl = document.getElementById("confirmMessage");
+  if (overlay) overlay.style.display = "flex";
+  if (msgEl) msgEl.textContent = msg;
+  confirmCallback = callback || null;
+}
+function hideConfirmModal() {
+  var overlay = document.getElementById("confirmOverlay");
+  if (overlay) overlay.style.display = "none";
+  confirmCallback = null;
+}
+// Wire up confirm button
+document.addEventListener("DOMContentLoaded", function(){
+  var okBtn = document.getElementById("confirmOkBtn");
+  if (okBtn) {
+    okBtn.addEventListener("click", function(){
+      if (typeof confirmCallback === "function") confirmCallback();
+      hideConfirmModal();
+    });
+  }
+});
+
+function exitApp() {
+  if (typeof currentTaskId !== "undefined" && currentTaskId) {
+    try { localStorage.setItem("agentHubLastTaskId", currentTaskId); } catch(e) {}
+  }
+  showConfirmModal(t("confirm_exit"), function(){
+    fetch("/api/shutdown", { method: "POST" }).then(function(){
+      closeSettings();
+    }).catch(function(){
+      closeSettings();
+    });
+  });
+}
+;(function(){var s=localStorage.getItem("hub_theme")||'gray';document.documentElement.setAttribute("data-theme",s);document.querySelectorAll('.theme-card[data-theme="'+s+'"]').forEach(function(c){c.classList.add("active")})})()
+function renderAgentAvatar(avatar, size) {
+  if (!avatar) return avatar || "";
+  if (avatar.indexOf("data:") === 0 || avatar.indexOf("/") === 0 || avatar.indexOf("http") === 0) {
+    return '<img src="' + avatar + '" style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;object-fit:cover">';
+  }
+  return avatar;
+}
+</script>
+<script src="/js/lang.js"></script>
+<script src="/js/chat.js"></script>
+<script src="/js/pixel-office.js"></script>
+<script>
+function populateProjectManagePanel() {
+  var panel = document.getElementById("projectManagePanel");
+  var allAgents = typeof agents !== 'undefined' ? agents : [];
+  var html = "<div class=\"right-panel-header\"><h3 >"+t("settings_project")+"</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div><div class=\"right-panel-body\">" +
+    "<div style=\"margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-color);\">" +
+    "<h4 style=\"font-size:13px;margin-bottom:8px;\">"+t("btn_new_project_title")+"</h4>" +
+    "<input class=\"form-input\" id=\"newProjectName\" data-i18n-placeholder='btn_placeholder_project_name' placeholder='Enter project name' style=\"width:100%;margin-bottom:8px;\">" +
+    "<div style=\"font-size:12px;color:var(--text-secondary);margin-bottom:6px;\">"+t("btn_select_agents")+"</div>" +
+    "<div id=\"newProjectAgents\" style=\"margin-bottom:8px;max-height:120px;overflow-y:auto;\">";
+  for (var i = 0; i < allAgents.length; i++) {
+    html += "<label style=\"display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer;\">" +
+      "<input type=\"checkbox\" class=\"project-agent-cb\" data-agent-id=\"" + allAgents[i].id + "\" checked>" +
+      "<span>" + (allAgents[i].nickname || allAgents[i].name) + "</span></label>";
+  }
+  html += "</div>" +
+    "<button onclick=\"createProject()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;width:100%;\">"+t("btn_new_project")+"</button>" +
+    "</div>" +
+    "<h4 style=\"font-size:13px;margin-bottom:8px;\">"+t("btn_existing_projects")+"</h4>" +
+    "<div id=\"projectList\" style=\"max-height:260px;overflow-y:auto;\">";
+  var hasProjects = typeof tasks !== 'undefined' && tasks.length > 0;
+  if (!hasProjects) {
+    html += "<div style=\"font-size:12px;color:var(--text-muted);text-align:center;padding:16px;\">"+t("btn_no_projects")+"</div>";
+  } else {
+    for (var i = 0; i < tasks.length; i++) {
+      var task = tasks[i];
+      html += "<div style=\"display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--border-color);\">" +
+        "<span style=\"font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\">" + escAttr(task.title) + "</span>" +
+        "<button onclick=\"editProject('" + task.id + "')\" style=\"padding:3px 8px;border:none;border-radius:4px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:11px;\">✏️</button>" +
+        "<button onclick=\"deleteProject('" + task.id + "','" + escAttr(task.title.replace(/'/g,'')) + "')\" style=\"padding:3px 8px;border:none;border-radius:4px;background:var(--accent-danger);color:#fff;cursor:pointer;font-size:11px;\">🗑️</button></div>";
+    }
+  }
+  html += "</div></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+var editingProjectId = null;
+
+function populateProjectEditPanel() {
+  var panel = document.getElementById("projectEditPanel");
+  var allAgents = typeof agents !== 'undefined' ? agents : [];
+  var project = null;
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].id === editingProjectId) { project = tasks[i]; break; }
+  }
+  if (!project) { closeAllRightPanels(); return; }
+  var currentParticipants = (project.participants && project.participants.length > 0) ? project.participants : (typeof agents !== 'undefined' ? agents.map(function(a){return a.id}) : []);
+  var html = "<div class=\"right-panel-header\"><h3>"+t("btn_edit_project_title")+"</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div>" +
+    "<div class=\"right-panel-body\">" +
+    "<div class=\"form-group\"><label>"+t("btn_project_name")+"</label>" +
+    "<input class=\"form-input\" id=\"editProjectName\" value=\"" + escAttr(project.title) + "\" data-i18n-placeholder='btn_project_name' placeholder='Project Name'></div>" +
+    "<div style=\"font-size:12px;color:var(--text-secondary);margin-bottom:6px;\">"+t("btn_select_agents")+"</div>" +
+    "<div id=\"editProjectAgents\" style=\"margin-bottom:8px;max-height:200px;overflow-y:auto;\">";
+  for (var i = 0; i < allAgents.length; i++) {
+    var checked = currentParticipants.indexOf(allAgents[i].id) >= 0;
+    html += "<label style=\"display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer;\">" +
+      "<input type=\"checkbox\" class=\"project-agent-cb\" data-agent-id=\"" + allAgents[i].id + "\"" + (checked ? " checked" : "") + ">" +
+      "<span>" + (allAgents[i].nickname || allAgents[i].name) + "</span></label>";
+  }
+  html += "</div></div>" +
+    "<div class=\"right-panel-footer\">" +
+    "<button class=\"btn-secondary\" onclick=\"closeAllRightPanels();openRightPanel('projectManagePanel')\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--bg-hover);color:var(--text-primary);cursor:pointer;font-size:13px;\">"+t("btn_return")+"</button>" +
+    "<button class=\"btn-save\" onclick=\"saveProjectEdit()\" style=\"padding:7px 16px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:13px;\">💾 "+t("btn_save")+"</button></div>";
+  panel.innerHTML = html;
+  panel.classList.add("show");
+}
+
+function createProject() {
+  var name = document.getElementById("newProjectName").value.trim();
+  if (!name) { alert(t("msg_nickname_required")); return; }
+  var cbs = document.querySelectorAll("#newProjectAgents .project-agent-cb");
+  var participants = [];
+  for (var i = 0; i < cbs.length; i++) {
+    if (cbs[i].checked) participants.push(cbs[i].getAttribute("data-agent-id"));
+  }
+  fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: name, participants: participants })
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/tasks");
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    tasks = d;
+    renderTaskDropdown();
+    populateProjectManagePanel();
+  }).catch(function(e) {
+    alert("创建失败: " + e.message);
+  });
+}
+
+function editProject(projectId) {
+  editingProjectId = projectId;
+  openRightPanel("projectEditPanel");
+}
+
+function deleteProject(projectId, projectName) {
+  showConfirmModal(t("confirm_delete_project").replace("{name}", projectName), function() {
+    fetch("/api/tasks/" + projectId, { method: "DELETE" }).then(function(r) {
+      if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+      return r.json();
+    }).then(function() {
+      return fetch("/api/tasks");
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      tasks = d;
+      renderTaskDropdown();
+      if (currentTaskId === projectId && tasks.length > 0) {
+        selectTask(tasks[0].id);
+      } else if (tasks.length === 0) {
+        currentTaskId = null;
+        renderTaskDropdown();
+      }
+      populateProjectManagePanel();
+    }).catch(function(e) {
+      alert("删除失败: " + e.message);
+    });
+  });
+}
+
+function saveProjectEdit() {
+  var name = document.getElementById("editProjectName").value.trim();
+  if (!name) { alert(t("msg_nickname_required")); return; }
+  var cbs = document.querySelectorAll("#editProjectAgents .project-agent-cb");
+  var participants = [];
+  for (var i = 0; i < cbs.length; i++) {
+    if (cbs[i].checked) participants.push(cbs[i].getAttribute("data-agent-id"));
+  }
+  // If all agents are checked, save empty array (meaning "all agents")
+  if (participants.length === (typeof agents !== 'undefined' ? agents.length : 0)) {
+    participants = [];
+  }
+  var btn = document.querySelector("#projectEditPanel .btn-save");
+  btn.disabled = true; btn.textContent = t("btn_saving");
+  fetch("/api/tasks/" + editingProjectId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: name })
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/tasks/" + editingProjectId, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ participants: participants })
+    });
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error); });
+    return r.json();
+  }).then(function() {
+    return fetch("/api/tasks");
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    tasks = d;
+    renderTaskDropdown();
+    closeAllRightPanels(); openRightPanel("projectManagePanel");
+  }).catch(function(e) {
+    alert("保存失败: " + e.message);
+    btn.disabled = false; btn.textContent = "💾 "+t("btn_save");
+  });
+}
+
+
+
+function loadRules() {
+  fetch("/api/rules").then(function(r) { return r.json(); }).then(function(data) {
+    var roundsInput = document.getElementById("ruleRounds");
+    var customInput = document.getElementById("ruleCustom");
+    if (roundsInput) roundsInput.value = data.rounds || 3;
+    if (customInput) customInput.value = data.customRules || "";
+    localStorage.setItem("hub_rule_rounds", data.rounds || 3);
+    localStorage.setItem("hub_rule_custom", data.customRules || "");
+  }).catch(function(e) {
+    console.error("Failed to load rules:", e.message);
+  });
+}
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

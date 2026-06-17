@@ -1,0 +1,10 @@
+﻿node_modules/
+data/*.db
+data/*.db-journal
+.env
+.DS_Store
+*.log
+*.bak
+*.bak.*
+step*-result.md
+verify_content.js

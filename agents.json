@@ -1,0 +1,20 @@
+{
+  "agents": [
+    {
+      "id": "example-agent",
+      "name": "My Agent",
+      "role": "executor",
+      "avatar": "🤖",
+      "endpoint": "http://127.0.0.1:8642/v1/chat/completions",
+      "model": "deepseek-v4-flash",
+      "auth": "$AUTH_TOKEN",
+      "system_prompt": "You are a helpful assistant.",
+      "group_permissions": {
+        "receive_all": true,
+        "receive_at_only": false,
+        "can_send_active": true,
+        "can_see_history": true
+      }
+    }
+  ]
+}
