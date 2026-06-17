@@ -38,11 +38,11 @@ if (sessionStorage.getItem("hub_splash_done")) {
         selectTask(taskToSelect.id);
         // Force sidebar refresh after task select
         loadHistorySidebar();
-        setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); }, 2500);
+        setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); try { applyI18n(); } catch(e) {} }, 2500);
       }
     })
     .catch(function(e) { console.error("Failed to init:", e);
-      setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); }, 2500);
+      setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); try { applyI18n(); } catch(e) {} }, 2500);
       });
 })();
 

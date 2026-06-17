@@ -193,12 +193,12 @@ function moveWalkerById(id) {
 // Map Agent Hub agent to pixel office agent format
 function mapAgentStatus(a) {
   var status = 'offline';
-  var task = a.role || '闲置中';
+  var task = a.role || t("agent_idle");
   if (a.online !== false) {
     status = 'idle';
     var dot = document.getElementById('dot-' + a.id);
     if (dot) {
-      if (dot.classList.contains('thinking')) { status = 'busy'; task = '思考中...'; }
+      if (dot.classList.contains('thinking')) { status = 'busy'; task = t("agent_thinking"); }
       else if (dot.classList.contains('online')) status = 'online';
       else if (dot.classList.contains('offline')) status = 'offline';
     }
