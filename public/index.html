@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN" data-theme="gray">
 <head>
 <meta charset="UTF-8">
@@ -867,10 +867,11 @@ function editAgent(agentId) {
   openRightPanel("editAgentPanel");
 }
 
+function populateUserSettingsPanel() {
   var savedAvatar = localStorage.getItem("hub_boss_avatar") || "";
   var savedName = localStorage.getItem("hub_boss_name") || "力哥";
   var avatarHtml = savedAvatar ? '<img src="' + savedAvatar + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '👤';
-  var html = "<div class=\"right-panel-header\"><h3 data-i18n="settings_user">👤 用户设置</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+  var html = "<div class=\"right-panel-header\"><h3 data-i18n='settings_user'>👤 用户设置</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
     "<div class=\"right-panel-body\">" +
     "<div class=\"form-group\"><label>头像</label>" +
     "<div style=\"display:flex;align-items:center;gap:10px;margin-top:4px;\">" +
@@ -911,7 +912,7 @@ function saveUserSettingsPanel() {
 function populateAgentAnimPanel() {
   var panel = document.getElementById("agentAnimPanel");
   var savedSpeed = localStorage.getItem("hub_agent_speed") || "20";
-  var html = "<div class=\"right-panel-header\"><h3 data-i18n="settings_animation">🎬 Agent 动画</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
+  var html = "<div class=\"right-panel-header\"><h3 data-i18n='settings_animation'>🎬 Agent 动画</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">×</button></div>" +
     "<div class=\"right-panel-body\">" +
     "<div class=\"form-group\"><label>速度</label>" +
     "<input type=\"range\" class=\"form-input\" id=\"agentAnimSpeed\" min=\"5\" max=\"100\" value=\"" + savedSpeed + "\" style=\"width:100%\" oninput=\"document.getElementById('speedValue').textContent=this.value\">" +
@@ -983,7 +984,7 @@ function renderAgentAvatar(avatar, size) {
 function populateProjectManagePanel() {
   var panel = document.getElementById("projectManagePanel");
   var allAgents = typeof agents !== 'undefined' ? agents : [];
-  var html = "<div class=\"right-panel-header\"><h3 data-i18n="settings_project">📁 项目管理</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div><div class=\"right-panel-body\">" +
+  var html = "<div class=\"right-panel-header\"><h3 data-i18n='settings_project'>📁 项目管理</h3><button class=\"settings-close\" onclick=\"closeAllRightPanels()\" style=\"position:static;width:auto;height:auto;font-size:18px;\">x</button></div><div class=\"right-panel-body\">" +
     "<div style=\"margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-color);\">" +
     "<h4 style=\"font-size:13px;margin-bottom:8px;\">➕ 新建项目</h4>" +
     "<input class=\"form-input\" id=\"newProjectName\" placeholder=\"请输入项目名称\" style=\"width:100%;margin-bottom:8px;\">" +
