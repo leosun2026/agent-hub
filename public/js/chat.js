@@ -33,9 +33,12 @@ var tasks = [];
         selectTask(taskToSelect.id);
         // Force sidebar refresh after task select
         loadHistorySidebar();
+        hideSplash();
       }
     })
-    .catch(function(e) { console.error("Failed to init:", e); });
+    .catch(function(e) { console.error("Failed to init:", e);
+      hideSplash();
+      });
 })();
 
 function loadTasks() {
@@ -82,7 +85,9 @@ function selectTask(taskId) {
   renderAgentSidebar();
   loadHistory(taskId);
   renderTaskDropdown();
-}function loadHistory(taskId) {
+}
+
+function loadHistory(taskId) {
   var url = "/api/messages?room_id=room-general&limit=500";
   if (taskId) url += "&task_id=" + encodeURIComponent(taskId);
   fetch(url)
@@ -96,6 +101,7 @@ function selectTask(taskId) {
         appendSystemMessage("📅 " + ds + " — 新对话");
       }
       msgs.forEach(function(msg) { appendMessage(msg); });
+      renderHistoryList(msgs);
     })
     .catch(function(e) { console.error("Failed to load history:", e); });
 }
@@ -277,7 +283,6 @@ function renderAgentSidebar() {
   histList.className = "history-list";
   histList.id = "historyList";
   sidebar.appendChild(histList);
-  loadHistorySidebar();
 
   // Settings button (floats at bottom of sidebar)
   var settingsBtn = document.createElement("button");
@@ -288,12 +293,7 @@ function renderAgentSidebar() {
   sidebar.appendChild(settingsBtn);
 }
 
-function loadHistorySidebar() {
-  var url = "/api/messages?room_id=room-general&limit=500";
-  if (currentTaskId) url += "&task_id=" + encodeURIComponent(currentTaskId);
-  fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(msgs) {
+function renderHistoryList(msgs) {
       var histList = document.getElementById("historyList");
       if (!histList) return;
       histList.innerHTML = "";
@@ -354,15 +354,29 @@ function loadHistorySidebar() {
       moreBtn.className = 'history-more';
       if (!showAll && keys.length > 3) {
         moreBtn.innerHTML = '<span style="cursor:pointer;color:var(--accent-primary);font-size:12px;">\u25bc \u66f4\u591a</span>';
-        moreBtn.onclick = function() { histList.setAttribute("data-show-all", "true"); loadHistorySidebar(); };
+        moreBtn.onclick = function() { histList.setAttribute("data-show-all", "true"); loadHistorySidebar();
+        hideSplash();
+      };
       } else if (showAll) {
         moreBtn.innerHTML = '<span style="cursor:pointer;color:var(--accent-primary);font-size:12px;">\u25b2 \u6536\u8d77</span>';
-        moreBtn.onclick = function() { histList.removeAttribute("data-show-all"); loadHistorySidebar(); };
+        moreBtn.onclick = function() { histList.removeAttribute("data-show-all"); loadHistorySidebar();
+        hideSplash();
+      };
       }
       histList.appendChild(moreBtn);
+}
+
+function loadHistorySidebar() {
+  var url = "/api/messages?room_id=room-general&limit=500";
+  if (currentTaskId) url += "&task_id=" + encodeURIComponent(currentTaskId);
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(msgs) {
+      renderHistoryList(msgs);
     })
     .catch(function(e) { console.error("Failed to load history sidebar:", e); });
 }
+
 
 
 
@@ -434,8 +448,8 @@ function deleteMonthChat(dateKey) {
       body: JSON.stringify({ date_key: dateKey, room_id: "room-general" })
     }).catch(function(e) { console.error("Server delete error:", e); });
     loadHistorySidebar();
-
-  }
+        hideSplash();
+      }
 }
 
 
@@ -578,7 +592,7 @@ function removeAgentPermanent(id) {
 
 // ============ Nickname Editing ============
 
-function startEditNickname(agentId, currentName) {
+function startEditNickname(event, agentId, currentName) {
   event.stopPropagation();
   var cards = document.querySelectorAll('.agent-card[data-id="' + agentId + '"]');
   if (cards.length === 0) return;

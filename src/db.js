@@ -138,8 +138,8 @@ function queryOne(sql, params) {
 function run(sql, params) {
   params = params || [];
   db.run(sql, params);
-  saveDb();
   var row = queryOne('SELECT last_insert_rowid() AS id');
+  saveDb();
   return row ? row.id : null;
 }
 

@@ -23,14 +23,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .task-option{padding:10px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;transition:background .12s}
 .task-option:hover{background:var(--bg-hover)}
 .task-option.active{background:var(--accent-bg);color:var(--accent-primary);font-weight:500}
-.task-option.new{border-top:1px solid var(--border-color);color:var(--accent-primary)}
-.task-edit-btn{display:inline;margin-left:6px;cursor:pointer;opacity:0;font-size:12px;transition:opacity .12s;user-select:none}
-.task-option:hover .task-edit-btn{opacity:.6}
-.task-edit-btn:hover{opacity:1!important}
-
-
-
-
 .task-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .task-selector-btn{max-width:200px;overflow:hidden;text-overflow:ellipsis}
 .inline-rename-form{display:flex;align-items:center;gap:4px;padding:2px 0;width:100%}
@@ -243,18 +235,42 @@ main{flex:1;display:flex;overflow:hidden}
 
 .right-panel-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:2001;display:none}.right-panel-overlay.show{display:block}
 </style>
+<script>
+(function(){
+  var splash = document.getElementById("splashScreen");
+  setTimeout(function(){
+    if (splash && splash.style.display !== "none") {
+      var sp = document.getElementById("splashSpinner");
+      var st = document.getElementById("splashStatus");
+      if (sp) sp.style.display = "none";
+      if (st) st.innerHTML = "加载异常 <button onclick=\"location.reload()\" style=\"margin:0 8px;padding:6px 16px;border-radius:6px;border:1px solid var(--accent-primary,#d4a373);background:transparent;color:var(--accent-primary,#d4a373);cursor:pointer\">重试</button><button onclick=\"fetch(&#39;/api/exit&#39;,{method:&#39;POST&#39;}).then(function(){setTimeout(function(){window.close()},300)})\" style=\"margin:0 8px;padding:6px 16px;border-radius:6px;border:none;background:var(--accent-danger,#ff3b30);color:#fff;cursor:pointer\">退出程序</button>";
+    }
+  }, 10000);
+  window.hideSplash = function() { var el = document.getElementById("splashScreen"); if (el) el.style.display = "none"; };
+})();
+</script>
+
 </head>
 <body>
+<div id="splashScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-primary,#1c1c1e);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:var(--text-primary,#f5f5f7)">
+  <div style="font-size:48px;font-weight:700;color:var(--accent-primary,#d4a373);margin-bottom:16px">Agent Hub</div>
+  <div style="font-size:16px;color:var(--text-secondary,#8e8e93);margin-bottom:32px">多智能体协作平台 — 欢迎大家使用</div>
+  <div id="splashSpinner" style="width:40px;height:40px;border:3px solid var(--border-color,#48484a);border-top-color:var(--accent-primary,#d4a373);border-radius:50%;animation:splashSpin .8s linear infinite"></div>
+  <div id="splashStatus" style="margin-top:20px;font-size:14px;color:var(--text-muted,#636366)">正在加载...</div>
+</div>
+<style>
+@keyframes splashSpin{to{transform:rotate(360deg)}}
+</style>
+
 <header>
   <div class="header-left">
     <h1 class="header-brand">Agent Hub</h1>
     <div class="task-selector">
       <button class="task-selector-btn" onclick="toggleTaskDropdown()">📋 当前任务 <span class="arrow">▼</span></button>
       <div class="task-dropdown" id="taskDropdown">
-        <div class="task-option active" onclick="switchTask(this)">📋 Agent Hub <span class="task-edit-btn" onclick="event.stopPropagation();alert('编辑任务名称功能开发中')">✏️</span></div>
-        <div class="task-option" onclick="switchTask(this)">🛠️ 系统维护 <span class="task-edit-btn" onclick="event.stopPropagation();alert('编辑任务名称功能开发中')">✏️</span></div>
+        <div class="task-option active" onclick="switchTask(this)">📋 Agent Hub 开发</div>
+        <div class="task-option" onclick="switchTask(this)">🛠️ 系统维护</div>
       <div class="task-divider"></div>
-      <div class="task-option new" onclick="alert('新建任务功能开发中')">＋ 新建任务</div>
     </div>
   </div>
 </div>
