@@ -329,7 +329,7 @@ main{flex:1;display:flex;overflow:hidden}
       <div id="walkers-container"></div>
     </div>
     <div style="padding:8px 16px;text-align:center;font-size:11px;color:var(--text-muted,#636366);border-top:1px solid var(--border-color,#48484a);flex-shrink:0;line-height:1.6">
-      大厅动画改编自 <a href="https://github.com/RingHyacinth/Star-Office-UI" target="_blank" rel="noopener" style="color:var(--accent-primary,#d4a373);text-decoration:none">Star-Office-UI</a> (MIT) · 像素艺术素材版权归原作者所有，仅限非商业学习使用
+      大厅动画改编自 openclaw-virtual-office（基于 <a href="https://github.com/RingHyacinth/Star-Office-UI" target="_blank" rel="noopener" style="color:var(--accent-primary,#d4a373);text-decoration:none">Star-Office-UI</a>）· 像素艺术素材版权归原作者所有，仅限非商业学习使用
     </div>
   </div>
 </main>
@@ -367,7 +367,7 @@ main{flex:1;display:flex;overflow:hidden}
       <div class="settings-card" onclick="openRightPanel('agentAnimPanel')" style="padding:10px 12px;"><div style="font-size:13px;font-weight:500;">🎬 动画速度</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">设置 Agent 消息动画速度</div></div>
     </div>
 
-    <div class="settings-section" style="margin-bottom:10px;"><div style="display:flex;gap:16px;"><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;">🪵 日志</h3><button onclick="window.open('/api/log','_blank')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;">📂 打开日志文件</button></div><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;">🌐 语言</h3><select id="settingsLanguage" onchange="localStorage.setItem('hub_language',this.value);" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;"><option value="en">English</option><option value="zh">中文</option></select></div></div></div>
+    <div class="settings-section" style="margin-bottom:10px;"><div style="display:flex;gap:16px;"><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;">🪵 日志</h3><button onclick="window.open('/api/log','_blank')" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;">📂 打开日志文件</button></div><div style="flex:1;"><h3 style="font-size:12px;margin-bottom:6px;">🌐 语言</h3><select id="settingsLanguage" onchange="setLocale(this.value);" style="padding:7px 14px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;font-size:12px;width:100%;"><option value="en">English</option><option value="zh">中文</option></select></div></div></div>
 
     <div class="settings-section" style="margin-bottom:10px;"><h3 style="font-size:12px;margin-bottom:6px;">📥 导出保存位置</h3>
       <div class="settings-input-row"><input class="settings-input" id="settingsExportPath" value="" onchange="localStorage.setItem('hub_export_path',this.value)" placeholder="路径"></div>
@@ -536,9 +536,9 @@ function openSettings() {
   var langSel = document.getElementById("settingsLanguage");
   if (langSel) {
     var detectedLang = (navigator.language || "en").startsWith("zh") ? "zh" : "en";
-    var savedLang = localStorage.getItem("hub_language");
+    var savedLang = localStorage.getItem("hub_locale") || localStorage.getItem("hub_language");
     langSel.value = savedLang || detectedLang;
-    if (!savedLang) localStorage.setItem("hub_language", langSel.value);
+    if (!savedLang) localStorage.setItem("hub_locale", langSel.value);
   }
   var nickInput = document.getElementById("settingsNickname");
   if (nickInput && savedName) nickInput.value = savedName;
@@ -976,6 +976,7 @@ function renderAgentAvatar(avatar, size) {
   return avatar;
 }
 </script>
+<script src="/js/lang.js"></script>
 <script src="/js/chat.js"></script>
 <script src="/js/pixel-office.js"></script>
 <script>
@@ -1160,6 +1161,8 @@ function loadRules() {
 </script>
 </body>
 </html>
+
+
 
 
 

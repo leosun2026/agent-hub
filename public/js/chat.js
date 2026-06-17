@@ -84,7 +84,7 @@ function selectTask(taskId) {
   for (var i = 0; i < tasks.length; i++) {
     if (tasks[i].id === taskId) { task = tasks[i]; break; }
   }
-  var title = task ? task.title : "任务";
+  var title = task ? task.title : t("sidebar_agents");
   var btn = document.querySelector(".task-selector-btn");
   if (btn) btn.innerHTML = '📋 ' + esc(title) + ' <span class="arrow">▼</span>';
   renderAgentSidebar();
@@ -108,7 +108,7 @@ function loadHistory(taskId) {
       if (msgs.length === 0 && taskId) {
         var d = new Date();
         var ds = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-        appendSystemMessage("📅 " + ds + " — 新对话");
+        appendSystemMessage("📅 " + ds + " — " + t("msg_new_chat"));
       }
       msgs.forEach(function(msg) { appendMessage(msg); });
       renderHistoryList(msgs);
@@ -124,9 +124,9 @@ socket.on("chat:message", function(msg) {
 
 socket.on("chat:system", function(data) {
   if (data.type === "member:joined") {
-    appendSystemMessage(data.payload.agentName + " 加入了聊天");
+    appendSystemMessage(data.payload.agentName + " " + t("msg_joined"));
   } else if (data.type === "member:removed") {
-    appendSystemMessage(data.payload.agentName + " 已移出聊天");
+    appendSystemMessage(data.payload.agentName + " " + t("msg_left"));
   }
 });
 
@@ -239,7 +239,7 @@ function renderAgentSidebar() {
   // Agent list title (matches prototype)
   var listTitle = document.createElement("div");
   listTitle.className = "sidebar-section-title";
-  listTitle.textContent = "Agent 列表";
+  listTitle.textContent = t("sidebar_agents");
   sidebar.appendChild(listTitle);
 
   // Filter agents by current task's participants
@@ -286,7 +286,7 @@ function renderAgentSidebar() {
   // Chat history section
   var title = document.createElement("div");
   title.className = "sidebar-section-title";
-  title.textContent = "聊天记录";
+  title.textContent = t("sidebar_history");
   sidebar.appendChild(title);
 
   var histList = document.createElement("div");
@@ -298,7 +298,7 @@ function renderAgentSidebar() {
   var settingsBtn = document.createElement("button");
   settingsBtn.className = "btn-settings-float";
   settingsBtn.onclick = openSettings;
-  settingsBtn.title = "设置";
+  settingsBtn.title = t("sidebar_settings");
   settingsBtn.textContent = "⚙️";
   sidebar.appendChild(settingsBtn);
 }
@@ -440,7 +440,7 @@ function exportMonthChat(dateKey) {
 function deleteMonthChat(dateKey) {
   var parts = dateKey.split("-");
   var label = parseInt(parts[1]) + "月" + parseInt(parts[2]) + "日";
-  if (!confirm("确定要删除 " + label + " 的聊天记录吗？此操作不可撤销。")) return;
+  if (!confirm(t("msg_delete_chat").replace("{label}", label))) return;
   var msgs = document.querySelectorAll("#chatMessages .chat-msg");
   var ids = [];
   var count = 0;
@@ -566,10 +566,10 @@ function openManageMembers() {
   agents.forEach(function(a) {
     var perms = a.group_permissions || {};
     var tags = [];
-    if (perms.receive_all !== false) tags.push("接收全部消息");
-    if (perms.receive_at_only) tags.push("@提及");
-    if (perms.can_send_active !== false) tags.push("可发送");
-    if (perms.can_see_history !== false) tags.push("历史可见");
+    if (perms.receive_all !== false) tags.push(t("agent_perms_receive_all"));
+    if (perms.receive_at_only) tags.push(t("agent_perms_at_only"));
+    if (perms.can_send_active !== false) tags.push(t("agent_perms_can_send"));
+    if (perms.can_see_history !== false) tags.push(t("agent_perms_history"));
 
     html += '<div class="manage-agent-card">';
     html += "<span style=\"font-size:24px\">" + a.avatar + "</span>";
@@ -615,7 +615,7 @@ function startEditNickname(event, agentId, currentName) {
   input.type = "text";
   input.className = "nickname-edit-input";
   input.value = currentName || "";
-  input.placeholder = "输入昵称...";
+  input.placeholder = t("nickname_placeholder");
 
   input.addEventListener("keydown", function(e) {
     if (e.key === "Enter") { e.preventDefault(); saveNickname(agentId, input.value); }
@@ -690,7 +690,7 @@ function getBossAvatar() {
 }
 function getBossName() {
   var saved = localStorage.getItem("hub_boss_name");
-  return saved || "力哥";
+  return saved || t("default_user_name");
 }
 
 /* 打开 Agent 对谈选人弹窗 */
@@ -719,7 +719,7 @@ function openPick() {
     l.appendChild(r);
   });
   document.getElementById("pickOverlay").classList.add("show");
-  document.querySelector(".pick-modal .btn-confirm").textContent = "确认（0/2）";
+  document.querySelector(".pick-modal .btn-confirm").textContent = t("battle_confirm") + "（0/2）";
   document.querySelector(".pick-modal .btn-confirm").style.opacity = "0.5";
 }
 function initCmdBar() {
@@ -891,7 +891,7 @@ function scrollToDate(dateKey) {
 var _origConfirmPick = typeof confirmPick !== "undefined" ? confirmPick : function(){};
 function confirmPick() {
   if (typeof picked === "undefined" || picked.length !== 2) {
-    if (typeof alert === "function") alert("请选择 2 个 Agent");
+    if (typeof alert === "function") alert(t("msg_battle_select"));
     return;
   }
   var agentNames = [];
@@ -899,10 +899,10 @@ function confirmPick() {
     var nameEl = picked[_i].querySelector(".name");
     if (nameEl) agentNames.push(nameEl.textContent);
   }
-  if (agentNames.length < 2) { alert("无法获取 Agent 名称"); return; }
+  if (agentNames.length < 2) { alert(t("msg_battle_names")); return; }
   closePick();
   
-  var topic = prompt("请输入探讨话题：");
+  var topic = prompt(t("msg_battle_topic"));
   if (!topic || !topic.trim()) return;
   
   var input = document.getElementById("chatInput");
