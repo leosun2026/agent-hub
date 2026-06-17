@@ -7,6 +7,12 @@ var pasteData = null;
 var currentTaskId = null;
 var tasks = [];
 
+// 页面刷新时立即隐藏欢迎屏
+if (sessionStorage.getItem("hub_splash_done")) {
+  var splashEl = document.getElementById("splashScreen");
+  if (splashEl) splashEl.style.display = "none";
+}
+
 // ============ Initialization ============
 
 (function init() {
@@ -33,11 +39,11 @@ var tasks = [];
         selectTask(taskToSelect.id);
         // Force sidebar refresh after task select
         loadHistorySidebar();
-        hideSplash();
+        setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); }, 2500);
       }
     })
     .catch(function(e) { console.error("Failed to init:", e);
-      hideSplash();
+      setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); }, 2500);
       });
 })();
 
@@ -85,6 +91,11 @@ function selectTask(taskId) {
   renderAgentSidebar();
   loadHistory(taskId);
   renderTaskDropdown();
+  // Refresh hall if open
+  var hallOverlay = document.getElementById('hallOverlay');
+  if (hallOverlay && hallOverlay.classList.contains('open') && typeof renderPixelOffice === 'function') {
+    renderPixelOffice();
+  }
 }
 
 function loadHistory(taskId) {
@@ -355,12 +366,12 @@ function renderHistoryList(msgs) {
       if (!showAll && keys.length > 3) {
         moreBtn.innerHTML = '<span style="cursor:pointer;color:var(--accent-primary);font-size:12px;">\u25bc \u66f4\u591a</span>';
         moreBtn.onclick = function() { histList.setAttribute("data-show-all", "true"); loadHistorySidebar();
-        hideSplash();
+        setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); }, 2500);
       };
       } else if (showAll) {
         moreBtn.innerHTML = '<span style="cursor:pointer;color:var(--accent-primary);font-size:12px;">\u25b2 \u6536\u8d77</span>';
         moreBtn.onclick = function() { histList.removeAttribute("data-show-all"); loadHistorySidebar();
-        hideSplash();
+        setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); }, 2500);
       };
       }
       histList.appendChild(moreBtn);
@@ -448,7 +459,7 @@ function deleteMonthChat(dateKey) {
       body: JSON.stringify({ date_key: dateKey, room_id: "room-general" })
     }).catch(function(e) { console.error("Server delete error:", e); });
     loadHistorySidebar();
-        hideSplash();
+        setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); }, 2500);
       }
 }
 
@@ -895,3 +906,4 @@ function confirmPick() {
     if (typeof sendMessage === "function") sendMessage();
   }
 }
+

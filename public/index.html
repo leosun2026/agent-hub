@@ -238,6 +238,7 @@ main{flex:1;display:flex;overflow:hidden}
 <script>
 (function(){
   var splash = document.getElementById("splashScreen");
+  // 10秒安全兜底：JS加载失败时显示错误页
   setTimeout(function(){
     if (splash && splash.style.display !== "none") {
       var sp = document.getElementById("splashSpinner");
@@ -325,6 +326,9 @@ main{flex:1;display:flex;overflow:hidden}
       <div class="hall-wall"><div class="hall-wall-title">Agent Hub Office</div></div>
       <div id="agents-container"></div>
       <div id="walkers-container"></div>
+    </div>
+    <div style="padding:8px 16px;text-align:center;font-size:11px;color:var(--text-muted,#636366);border-top:1px solid var(--border-color,#48484a);flex-shrink:0;line-height:1.6">
+      大厅动画改编自 <a href="https://github.com/RingHyacinth/Star-Office-UI" target="_blank" rel="noopener" style="color:var(--accent-primary,#d4a373);text-decoration:none">Star-Office-UI</a> (MIT) · 像素艺术素材版权归原作者所有，仅限非商业学习使用
     </div>
   </div>
 </main>
