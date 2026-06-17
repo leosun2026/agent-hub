@@ -81,6 +81,7 @@ main{flex:1;display:flex;overflow:hidden}
 .cmd-label{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-right:4px}
 .cmd-item{padding:4px 10px;border-radius:6px;background:var(--cmd-badge-bg);color:var(--cmd-badge-color);font-size:12px;cursor:pointer;transition:opacity .12s;white-space:nowrap}
 .cmd-item:hover{opacity:.8}
+.cmd-text{color:#e8b831;font-weight:500}
 .cmd-item .cmd-desc{color:var(--text-muted);margin-left:4px;font-size:11px}
 .input-area{padding:10px 16px;border-top:1px solid var(--border-color);background:var(--bg-secondary)}
 .input-row{display:flex;gap:6px;align-items:center}
@@ -172,7 +173,7 @@ main{flex:1;display:flex;overflow:hidden}
 .pick-modal h3{font-size:15px;margin-bottom:14px}
 .pick-agent-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;margin-bottom:4px;border:1px solid transparent}
 .pick-agent-row:hover{background:var(--bg-hover)}
-.pick-agent-row.selected{border-color:var(--accent-primary);background:var(--accent-bg)}
+.pick-agent-row.selected{border-color:var(--accent-primary);background:var(--accent-bg)}.pick-agent-row .name{font-size:13px}
 .pick-modal .btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 .pick-modal .btn-row button{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px}
 .pick-modal .btn-cancel{background:var(--bg-hover);color:var(--text-primary)}
@@ -291,12 +292,12 @@ main{flex:1;display:flex;overflow:hidden}
     <div class="cmd-panel" id="cmdPanel">
       <div class="cmd-items">
         <span class="cmd-label">命令</span>
-        <span class="cmd-item" title="查看所有命令">/help <span class="cmd-desc">帮助</span></span>
-        <span class="cmd-item" title="停止当前 Agent 回复">/stop <span class="cmd-desc">停止</span></span>
-        <span class="cmd-item" title="清屏（仅清显示，数据已存）">/new <span class="cmd-desc">清屏</span></span>
-        <span class="cmd-item" title="导出从上一次 /new 到现在的对话">/save <span class="cmd-desc">保存导出</span></span>
-        <span class="cmd-item" title="点选 2 个 Agent 展开探讨">/Battle <span class="cmd-desc">探讨</span></span>
-        <span class="cmd-item" title="搜索聊天历史">/search <span class="cmd-desc">搜索</span></span>
+        <span class="cmd-item" data-cmd="/help" title="查看所有命令"><span class="cmd-text">帮助</span> <span class="cmd-desc">命令列表</span></span>
+        <span class="cmd-item" data-cmd="/stop" title="停止当前 Agent 回复"><span class="cmd-text">停止</span> <span class="cmd-desc">停止回复</span></span>
+        <span class="cmd-item" data-cmd="/new" title="清屏（仅清显示，数据已存）"><span class="cmd-text">清屏</span> <span class="cmd-desc">清空显示</span></span>
+        <span class="cmd-item" data-cmd="/save" title="导出从上一次 /new 到现在的对话"><span class="cmd-text">导出</span> <span class="cmd-desc">保存对话</span></span>
+        <span class="cmd-item" data-cmd="/Battle" title="点选 2 个 Agent 展开探讨"><span class="cmd-text">Battle</span> <span class="cmd-desc">深入探讨</span></span>
+        <span class="cmd-item" data-cmd="/search" title="搜索聊天历史"><span class="cmd-text">搜索</span> <span class="cmd-desc">搜索历史</span></span>
       </div>
     </div>
     <div class="input-area">
@@ -1261,3 +1262,6 @@ function loadRules() {
 </script>
 </body>
 </html>
+
+
+

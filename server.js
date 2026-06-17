@@ -9,7 +9,7 @@ const fs = require('fs');
 const LOG_FILE = path.join(__dirname, 'hub.log');
 ;
 const { setupRoutes } = require('./src/routes');
-const { saveMessage, getMessages, getDb, getRoom, syncAgentsToDb, listAgentsFromDb } = require('./src/db');
+const { saveMessage, getMessages, getDb, getRoom, getTask, syncAgentsToDb, listAgentsFromDb } = require('./src/db');
 const { callAgent, getAgent, listAgents, setInMemoryProperty } = require('./src/agents');
 const {
   initDefaultRoom,
@@ -195,13 +195,27 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
     return;
   }
 
+  // Filter agents by current task's participants
+  // This ensures @mentions and battle only reach agents in the current project
+  let taskFilteredAgents = roomAgents;
+  if (taskId) {
+    const task = getTask(taskId);
+    if (task && task.participants && task.participants.length > 0) {
+      taskFilteredAgents = roomAgents.filter(function(agent) {
+        return task.participants.indexOf(agent.id) >= 0;
+      });
+      console.log('[Broadcast] Task "' + task.title + '" participants filter: ' + roomAgents.length + ' -> ' + taskFilteredAgents.length + ' agents');
+      writeLog('INFO', '[Broadcast] Task "' + task.title + '" participants filter: ' + roomAgents.length + ' -> ' + taskFilteredAgents.length + ' agents');
+    }
+  }
+
   // Build reply-to context (NEW)
   const replyTo = (senderId !== 'user' && recentMsgs.length > 1)
     ? buildReplyContext(content, recentMsgs.slice(0, -1))
     : null;
 
   // Send to all agents in parallel
-  const tasks = roomAgents.map(async function(agent) {
+  const tasks = taskFilteredAgents.map(async function(agent) {
     // Permission check: mention-only mode
     const perms = agent.group_permissions || {};
 
@@ -532,6 +546,7 @@ function incrementAgentRound(agentId, taskId) {
 }
 
 module.exports = { broadcastToRoom, resetTaskRounds, chatRules };
+
 
 
 

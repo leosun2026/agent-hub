@@ -699,11 +699,23 @@ function openPick() {
   var l = document.getElementById("pickAgentList");
   l.innerHTML = "";
   picked = [];
-  agents.forEach(function(a){
+  var filteredAgents = agents;
+  if (currentTaskId) {
+    var ct = null;
+    for (var ti = 0; ti < tasks.length; ti++) {
+      if (tasks[ti].id === currentTaskId) { ct = tasks[ti]; break; }
+    }
+    if (ct && ct.participants && ct.participants.length > 0) {
+      filteredAgents = agents.filter(function(ag) {
+        return ct.participants.indexOf(ag.id) >= 0;
+      });
+    }
+  }
+  filteredAgents.forEach(function(a){
     if (!a.endpoint) return;
     var r = document.createElement("div");
     r.className = "pick-agent-row";
-    r.innerHTML = '<span style="font-size:24px">'+a.avatar+'</span><span class="name">'+(a.nickname||a.name)+'</span><code style="margin-left:auto;font-size:11px;color:var(--text-muted)">@'+a.id+"</code>";
+    r.innerHTML = renderAvatarHtml(a.avatar, 28)+'<span class="name">'+(a.nickname||a.name)+'</span>';
     r.addEventListener("click", function(){ togglePick(r); });
     l.appendChild(r);
   });
@@ -716,13 +728,7 @@ function initCmdBar() {
   for (var i = 0; i < cmdItems.length; i++) {
     (function(el) {
       el.addEventListener("click", function() {
-        var cmd = "/help";
-        for (var j = 0; j < el.childNodes.length; j++) {
-          if (el.childNodes[j].nodeType === 3) {
-            cmd = el.childNodes[j].textContent.trim();
-            break;
-          }
-        }
+        var cmd = el.getAttribute("data-cmd") || "/help";
         if (cmd === "/new") {
           var cm = document.getElementById("chatMessages");
           if (cm) cm.innerHTML = "";
@@ -906,4 +912,7 @@ function confirmPick() {
     if (typeof sendMessage === "function") sendMessage();
   }
 }
+
+
+
 

@@ -1,4 +1,4 @@
-// Room management module — Group chat room management
+﻿// Room management module 鈥?Group chat room management
 // Enhanced: name+alias @mention, companion list injection, replyTo context, nickname override
 
 const agents = require('./agents');
@@ -141,6 +141,8 @@ function buildGroupChatMessages(room, history, currentMsg, agent, isMentioned, c
  */
 function buildGroupInstructions(room, agent, isMentioned, chatRules) {
   const displayName = agent.nickname || agent.name;
+  const rounds = (chatRules && chatRules.rounds) ? chatRules.rounds : 3;
+  const customRules = (chatRules && chatRules.customRules) ? chatRules.customRules.trim() : "";
   let instructions = '[Group Chat Mode]\n';
   instructions += 'You are a member of the "' + room.name + '" chat room. Your name is "' + displayName + '" (ID: ' + agent.id + ').\n';
   instructions += 'CRITICAL: You are in a GROUP CHAT with other AI agents. All messages are visible to everyone.\n\n';
@@ -148,7 +150,7 @@ function buildGroupInstructions(room, agent, isMentioned, chatRules) {
   instructions += '=== CORE RULES (MUST FOLLOW) ===\n\n';
 
   instructions += '1. **Be concise and factual**: No pleasantries, no polite openings, no filler.\n';
-  instructions += '   State your point directly. 1-3 sentences max unless @mentioned.\n';
+  instructions += '   State your point directly. ' + rounds + ' response' + (rounds > 1 ? 's' : '') + ' max per topic in group chat.\n';
   instructions += '   BAD: "Hello! How can I assist you today?" "Sure, let me look into that for you..."\n';
   instructions += '   GOOD: Direct answer or relevant point without preamble.\n\n';
 
@@ -157,6 +159,10 @@ function buildGroupInstructions(room, agent, isMentioned, chatRules) {
 
   instructions += '3. **Relevance**: Only respond when you have something valuable to add.\n';
   instructions += '   If the topic is outside your expertise, output only "[SILENT]".\n\n';
+  if (customRules) {
+    instructions += '=== CUSTOM RULES ===\n';
+    instructions += customRules + '\n\n';
+  }
   return instructions;
 }
 
@@ -185,7 +191,7 @@ function buildCompanionList(room, currentAgentId, senderId) {
   let list = '[Room Companions]\nOther participants in this room you can interact with:\n';
   for (const c of companions) {
     const senderTag = c.isSender ? ' [CURRENT SPEAKER]' : '';
-    list += '- ' + c.name + ' (' + c.role + ')' + senderTag + ' — @mention with: @' + c.name + '\n';
+    list += '- ' + c.name + ' (' + c.role + ')' + senderTag + ' 鈥?@mention with: @' + c.name + '\n';
   }
   list += '\nYou can @mention any companion above to directly address them.';
 
@@ -279,3 +285,5 @@ module.exports = {
   extractMentions,
   isMentionAll,
 };
+
+
