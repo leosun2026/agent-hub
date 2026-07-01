@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", function(){ try { applyI18n(); } c
     .then(function(r) { return r.json(); })
     .then(function(data) {
       agents = data;
-      renderAgentSidebar();
       return fetch("/api/tasks");
     })
     .then(function(r) { return r.json(); })
@@ -38,12 +37,11 @@ document.addEventListener("DOMContentLoaded", function(){ try { applyI18n(); } c
         if (!taskToSelect) taskToSelect = tasks[0];
         selectTask(taskToSelect.id);
         // Force sidebar refresh after task select
-        loadHistorySidebar();
-        setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); try { applyI18n(); } catch(e) {} }, 2500);
+        try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} setTimeout(function(){ hideSplash(); try { applyI18n(); } catch(e) {} }, 3000);
       }
     })
     .catch(function(e) { console.error("Failed to init:", e);
-      setTimeout(function(){ try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); try { applyI18n(); } catch(e) {} }, 2500);
+      try { sessionStorage.setItem("hub_splash_done", "1"); } catch(e) {} hideSplash(); try { applyI18n(); } catch(e) {}
       });
 })();
 
@@ -512,8 +510,11 @@ function showMentionDropdown(query) {
   matching.forEach(function(a) {
     var item = document.createElement("div");
     item.className = "mention-item";
+    var avatarHtml = a.avatar && a.avatar.indexOf("/") === 0
+      ? '<img class="mention-avatar-img" src="' + esc(a.avatar) + '" alt="" style="width:20px;height:20px;border-radius:4px;">'
+      : "<span class=\"mention-avatar\">" + esc(a.avatar || "🤖") + "</span>";
     item.innerHTML =
-      "<span class=\"mention-avatar\">" + a.avatar + "</span>" +
+      avatarHtml +
       '<span class="mention-name">' + esc(a.nickname || a.name) + "</span>";
     item.addEventListener("click", function() { insertMention(a.id); });
     dd.appendChild(item);
@@ -581,7 +582,7 @@ function exportChat() {
     a.href = URL.createObjectURL(blob);
     a.download = filename;
     a.click();
-    URL.revokeObjectURL(a.download);
+    URL.revokeObjectURL(a.href);
   });
 }
 

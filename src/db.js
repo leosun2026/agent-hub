@@ -4,6 +4,7 @@
 const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 // Project-relative DB path (GitHub-friendly)
 const DB_DIR = path.join(__dirname, '..', 'data');
@@ -113,6 +114,21 @@ function initSchema() {
   // === settings (key-value store for rules, etc.) ===
   db.run("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
 
+    // === invitations ===
+  db.run("CREATE TABLE IF NOT EXISTS invitations (" +
+    "id TEXT PRIMARY KEY," +
+    "agent_id TEXT NOT NULL," +
+    "agent_name TEXT NOT NULL," +
+    "challenge TEXT NOT NULL," +
+    "status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted','expired','cancelled'))," +
+    "endpoint TEXT," +
+    "auth_token TEXT," +
+    "model TEXT," +
+    "mode TEXT NOT NULL DEFAULT 'direct' CHECK(mode IN ('direct','review'))," +
+    "created_at TEXT DEFAULT (datetime('now'))," +
+    "expires_at TEXT NOT NULL," +
+    "approved_by TEXT)");
+
   saveDb();
 }
 
@@ -137,10 +153,9 @@ function queryOne(sql, params) {
 
 function run(sql, params) {
   params = params || [];
-  db.run(sql, params);
-  var row = queryOne('SELECT last_insert_rowid() AS id');
+  var info = db.run(sql, params);
   saveDb();
-  return row ? row.id : null;
+  return info && info.lastInsertRowid ? Number(info.lastInsertRowid) : null;
 }
 
 // === Messages ===
@@ -440,7 +455,61 @@ function setSetting(key, value) {
   return value;
 }
 
+
+// === Invitations ===
+
+function createInvitation(agentId, agentName, mode) {
+  var id = 'inv-' + crypto.randomBytes(8).toString('hex');
+  var challenge = crypto.randomBytes(16).toString('hex'); // kept for future use
+  var expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 minutes
+  mode = mode || 'direct';
+  db.run("INSERT INTO invitations (id, agent_id, agent_name, challenge, status, mode, expires_at) VALUES (?, ?, ?, ?, 'pending', ?, ?)",
+    [id, agentId, agentName, challenge, mode, expiresAt]);
+  saveDb();
+  return { inviteId: id, challenge: challenge, expiresAt: expiresAt };
+}
+
+function getInvitation(inviteId) {
+  var row = queryOne('SELECT * FROM invitations WHERE id = ?', [inviteId]);
+  return row || null;
+}
+
+function updateInvitationStatus(inviteId, status, opts) {
+  opts = opts || {};
+  var sql = "UPDATE invitations SET status = ?";
+  var params = [status];
+  if (opts.endpoint) { sql += ", endpoint = ?"; params.push(opts.endpoint); }
+  if (opts.authToken) { sql += ", auth_token = ?"; params.push(opts.authToken); }
+  if (opts.model) { sql += ", model = ?"; params.push(opts.model); }
+  if (opts.approvedBy) { sql += ", approved_by = ?"; params.push(opts.approvedBy); }
+  sql += " WHERE id = ?";
+  params.push(inviteId);
+  db.run(sql, params);
+  saveDb();
+}
+
+function listPendingInvitations() {
+  return queryAll("SELECT * FROM invitations WHERE status = 'pending' AND expires_at > datetime('now') ORDER BY created_at DESC");
+}
+
+function listAllInvitations() {
+  return queryAll("SELECT * FROM invitations ORDER BY created_at DESC");
+}
+
+function deleteExpiredInvitations() {
+  db.run("DELETE FROM invitations WHERE expires_at < datetime('now') AND status = 'pending'");
+  saveDb();
+}
+
 module.exports = {
+  // Invitations
+  createInvitation,
+  getInvitation,
+  updateInvitationStatus,
+  listPendingInvitations,
+  listAllInvitations,
+  deleteExpiredInvitations,
+  // Existing exports
   getSetting,
   setSetting,
   getDb,

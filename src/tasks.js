@@ -1,8 +1,8 @@
 ﻿// Task state machine
 // discussing -> planning -> confirming -> executing -> reviewing -> done
 //                    ^                             ^
-//               User确认                        User审核
-//  User驳回可回退到 discussing                 User驳回可回退到 planning
+//               力哥确认                        力哥审核
+//  力哥驳回可回退到 discussing                 力哥驳回可回退到 planning
 
 const VALID_TRANSITIONS = {
   discussing: ['planning'],

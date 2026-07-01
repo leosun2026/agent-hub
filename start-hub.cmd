@@ -1,16 +1,22 @@
 @echo off
 cd /d "%~dp0"
 
+netstat -ano 2>nul | findstr ":3457 " | findstr "LISTENING" >nul
+if not errorlevel 1 (
+    echo [Agent Hub] ERROR: Port 3457 is already in use.
+    pause
+    exit /b 1
+)
+
 if not exist "node_modules" (
-    echo [Agent Hub] Dependencies not found. Running npm install...
+    echo [Agent Hub] Installing dependencies...
     call npm install
     if errorlevel 1 (
-        echo [Agent Hub] npm install failed. Please run "npm install" manually.
+        echo [Agent Hub] npm install failed.
         pause
         exit /b 1
     )
-    echo [Agent Hub] Dependencies installed successfully.
 )
 
 echo Starting Agent Hub...
-powershell -Command "Start-Process -WindowStyle Hidden -FilePath 'node' -ArgumentList 'server.js'; Start-Sleep -Seconds 2; Start-Process 'http://localhost:3457/'"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0start-hub.ps1"

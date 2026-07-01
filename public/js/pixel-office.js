@@ -1,4 +1,4 @@
-﻿// Pixel Office renderer (adapted from openclaw-virtual-office)
+// Pixel Office renderer (adapted from openclaw-virtual-office)
 // Uses global 'agents' array from Agent Hub API
 // Resource paths: /office-assets/
 
@@ -270,7 +270,7 @@ function renderPixelOffice() {
       '<div class="status-dot ' + cls + '"></div>' +
       charHtml +
       '<img class="desk-img" src="/office-assets/desk-with-pc.png">' +
-      '<div class="label">' + esc(a.name) + '</div>' +
+      '<div class="label">' + esc(a.nickname || a.name) + '</div>' +
       '<div class="task-bubble">' + esc(mapped.task) + '</div>';
     container.appendChild(ws);
   });
@@ -291,9 +291,9 @@ function renderPixelOffice() {
     if (!currentIds[id]) { activeWalkers[id].el.remove(); delete activeWalkers[id]; }
   }
 
-  participantIdle.forEach(function(a) {
+  participantIdle.forEach(function(a, wi) {
     if (activeWalkers[a.id]) return;
-    var prefix = SPRITE_MAP[a.id] || SPRITE_DEFAULTS[0];
+    var prefix = SPRITE_MAP[a.id] || SPRITE_DEFAULTS[wi % SPRITE_DEFAULTS.length];
     var start = randomWalkablePoint();
     var el = document.createElement('div');
     el.className = 'walker';
@@ -301,7 +301,7 @@ function renderPixelOffice() {
     el.style.top = start.y + 'px';
     el.innerHTML =
       '<img class="sprite-sheet" src="/office-assets/' + prefix + '-walk-right.png" style="width:384px;">' +
-      '<div class="walker-label">' + esc(a.name) + '</div>';
+      '<div class="walker-label">' + esc(a.nickname || a.name) + '</div>';
     walkersContainer.appendChild(el);
     activeWalkers[a.id] = { el: el, prefix: prefix, x: start.x, y: start.y, moveTimer: null };
   });
@@ -317,13 +317,13 @@ function renderPixelOffice() {
   standingContainer.innerHTML = '';
   nonParticipantIdle.forEach(function(a, si) {
     var pos = STANDING_POSITIONS[si] || { x: 60 + (si - STANDING_POSITIONS.length) * 110, y: 590 };
-    var prefix = SPRITE_MAP[a.id] || SPRITE_DEFAULTS[0];
+    var prefix = SPRITE_MAP[a.id] || SPRITE_DEFAULTS[si % SPRITE_DEFAULTS.length];
     var el = document.createElement('div');
     el.className = 'standing-agent';
     el.style.cssText = 'position:absolute;left:' + pos.x + 'px;top:' + pos.y + 'px;width:64px;height:80px;text-align:center;';
     el.innerHTML =
       '<img class="standing-sprite" src="/office-assets/' + prefix + '-walk-down.png" style="width:384px;image-rendering:pixelated;">' +
-      '<div class="standing-label" style="font-size:10px;color:#999;margin-top:-4px;">' + esc(a.name) + '</div>';
+      '<div class="standing-label" style="font-size:10px;color:#999;margin-top:-4px;">' + esc(a.nickname || a.name) + '</div>';
     standingContainer.appendChild(el);
   });
 

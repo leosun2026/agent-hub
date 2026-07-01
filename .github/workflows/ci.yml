@@ -1,0 +1,42 @@
+﻿name: CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 创建测试用环境变量
+        run: |
+          cp .env.example .env
+          # 用占位 token，CI 环境不需要真实调用 agent
+
+      - name: 安装依赖
+        run: npm install
+
+      - name: 检查服务器能否启动
+        run: |
+          # 后台启动服务器，等3秒看有没有崩溃
+          timeout 5 node server.js &
+          sleep 3
+          if kill -0 $! 2>/dev/null; then
+            echo "✅ 服务器启动成功"
+            kill $!
+          else
+            echo "❌ 服务器启动失败"
+            exit 1
+          fi

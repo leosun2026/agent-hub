@@ -9,7 +9,45 @@ const agents = require('./agents');
 const tasksMod = require('./tasks');
 const roomsMod = require('./rooms');
 
+const ENV_PATH = path.join(__dirname, '..', '.env');
+const ENV_LOCK = { locked: false, queue: [] };
+function acquireEnvLock() {
+  return new Promise(resolve => {
+    if (!ENV_LOCK.locked) { ENV_LOCK.locked = true; resolve(); return; }
+    ENV_LOCK.queue.push(resolve);
+  });
+}
+function releaseEnvLock() {
+  if (ENV_LOCK.queue.length > 0) { ENV_LOCK.queue.shift()(); return; }
+  ENV_LOCK.locked = false;
+}
 const AVATAR_DIR = path.join(__dirname, '..', 'public', 'avatars');
+
+async function saveEnvVar(key, value) {
+  await acquireEnvLock();
+  try {
+    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let content = fs.readFileSync(ENV_PATH, 'utf8');
+    const regex = new RegExp('^' + escapedKey + '=.*', 'm');
+    if (value && (value.includes('\n') || value.includes('\r'))) {
+      console.error('[Env] Value for', key, 'contains newlines, rejecting');
+      return;
+    }
+    const line = key + '=' + value;
+    if (regex.test(content)) {
+      content = content.replace(regex, line);
+    } else {
+      if (!content.endsWith('\n')) content += '\n';
+      content += line;
+    }
+    fs.writeFileSync(ENV_PATH, content, 'utf8');
+    process.env[key] = value;
+  } catch(e) {
+    console.error('[Env] Failed to write', key, e.message);
+  } finally {
+    releaseEnvLock();
+  }
+}
 // Ensure avatars directory exists
 if (!fs.existsSync(AVATAR_DIR)) {
   fs.mkdirSync(AVATAR_DIR, { recursive: true });
@@ -62,7 +100,7 @@ function setupRoutes(app, io) {
   // ============ Member Management (NEW) ============
 
   // Add a new member/agent
-  app.post('/api/members', (req, res) => {
+  app.post('/api/members', async (req, res) => {
     try {
       const data = req.body;
 
@@ -77,10 +115,47 @@ function setupRoutes(app, io) {
         return res.status(400).json({ error: 'id must only contain letters, numbers, underscores, hyphens' });
       }
 
+      // Validate endpoint (if provided)
+      if (data.endpoint) {
+        try { const u = new URL(data.endpoint); } catch (_) {
+          return res.status(400).json({ error: 'endpoint must be a valid URL (e.g. http://127.0.0.1:8642/v1/chat/completions)' });
+        }
+        if (data.endpoint.includes('{') || data.endpoint.includes('}')) {
+          return res.status(400).json({ error: 'endpoint contains placeholder braces { }. Please use a real URL.' });
+        }
+      }
+
+
+      // Try to verify endpoint connectivity (reject if unreachable)
+      if (data.endpoint) {
+        try {
+          const modelUrl = data.endpoint.replace('/v1/chat/completions', '/v1/models');
+          const timeout = new AbortController();
+          setTimeout(() => timeout.abort(), 5000);
+          const testResp = await fetch(modelUrl, { signal: timeout.signal });
+          if (!testResp.ok) {
+            console.warn('[Members] Endpoint check returned ' + testResp.status + ', but continuing');
+          }
+        } catch (_) {
+          return res.status(400).json({ error: 'endpoint is unreachable. Agent Hub could not connect to ' + data.endpoint + '. Please check the address and ensure the service is running.' });
+        }
+      }
       // Check for duplicate
       const existing = agents.getAgent(data.id);
       if (existing) {
         return res.status(409).json({ error: 'Agent id "' + data.id + '" already exists' });
+      }
+
+      // Save endpoint/auth to .env if provided
+      if (data.endpoint) {
+        const envKey = 'ENDPOINT_' + data.id.toUpperCase().replace(/-/g, '_');
+        await saveEnvVar(envKey, data.endpoint);
+        data.endpoint = '$' + envKey;
+      }
+      if (data.auth) {
+        const authEnvKey = 'AUTH_' + data.id.toUpperCase().replace(/-/g, '_');
+        await saveEnvVar(authEnvKey, data.auth);
+        data.auth = '$' + authEnvKey;
       }
 
       const agent = agents.addAgent(data);
@@ -196,6 +271,18 @@ function setupRoutes(app, io) {
         const base64Data = updates.avatar.substring(commaIdx + 1);
         const imgBuffer = Buffer.from(base64Data, 'base64');
         updates.avatar = await saveAvatarFile(id, imgBuffer);
+      }
+
+      // Sync endpoint/auth to .env if provided
+      if (updates.endpoint) {
+        const envKey = 'ENDPOINT_' + id.toUpperCase().replace(/-/g, '_');
+        await saveEnvVar(envKey, updates.endpoint);
+        updates.endpoint = '$' + envKey;
+      }
+      if (updates.auth) {
+        const authEnvKey = 'AUTH_' + id.toUpperCase().replace(/-/g, '_');
+        await saveEnvVar(authEnvKey, updates.auth);
+        updates.auth = '$' + authEnvKey;
       }
 
       const updated = agents.updateAgent(id, updates);
@@ -576,6 +663,263 @@ app.delete('/api/rooms/:id', (req, res) => {
     res.json({ success: true, rules: { rounds: rounds, customRules: customRules } });
   });
 
+
+  // ============ Invitation / Registration (Verification Callback) ============
+
+  // POST /api/invite - Create an invitation for an agent
+  app.post('/api/invite', (req, res) => {
+    var agentId = (req.body.agentId || '').trim();
+    var agentName = (req.body.agentName || agentId).trim();
+    var mode = req.body.mode || 'direct'; // 'direct' or 'review'
+    if (!agentId) return res.status(400).json({ error: 'agentId is required' });
+
+    // Check if agent already exists
+    var existing = agents.getAgent(agentId);
+    if (existing) return res.status(409).json({ error: 'Agent "' + agentId + '" already exists' });
+
+    var invite = db.createInvitation(agentId, agentName, mode);
+    var hubUrl = req.protocol + '://' + req.get('host');
+    res.json({
+      inviteId: invite.inviteId,
+      challenge: invite.challenge,
+      expiresAt: invite.expiresAt,
+      registerUrl: hubUrl + '/api/register',
+      mode: mode
+    });
+  });
+
+  // POST /api/register - Agent calls back with minimum info (simplified)
+  app.post('/api/register', async (req, res) => {
+    var inviteId = (req.body.inviteId || '').trim();
+    var baseUrl = (req.body.baseUrl || req.body.endpoint || '').trim();
+    var authToken = req.body.auth || req.body.authToken || req.body.auth_token || '';
+    var model = (req.body.model || '').trim();
+    var mode = req.body.mode || 'direct';
+
+    if (!inviteId) return res.status(400).json({ error: 'inviteId is required' });
+
+    var invite = db.getInvitation(inviteId);
+    if (!invite) return res.status(404).json({ error: 'Invitation not found' });
+    if (invite.status !== 'pending') return res.status(410).json({ error: 'Invitation already ' + invite.status });
+    if (new Date(invite.expires_at) < new Date()) {
+      db.updateInvitationStatus(inviteId, 'expired');
+      return res.status(410).json({ error: 'Invitation expired' });
+    }
+
+    // Construct endpoint from baseUrl or use provided endpoint directly
+    var endpoint = baseUrl;
+    if (endpoint && !endpoint.includes('/v1/chat/completions')) {
+      endpoint = endpoint.replace(/\/+$/, '') + '/v1/chat/completions';
+    }
+
+    // Mark as accepted immediately
+    db.updateInvitationStatus(inviteId, 'accepted', {
+      endpoint: endpoint || null,
+      authToken: authToken || null,
+      model: model || null
+    });
+
+    // Add the agent right away
+    var agentData = {
+      id: invite.agent_id,
+      name: invite.agent_name,
+      role: 'executor',
+      avatar: '🤖',
+      endpoint: endpoint || null,
+      model: model || null,
+      auth: authToken || null,
+      capabilities: ['chat'],
+      group_permissions: { receive_all: true, receive_at_only: false, can_send_active: true, can_see_history: true }
+    };
+
+    agents.addAgent(agentData);
+    db.saveAgentToDb(agentData);
+
+    // Auto-add to default room
+    try {
+      var roomGeneral = db.getRoom('room-general');
+      if (roomGeneral) {
+        var members = roomGeneral.members || [];
+        if (members.indexOf(agentData.id) < 0) {
+          members.push(agentData.id);
+          db.updateRoomMembers('room-general', members);
+        }
+      }
+    } catch (e) {
+      console.error('[Register] Failed to add to room:', e.message);
+    }
+
+    try { require('../server').io.emit('agents:list', agents.listAgents()); } catch(e) {}
+
+    // Async endpoint probe (non-blocking, wont affect registration)
+    if (endpoint) {
+      setTimeout(async () => {
+        try {
+          var modelUrl = endpoint.replace('/v1/chat/completions', '/v1/models');
+          var probeResp = await fetch(modelUrl, { signal: AbortSignal.timeout(5000) });
+          if (probeResp.ok) {
+            var body = await probeResp.json();
+            var modelList = (body.data || body.models || []).map(function(m) { return m.id || m.name || m; });
+            console.log('[Register] Endpoint verified for', invite.agent_id, '- models:', modelList.join(', '));
+          } else {
+            console.log('[Register] Endpoint check returned', probeResp.status, 'for', invite.agent_id);
+          }
+        } catch (e) {
+          console.log('[Register] Async endpoint probe skipped for', invite.agent_id, ':', e.message);
+        }
+      }, 0);
+    }
+
+    res.json({ status: 'active', agentId: invite.agent_id, agentName: invite.agent_name });
+  });
+
+  // GET /api/invite/:id - Check a single invitation status
+  app.get('/api/invite/:id', (req, res) => {
+    var invite = db.getInvitation(req.params.id);
+    if (!invite) return res.status(404).json({ error: 'Invitation not found' });
+    res.json({
+      id: invite.id,
+      agentId: invite.agent_id,
+      agentName: invite.agent_name,
+      status: invite.status,
+      expiresAt: invite.expires_at,
+      createdAt: invite.created_at
+    });
+  });
+
+  // GET /api/pending-invites - List pending invitations for the UI
+  // GET /api/pending-invites - List pending invitations for the UI
+  app.get('/api/pending-invites', (req, res) => {
+    var invites = db.listPendingInvitations();
+    res.json(invites);
+  });
+
+  // POST /api/invite/approve - Human approves a pending review-mode invitation
+  app.post('/api/invite/approve', (req, res) => {
+    var inviteId = (req.body.inviteId || '').trim();
+    var approvedBy = req.body.approvedBy || 'user';
+    if (!inviteId) return res.status(400).json({ error: 'inviteId is required' });
+
+    var invite = db.getInvitation(inviteId);
+    if (!invite) return res.status(404).json({ error: 'Invitation not found' });
+    if (invite.status !== 'accepted') return res.status(400).json({ error: 'Invitation not in accepted state, current: ' + invite.status });
+
+    // Generate approval token for agent to complete registration
+    var approvalToken = 'appr-' + require('crypto').randomBytes(8).toString('hex');
+    db.updateInvitationStatus(inviteId, 'accepted', { approvedBy: approvedBy });
+
+    // If endpoint already provided in review mode, add agent now
+    if (invite.endpoint && invite.model) {
+      var agentData = {
+        id: invite.agent_id,
+        name: invite.agent_name,
+        role: 'executor',
+        avatar: '🤖',
+        endpoint: invite.endpoint,
+        model: invite.model,
+        auth: invite.auth_token,
+        capabilities: ['chat'],
+        group_permissions: { receive_all: true, receive_at_only: false, can_send_active: true, can_see_history: true }
+      };
+      agents.addAgent(agentData);
+      db.saveAgentToDb(agentData);
+      try { require('../server').io.emit('agents:list', agents.listAgents()); } catch(e) {}
+      return res.json({ status: 'active', agentId: invite.agent_id, approvalToken: approvalToken });
+    }
+
+    res.json({ status: 'approved', agentId: invite.agent_id, approvalToken: approvalToken,
+      message: 'Agent approved. Send the approvalToken to the agent so it can complete registration via POST /api/complete-registration' });
+  });
+
+  // POST /api/complete-registration - Agent completes registration after approval
+  app.post('/api/complete-registration', async (req, res) => {
+    var approvalToken = (req.body.approvalToken || '').trim();
+    var endpoint = (req.body.endpoint || '').trim();
+    var authToken = req.body.auth || '';
+    var model = (req.body.model || '').trim();
+
+    if (!approvalToken) return res.status(400).json({ error: 'approvalToken is required' });
+    if (!endpoint) return res.status(400).json({ error: 'endpoint is required' });
+    if (!model) return res.status(400).json({ error: 'model is required' });
+
+    // Find invitation by approval context
+    // In a real implementation, approvalToken would map to an invitation
+    // For now, simple lookup
+    var allInvites = db.listAllInvitations();
+    var invite = allInvites.find(function(i) { return i.status === 'accepted' && i.agent_id; });
+    if (!invite) return res.status(404).json({ error: 'No pending approved invitation found' });
+
+    var agentData = {
+      id: invite.agent_id,
+      name: invite.agent_name,
+      role: 'executor',
+      avatar: '🤖',
+      endpoint: endpoint,
+      model: model,
+      auth: authToken,
+      capabilities: ['chat'],
+      group_permissions: { receive_all: true, receive_at_only: false, can_send_active: true, can_see_history: true }
+    };
+    agents.addAgent(agentData);
+    db.saveAgentToDb(agentData);
+    db.updateInvitationStatus(invite.id, 'accepted', { endpoint: endpoint, authToken: authToken, model: model });
+    try { require('../server').io.emit('agents:list', agents.listAgents()); } catch(e) {}
+
+    res.json({ status: 'active', agentId: invite.agent_id });
+  });
+
+
+    app.post("/api/hello", async (req, res) => {
+      try {
+        const { id, name } = req.body;
+        if (!id) return res.status(400).json({ error: "id is required" });
+        const existing = agents.getAgent(id);
+        if (existing) return res.status(409).json({ error: "Agent \"" + id + "\" already exists" });
+        const envKey = "ENDPOINT_" + id.toUpperCase().replace(/-/g, "_");
+        const authEnvKey = "AUTH_" + id.toUpperCase().replace(/-/g, "_");
+        let endpoint = req.body.endpoint || process.env[envKey] || null;
+        let auth = req.body.auth || process.env[authEnvKey] || null;
+        if (req.body.endpoint) await saveEnvVar(envKey, req.body.endpoint);
+        if (req.body.auth) await saveEnvVar(authEnvKey, req.body.auth);
+        const agentData = {
+          id: id, name: name || id, role: "executor",
+          avatar: req.body.avatar || "robot",
+          endpoint: endpoint ? "$" + envKey : null,
+          model: req.body.model || null,
+          auth: auth ? "$" + authEnvKey : null,
+          capabilities: ["chat"],
+          group_permissions: { receive_all: true, receive_at_only: false, can_send_active: true, can_see_history: true }
+        };
+        if (endpoint) {
+          try {
+            const modelUrl = endpoint.replace("/v1/chat/completions", "/v1/models");
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), 3000);
+            const probeResp = await fetch(modelUrl, { signal: controller.signal });
+            if (probeResp.ok) {
+              const body = await probeResp.json();
+              const modelList = (body.data || body.models || []).map(function(m) { return m.id || m.name || m; });
+              if (modelList.length > 0 && !agentData.model) agentData.model = modelList[0];
+            }
+          } catch (_) { console.log("[Hello] Endpoint probe skipped for", id); }
+        }
+        const agent = agents.addAgent(agentData);
+        db.saveAgentToDb(agent);
+        try {
+          const defaultRoom = db.getRoom("room-general");
+          if (defaultRoom) {
+            const members = defaultRoom.members || [];
+            if (!members.includes(agent.id)) { members.push(agent.id); db.updateRoomMembers("room-general", members); }
+          }
+        } catch (_) {}
+        try { require("../server").io.emit("agents:list", agents.listAgents()); } catch(_) {}
+        console.log("[Hello] Agent registered:", id, endpoint ? "-> " + endpoint : "(no endpoint)");
+        res.json({ status: "active", agentId: agent.id, agentName: agent.name });
+      } catch (e) {
+        console.error("[Hello] Error:", e.message);
+        res.status(500).json({ error: e.message });
+      }
+    });
 }
 
-module.exports = { setupRoutes };
+  module.exports = { setupRoutes };

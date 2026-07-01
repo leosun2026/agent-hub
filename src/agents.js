@@ -1,4 +1,4 @@
-// Agents module — Dynamic loading from agents.json
+﻿// Agents module — Dynamic loading from agents.json
 // Supports live add/remove/update without server restart
 
 const fs = require('fs');
@@ -34,17 +34,30 @@ function reloadAgents() {
   return loadAgents();
 }
 
+// Resolve  references in agent endpoint and auth
+function resolveAgentEnvVars(agent) {
+  if (agent.endpoint && agent.endpoint.startsWith("$")) {
+    const envKey = agent.endpoint.slice(1);
+    agent.endpoint = process.env[envKey] || agent.endpoint;
+  }
+  if (agent.auth && agent.auth.startsWith("$")) {
+    const envKey = agent.auth.slice(1);
+    agent.auth = process.env[envKey] || null;
+  }
+  return agent;
+}
+
 // === Read ===
 
 function getAgent(id) {
   const agent = AGENT_MAP[id];
   if (!agent) return null;
-  // Deep clone to prevent external mutation
-  return JSON.parse(JSON.stringify(agent));
+  const clone = JSON.parse(JSON.stringify(agent));
+  return resolveAgentEnvVars(clone);
 }
 
 function listAgents() {
-  return AGENTS.map(a => JSON.parse(JSON.stringify(a)));
+  return AGENTS.map(a => JSON.parse(JSON.stringify(resolveAgentEnvVars(a))));
 }
 
 // === Write (double-writes to agents.json + returns the agent for db sync) ===
@@ -156,11 +169,9 @@ async function callAgent(agentId, messages) {
 
   const headers = { 'Content-Type': 'application/json' };
 
-  // If auth starts with '\$', resolve from environment variable
-  if (agent.auth && agent.auth.startsWith('$')) {
-    const envKey = agent.auth.slice(1);
-    agent.auth = process.env[envKey] || null;
-  }
+// '\$', resolve from environment variable
+  // Resolve env var references for endpoint and auth
+  resolveAgentEnvVars(agent);
 
   if (agent.auth) {
     headers['Authorization'] = agent.auth.startsWith('Bearer ') ? agent.auth : 'Bearer ' + agent.auth;
@@ -190,10 +201,8 @@ async function checkAgentStatus(agentId) {
 
   try {
     // Resolve $env var prefix before using auth
-    if (agent.auth && agent.auth.startsWith('$')) {
-      const envKey = agent.auth.slice(1);
-      agent.auth = process.env[envKey] || null;
-    }
+    // Resolve env var references for endpoint and auth
+    resolveAgentEnvVars(agent);
     const url = agent.endpoint.replace('/v1/chat/completions', '/v1/models');
     const headers = {};
     if (agent.auth) headers['Authorization'] = agent.auth.startsWith('Bearer ') ? agent.auth : 'Bearer ' + agent.auth;
@@ -238,6 +247,7 @@ module.exports = {
   removeAgent,
   updateAgent,
   setInMemoryProperty,
+  resolveAgentEnvVars,
   reloadAgents,
   callAgent,
   checkAgentStatus,

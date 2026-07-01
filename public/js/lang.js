@@ -9,7 +9,7 @@ LOCALE.zh = {
   splash_title: "Agent Hub",
   splash_welcome: "欢迎大家使用",
   splash_loading: "正在加载...",
-  splash_copyright: "Agent Hub v0.1.0 © 2026 @ Leosun2026",
+  splash_copyright: "Agent Hub v0.2.0 © 2026 @ Leosun2026",
   splash_attribution: "大厅动画改编自 Star-Office-UI (MIT) · 像素艺术素材版权归原作者所有，仅限非商业学习使用",
 
   // 侧边栏
@@ -175,7 +175,7 @@ LOCALE.zh = {
   help_battle: "Agent 对谈",
 
   // 默认名称
-  default_user_name: "用户",
+  default_user_name: "力哥",
   nickname_placeholder: "输入昵称...",
 
   // Agent 状态
@@ -258,14 +258,64 @@ LOCALE.zh = {
   cmd_desc_save: "保存对话",
   cmd_desc_battle: "深入探讨",
   cmd_desc_search: "搜索历史",
+  // 邀请 (Invitation)
+  invite_tab_new: '验证回调',
+  invite_tab_old: '粘贴 JSON',
+  invite_new_step1: '1. 设置 Agent 信息',
+  invite_new_step2: '2. 发送邀请',
+  invite_new_agent_id: 'Agent ID（唯一标识）',
+  invite_new_agent_name: '显示名称',
+  invite_new_endpoint: 'API 地址（可选，填写后直接添加）',
+  invite_new_mode: '信任模式',
+  invite_mode_direct: '直接注册（自动验证）',
+  invite_mode_review: '审核模式（需人工批准）',
+  invite_btn_generate: '生成邀请',
+  invite_new_invite_id: '邀请码',
+  invite_new_register_url: '注册地址',
+  invite_new_expires: '过期时间',
+  invite_new_instructions: '请将以上信息发送给目标 Agent。Agent 需向注册地址 POST 请求完成注册。',
+  invite_status_waiting: '等待 Agent 注册...',
+  invite_status_active: '注册成功！',
+  invite_status_timeout: '注册超时，请重试',
+  msg_agent_id_required: '请填写 Agent ID',
+  invite_preview: '预览',
+
+
+  invite_field_id: 'Agent ID',
+  invite_field_name: '显示名称',
+  invite_field_endpoint: 'Endpoint',
+  invite_field_model: 'Model',
+  invite_new_instructions_direct: '向 {registerUrl} POST 以下 JSON：\n\n{\n  "inviteId": "{inviteId}",\n  "baseUrl": "<你的 API 根地址>",\n  \"auth\": \"<Bearer 令牌 (可选，如果 API 需要认证)>\"\n}\n\nAgent Hub 会自动探测你的端口和模型信息。',
+  invite_new_instructions_review: '向 {registerUrl} POST 以下 JSON：\n\n{\n  "inviteId": "{inviteId}",\n  "baseUrl": "<你的 API 根地址>"\n}\n\n等待人工审核后激活。',
 };
+
 
 // ============ 英文 ============
 LOCALE.en = {
+  // Invitation
+  invite_tab_new:"Verification Callback 🆕",
+  invite_tab_old:"Paste JSON",
+  invite_new_step1:"1. Set Agent Info",
+  invite_new_step2:"2. Send Invitation",
+  invite_new_agent_id:"Agent ID (unique identifier)",
+  invite_new_agent_name:"Display Name",
+  invite_new_mode:"Trust Mode",
+  invite_mode_direct:"Direct (auto-verify)",
+  invite_mode_review:"Review (manual approval)",
+  invite_btn_generate:"Generate Invitation",
+  invite_new_invite_id:"Invite ID",
+  invite_new_register_url:"Register URL",
+  invite_new_expires:"Expires",
+  invite_status_waiting:"Waiting for agent registration...",
+  invite_status_active:"Registration successful!",
+  invite_status_timeout:"Registration timed out, please retry",
+  msg_agent_id_required:"Please enter Agent ID",
+  invite_preview:"Preview",
+
   splash_title: "Agent Hub",
   splash_welcome: "Welcome!",
   splash_loading: "Loading...",
-  splash_copyright: "Agent Hub v0.1.0 © 2026 @ Leosun2026",
+  splash_copyright: "Agent Hub v0.2.0 © 2026 @ Leosun2026",
   splash_attribution: "Hall animation adapted from Star-Office-UI (MIT) · Pixel art assets copyright owned by original authors, for non-commercial learning use only",
 
   sidebar_agents: "Agents",
@@ -487,6 +537,35 @@ LOCALE.en = {
   cmd_desc_save: "Export conversation",
   cmd_desc_battle: "Deep discussion",
   cmd_desc_search: "Search history",
+  // Invitation
+  invite_tab_new: 'Verification Callback',
+  invite_tab_old: 'Paste JSON',
+  invite_new_step1: '1. Set Agent Info',
+  invite_new_step2: '2. Send Invitation',
+  invite_new_agent_id: 'Agent ID',
+  invite_new_agent_name: 'Display Name',
+  invite_new_endpoint: 'API Endpoint (optional, fill to add directly)',
+  invite_new_mode: 'Trust Mode',
+  invite_mode_direct: 'Direct (auto-verify)',
+  invite_mode_review: 'Review (manual approval)',
+  invite_btn_generate: 'Generate Invitation',
+  invite_new_invite_id: 'Invite ID',
+  invite_new_register_url: 'Register URL',
+  invite_new_expires: 'Expires',
+  invite_new_instructions: 'Send the above info to the target agent. The agent must POST to the Register URL to complete registration.',
+  invite_status_waiting: 'Waiting for agent registration...',
+  invite_status_active: 'Registration successful!',
+  invite_status_timeout: 'Registration timed out, please retry',
+  msg_agent_id_required: 'Please enter Agent ID',
+  invite_preview: 'Preview',
+
+
+  invite_field_id: 'Agent ID',
+  invite_field_name: 'Display Name',
+  invite_field_endpoint: 'Endpoint',
+  invite_field_model: 'Model',
+  invite_new_instructions_direct: 'POST to {registerUrl} with:\n\n{\n  "inviteId": "{inviteId}",\n  "baseUrl": "<your API root URL>",\n  \"auth\": \"<Bearer token (optional, if your API requires auth)>\"\n}\n\nAgent Hub will auto-discover your endpoint and model info.',
+  invite_new_instructions_review: 'POST to {registerUrl} with:\n\n{\n  "inviteId": "{inviteId}",\n  "baseUrl": "<your API root URL>"\n}\n\nWait for human approval.',
 };
 
 // ============ 核心函数 ============
@@ -531,5 +610,7 @@ function applyI18n() {
     if (key) phEls[i].placeholder = t(key);
   }
 }
+
+
 
 

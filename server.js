@@ -1,4 +1,4 @@
-﻿// Agent Hub Server v2.0 — Dynamic member management + Group chat
+﻿// Agent Hub Server v0.2.0 — Dynamic member management + Group chat
 // Core: message broadcast to all room agents with permission filtering
 
 const express = require('express');
@@ -9,7 +9,7 @@ const fs = require('fs');
 const LOG_FILE = path.join(__dirname, 'hub.log');
 ;
 const { setupRoutes } = require('./src/routes');
-const { saveMessage, getMessages, getDb, getRoom, getTask, syncAgentsToDb, listAgentsFromDb } = require('./src/db');
+const { saveMessage, getMessages, getDb, getRoom, getTask, syncAgentsToDb, listAgentsFromDb, createTask, listTasks } = require('./src/db');
 const { callAgent, getAgent, listAgents, setInMemoryProperty } = require('./src/agents');
 const {
   initDefaultRoom,
@@ -67,13 +67,6 @@ function isDuplicateReply(agentId, content) {
   return dup;
 }
 
-// ============ Parse @mentions (for notification enhancement) ============
-
-function parseMentions(text) {
-  const matches = text.match(/@(\S+)/g);
-  if (!matches) return [];
-  return matches.map(function(m) { return m.slice(1); });
-}
 
 // ============ Agent reply: build reply-to context (NEW) ============
 
@@ -109,7 +102,7 @@ async function askAgent(agentId, userMessage, taskId, roomId) {
     ]);
 
     const content = (result.content || '').trim();
-    if (content === '[SILENT]' || content === '') {
+    if (content === '[SILENT]' || content.startsWith('[SILENT]') || content === '' || content.startsWith('No response from OpenClaw')) {
       console.log('[Silent] Agent ' + agentId + ' chose to be silent');
       writeLog('INFO', '[Silent] Agent ' + agentId + ' chose to be silent');
       io.emit('agent:state', { agentId: agentId, state: 'idle' });
@@ -146,21 +139,30 @@ async function askAgent(agentId, userMessage, taskId, roomId) {
 
     return result;
   } catch (err) {
-    console.error('Agent ' + agentId + ' error:', err.message);
-    writeLog('ERROR', 'Agent ' + agentId + ' error: ' + err.message)
-    const errMsg = saveMessage({
+    var errMsg = err.message || '';
+    var noisePatterns = ['No response from OpenClaw', '[SILENT]'];
+    var isNoise = noisePatterns.some(function(p) { return errMsg.indexOf(p) >= 0; });
+    if (isNoise) {
+      console.log('[Silent] Agent ' + agentId + ' chose to be silent (' + errMsg.substring(0, 80) + ')');
+      writeLog('INFO', '[Silent] Agent ' + agentId + ' chose to be silent');
+      io.emit('agent:state', { agentId: agentId, state: 'idle' });
+      return { agentId, silent: true };
+    }
+    console.error('Agent ' + agentId + ' error:', errMsg);
+    writeLog('ERROR', 'Agent ' + agentId + ' error: ' + errMsg);
+    var savedMsg = saveMessage({
       task_id: taskId || null,
       room_id: roomId || null,
       agent_id: agentId,
       role: 'agent',
-      content: '[Error] ' + err.message,
+      content: '[Error] ' + errMsg,
     });
     io.emit('chat:message', {
-      id: errMsg.id,
+      id: savedMsg.id,
       room_id: roomId || null,
       agent_id: agentId,
       role: 'agent',
-      content: '[Error] ' + err.message,
+      content: '[Error] ' + errMsg,
       created_at: new Date().toISOString()
     });
     io.emit('agent:state', { agentId: agentId, state: 'idle' });
@@ -170,9 +172,9 @@ async function askAgent(agentId, userMessage, taskId, roomId) {
 
 // ============ Broadcast to all agents in room (core logic — enhanced) ============
 
-async function broadcastToRoom(roomId, senderId, senderName, content, taskId, depth) {
+async function broadcastToRoom(roomId, senderId, senderName, content, taskId, depth, eligibleAgentIds) {
   if (depth === undefined) depth = 0;
-    if (stopBroadcast) { stopBroadcast = false; return; }
+    if (stopBroadcast) { return; }
   const room = getRoom(roomId);
   if (!room) {
     console.log('[Broadcast] Room not found:', roomId);
@@ -180,15 +182,22 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
     return;
   }
 
-  const mode = room.mode || 'broadcast';
+  // When user @mentions a specific agent (not @all/@everyone), switch to mention-only
+  const isUserMessage = senderId === 'user';
+  const hasMention = content && /@(?!all\b|everyone\b)\S+/i.test(content);
+
+  // Get room agents with permission filtering
+  const roomAgents = getRoomAgents(room, senderId, content);
+  const hasRealAgentMention = hasMention && roomAgents.some(function(a) {
+    return isAgentMentioned(content, a.id);
+  });
+  const mode = (isUserMessage && hasRealAgentMention) ? 'mention-only' : (room.mode || 'broadcast');
   console.log('[Broadcast] Room "' + room.name + '" mode=' + mode + ' sender=' + senderId);
   writeLog('INFO', '[Broadcast] Room "' + room.name + '" mode=' + mode + ' sender=' + senderId);
 
   // Get recent history for context
-  const recentMsgs = getMessages({ room_id: roomId, limit: 30 });
+  const recentMsgs = getMessages({ room_id: roomId, limit: 15 });
 
-  // Get room agents with permission filtering
-  const roomAgents = getRoomAgents(room, senderId, content);
   if (roomAgents.length === 0) {
     console.log('[Broadcast] No eligible agents in room');
     writeLog('WARN', '[Broadcast] No eligible agents in room');
@@ -209,36 +218,61 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
     }
   }
 
-  // Build reply-to context (NEW)
+    // Track eligible agents for chain broadcast (mention-only/battle mode)
+  if (depth === 0 && mode === 'mention-only' && !eligibleAgentIds) {
+    eligibleAgentIds = new Set();
+    for (var ei = 0; ei < taskFilteredAgents.length; ei++) {
+      var ea = taskFilteredAgents[ei];
+      if (isAgentMentioned(content, ea.id) || isMentionAll(content)) {
+        eligibleAgentIds.add(ea.id);
+      }
+    }
+    if (eligibleAgentIds.size > 0) {
+      console.log('[Broadcast] Tracked ' + eligibleAgentIds.size + ' eligible agents for chain');
+    } else {
+      eligibleAgentIds = null;
+    }
+  }
+
+    // Build reply-to context (NEW)
   const replyTo = (senderId !== 'user' && recentMsgs.length > 1)
     ? buildReplyContext(content, recentMsgs.slice(0, -1))
     : null;
 
-  // Send to all agents in parallel
-  const tasks = taskFilteredAgents.map(async function(agent) {
+  // Send to all agents sequentially so stop can take effect between agents
+  const results = [];
+
+  for (const agent of taskFilteredAgents) {
+    // Chain depth filtering: only allow agents that were originally eligible
+    if (eligibleAgentIds && !eligibleAgentIds.has(agent.id)) {
+      results.push({ agentId: agent.id, name: agent.name, skipped: true, reason: 'not in chain scope' });
+      continue;
+    }
     // Permission check: mention-only mode
     const perms = agent.group_permissions || {};
 
     if (mode === 'mention-only') {
       const mentioned = isAgentMentioned(content, agent.id);
       const mentionAll = isMentionAll(content);
-      if (!mentioned && !mentionAll && perms.receive_at_only !== false) {
-        // In mention-only mode, skip if not @mentioned and not receive_at_only
-        return { agentId: agent.id, name: agent.name, skipped: true, reason: 'not mentioned' };
+      if (!mentioned && !mentionAll) {
+        results.push({ agentId: agent.id, name: agent.name, skipped: true, reason: 'not mentioned' });
+        continue;
       }
     }
 
     // Skip if agent cannot receive broadcast
     if (mode === 'broadcast' && perms.receive_all === false) {
-      return { agentId: agent.id, name: agent.name, skipped: true, reason: 'receive_all disabled' };
+      results.push({ agentId: agent.id, name: agent.name, skipped: true, reason: 'receive_all disabled' });
+      continue;
     }
 
     // Throttle check
     if (!canAgentReply(agent.id)) {
-      return { agentId: agent.id, name: agent.name, skipped: true, reason: 'throttled' };
+      results.push({ agentId: agent.id, name: agent.name, skipped: true, reason: 'throttled' });
+      continue;
     }
 
-    // Build messages with enhanced context (companion list + reply-to)
+    // Build messages with enhanced context
     const isMentioned = mode === 'broadcast'
       ? isAgentMentioned(content, agent.id) || isMentionAll(content)
       : true;
@@ -251,11 +285,15 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
     };
 
     // Check round limit before calling agent
-    if (!canAgentReplyInRound(agent.id, taskId, content)) {
+    if (!canAgentReplyInRound(agent.id, taskId, content, depth === 0)) {
       io.emit('agent:state', { agentId: agent.id, state: 'idle' });
-      return { agentId: agent.id, name: agent.name, skipped: true, reason: 'round limit' };
+      results.push({ agentId: agent.id, name: agent.name, skipped: true, reason: 'round limit' });
+      continue;
     }
     
+    // Check stop before calling agent
+    if (stopBroadcast) { io.emit("agent:state", { agentId: agent.id, state: "idle" }); results.push({ agentId: agent.id, name: agent.name, skipped: true, reason: "stopped" }); break; }
+
     // Pass rules to buildGroupChatMessages
     const messages = buildGroupChatMessages(room, recentMsgs, currentMsg, agent, isMentioned, chatRules);
 
@@ -263,16 +301,26 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
       io.emit('agent:state', { agentId: agent.id, state: 'thinking' });
 
       const result = await callAgent(agent.id, messages);
+      
+      // Check stop AFTER callAgent returns — catches already-in-flight calls
+      if (stopBroadcast) {
+        io.emit('agent:state', { agentId: agent.id, state: 'idle' });
+        results.push({ agentId: agent.id, name: agent.name, skipped: true, reason: 'stopped' });
+        break;
+      }
+
       const replyContent = (result.content || '').trim();
 
       if (replyContent === '[SILENT]' || replyContent === '') {
         io.emit('agent:state', { agentId: agent.id, state: 'idle' });
-        return { agentId: agent.id, name: agent.name, silent: true };
+        results.push({ agentId: agent.id, name: agent.name, silent: true });
+        continue;
       }
 
       if (isDuplicateReply(agent.id, replyContent)) {
         io.emit('agent:state', { agentId: agent.id, state: 'idle' });
-        return { agentId: agent.id, name: agent.name, duplicate: true };
+        results.push({ agentId: agent.id, name: agent.name, duplicate: true });
+        continue;
       }
 
       recordAgentReply(agent.id);
@@ -296,36 +344,55 @@ async function broadcastToRoom(roomId, senderId, senderName, content, taskId, de
       });
       io.emit('agent:state', { agentId: agent.id, state: 'idle' });
 
-      // Also broadcast this agent's reply to other agents (chained broadcast)
-      // But only for broadcast mode, not mention-only (to avoid infinite loops)
-      // Max 3 rounds of agent-to-agent replies without user input
-      if (mode === 'broadcast' && replyContent && replyContent.length > 0) {
-        const nextDepth = depth + 1;
-        if (nextDepth <= 3) {
-          setImmediate(() => {
-            const agentName = agent.nickname || agent.name || agent.id;
-            broadcastToRoom(roomId, agent.id, agentName, replyContent, taskId, nextDepth)
-              .catch(err => console.error('[Chained] Broadcast error:', err.message));
-          });
-        }
+      // Check stop before chaining
+      if (stopBroadcast) {
+        results.push({ agentId: agent.id, name: agent.name, replied: true, content: replyContent });
+        break;
       }
 
-      return { agentId: agent.id, name: agent.name, replied: true, content: replyContent };
+      results.push({ agentId: agent.id, name: agent.name, replied: true, content: replyContent });
     } catch (err) {
       console.error('Agent ' + agent.id + ' error:', err.message);
-      writeLog('ERROR', 'Agent ' + agent.id + ' error: ' + err.message)
+      writeLog('ERROR', 'Agent ' + agent.id + ' error: ' + err.message);
       io.emit('agent:state', { agentId: agent.id, state: 'idle' });
-      return { agentId: agent.id, name: agent.name, error: err.message };
+      results.push({ agentId: agent.id, name: agent.name, error: err.message });
     }
-  });
 
-  const results = await Promise.allSettled(tasks);
+    // Break out of loop entirely if stopped
+    if (stopBroadcast) {
+      console.log('[Broadcast] Stopped mid-loop, remaining agents skipped');
+      writeLog('INFO', '[Broadcast] Stopped mid-loop by user');
+      break;
+    }
+  }
+
+  // One chain broadcast per depth (not one per agent)
+  if (depth < 3 && !stopBroadcast) {
+    var chainContent = null;
+    var chainSenderId = null;
+    var chainSenderName = null;
+    for (var ri = 0; ri < results.length; ri++) {
+      var r = results[ri];
+      if (r && r.replied && r.content) {
+        chainContent = r.content;
+        chainSenderId = r.agentId;
+        chainSenderName = r.name || r.agentId;
+      }
+    }
+    if (chainContent) {
+      setImmediate(function() {
+        if (stopBroadcast) { return; }
+        broadcastToRoom(roomId, chainSenderId, chainSenderName, chainContent, taskId, depth + 1, eligibleAgentIds)
+          .catch(function(err) { console.error('[Chained] Broadcast error:', err.message); });
+      });
+    }
+  }
 
   // Statistics
-  const replied = results.filter(r => r.status === 'fulfilled' && r.value && r.value.replied).length;
-  const silent = results.filter(r => r.status === 'fulfilled' && r.value && r.value.silent).length;
-  const skipped = results.filter(r => r.status === 'fulfilled' && r.value && r.value.skipped).length;
-  const errors = results.filter(r => r.status === 'rejected' || (r.value && r.value.error)).length;
+  const replied = results.filter(function(r) { return r && r.replied; }).length;
+  const silent = results.filter(function(r) { return r && r.silent; }).length;
+  const skipped = results.filter(function(r) { return r && r.skipped; }).length;
+  const errors = results.filter(function(r) { return r && r.error; }).length;
 
   console.log('[Broadcast] Results: ' + replied + ' replied, ' + silent + ' silent, ' + skipped + ' skipped, ' + errors + ' errors');
   writeLog('INFO', '[Broadcast] Results: ' + replied + ' replied, ' + silent + ' silent, ' + skipped + ' skipped, ' + errors + ' errors');
@@ -341,6 +408,7 @@ io.on('connection', function(socket) {
 
   // --- Send message (broadcast mode core) ---
   socket.on('chat:send', async function(data) {
+    stopBroadcast = false; // Reset stop flag for new user message
     resetTaskRounds(data.task_id);
     const { task_id, agent_id, role, content, room_id, reply_to } = data;
     if (!content) return;
@@ -468,6 +536,16 @@ async function start() {
   // Sync agents.json to hub.db
   const allAgents = listAgents();
   syncAgentsToDb(allAgents);
+  // Validate env var references for all agents
+  for (const agent of allAgents) {
+    if (agent.endpoint && typeof agent.endpoint === "string" && agent.endpoint.startsWith("$")) {
+      const envKey = agent.endpoint.slice(1);
+      if (!process.env[envKey]) {
+        console.warn("[Startup] WARNING: Agent " + agent.id + " references env " + agent.endpoint + " which is not set");
+        writeLog("WARN", "Missing env var " + agent.endpoint + " for agent " + agent.id);
+      }
+    }
+  }
 
   // Restore DB-persisted nicknames into in-memory cache
   // This makes nickname survive git checkout of agents.json
@@ -481,9 +559,23 @@ async function start() {
   // Initialize default room
   initDefaultRoom(require('./src/db'));
 
+  // Create default task if none exist
+  const db = require('./src/db');
+  const existingTasks = db.listTasks();
+  if (!existingTasks || existingTasks.length === 0) {
+    db.createTask({
+      id: 'default-project',
+      title: 'Default Project',
+      description: 'Welcome! Start your first conversation or add agents.',
+      participants: []
+    });
+    console.log('[Startup] Created default task: Default Project');
+    writeLog('INFO', 'Created default task for new installation');
+  }
+
   server.listen(PORT, '127.0.0.1', function() {
-    console.log('Agent Hub v2.0 running at http://127.0.0.1:' + PORT);
-    writeLog('INFO', 'Agent Hub v2.0 started on port ' + PORT + ' with ' + allAgents.length + ' agents');
+    console.log('Agent Hub v0.2.0 running at http://127.0.0.1:' + PORT);
+    writeLog('INFO', 'Agent Hub v0.2.0 started on port ' + PORT + ' with ' + allAgents.length + ' agents');
     console.log('Mode: Dynamic member management + Group chat broadcast');
     writeLog('INFO', 'Mode: Dynamic member management + Group chat broadcast');
     console.log('Agents loaded:', allAgents.length);
@@ -525,34 +617,29 @@ global.__chatRules = chatRules;
 
 // Reset round counters for a task (called when user sends a message)
 function resetTaskRounds(taskId) {
-  if (taskId) {
-    delete agentRoundCounts[taskId];
-  }
+  delete agentRoundCounts[taskId || "__global__"];
 }
 
 // Check if an agent can reply in this round
-function canAgentReplyInRound(agentId, taskId, content) {
-  // @mentions and battle mode skip round limits
-  if (isAgentMentioned(content, agentId) || isMentionAll(content) || content.includes("/Battle") || content.includes("/battle")) {
+function canAgentReplyInRound(agentId, taskId, content, allowMentionBypass) {
+  // @mentions and battle mode skip round limits (user messages only)
+  if (allowMentionBypass !== false && (isAgentMentioned(content, agentId) || isMentionAll(content) || content.includes("/Battle") || content.includes("/battle"))) {
     return true;
   }
-  
-  // No task = no round limit
-  if (!taskId) return true;
-  
-  if (!agentRoundCounts[taskId]) agentRoundCounts[taskId] = {};
-  var counts = agentRoundCounts[taskId];
+
+  var key = taskId || "__global__";
+  if (!agentRoundCounts[key]) agentRoundCounts[key] = {};
+  var counts = agentRoundCounts[key];
   var count = counts[agentId] || 0;
-  
+
   return count < chatRules.rounds;
 }
 
-// Increment agent round count
 function incrementAgentRound(agentId, taskId) {
-  if (!taskId) return;
-  if (!agentRoundCounts[taskId]) agentRoundCounts[taskId] = {};
-  if (!agentRoundCounts[taskId][agentId]) agentRoundCounts[taskId][agentId] = 0;
-  agentRoundCounts[taskId][agentId]++;
+  var key = taskId || "__global__";
+  if (!agentRoundCounts[key]) agentRoundCounts[key] = {};
+  if (!agentRoundCounts[key][agentId]) agentRoundCounts[key][agentId] = 0;
+  agentRoundCounts[key][agentId]++;
 }
 
 module.exports = { broadcastToRoom, resetTaskRounds, chatRules };

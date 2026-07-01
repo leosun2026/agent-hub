@@ -1,4 +1,4 @@
-﻿// Room management module 鈥?Group chat room management
+// Room management module 鈥?Group chat room management
 // Enhanced: name+alias @mention, companion list injection, replyTo context, nickname override
 
 const agents = require('./agents');
@@ -218,7 +218,7 @@ function isAgentMentioned(content, agentId) {
   if (/@all\b|@everyone\b/i.test(content)) return true;
 
   // Check @agentId
-  if (new RegExp('@' + escapeRegex(agentId) + '\\b', 'i').test(content)) return true;
+  if (new RegExp('@' + escapeRegex(agentId) + '(?=\\s|$)', 'i').test(content)) return true;
 
   // Check @name (Chinese + English) and @nickname
   const allAgents = agents.AGENTS || agents.listAgents();
@@ -226,13 +226,25 @@ function isAgentMentioned(content, agentId) {
   if (!agent) return false;
 
   // Match by name
-  if (agent.name && new RegExp('@' + escapeRegex(agent.name) + '\\b', 'i').test(content)) {
+  if (agent.name && new RegExp('@' + escapeRegex(agent.name) + '(?=\\s|$)', 'i').test(content)) {
     return true;
   }
 
   // Match by nickname (if set)
-  if (agent.nickname && new RegExp('@' + escapeRegex(agent.nickname) + '\\b', 'i').test(content)) {
+  if (agent.nickname && new RegExp('@' + escapeRegex(agent.nickname) + '(?=\\s|$)', 'i').test(content)) {
     return true;
+  }
+
+  // Space-insensitive match: strip whitespace from both @mention and name/id
+  var atMatch = content.match(/@(\S+)/);
+  if (atMatch) {
+    var strippedAt = atMatch[1].replace(/\s+/g, '');
+    if (agent.name && agent.name.replace(/\s+/g, '') === strippedAt) {
+      return true;
+    }
+    if (agent.id && agent.id.replace(/\s+/g, '') === strippedAt) {
+      return true;
+    }
   }
 
   return false;
